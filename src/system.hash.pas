@@ -11,7 +11,6 @@
  **********************************************************************}
 unit System.Hash;
 
-{$IFDEF CLOSE_TO_DELPHI}{$DEFINE ENABLE_UNICODE}{$ENDIF}
 {$IFDEF ENABLE_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
 {$CODEPAGE UTF8}
 {$MODESWITCH ADVANCEDRECORDS}
@@ -37,9 +36,6 @@ type
   end;
 
 implementation
-
-uses
-  Math;
 
 const
   HC: array [0..66] of Char = (
@@ -82,7 +78,7 @@ begin
   if Length(ADigest) = 16 then
   begin
     {$IFDEF ENDIAN_BIG}
-    Result := GUIDToString(Guid^);
+    Result := GUIDToString(MappedGuid^);
     {$ELSE}
     Guid.D1 := SwapEndian(MappedGuid^.D1);
     Guid.D2 := SwapEndian(MappedGuid^.D2);

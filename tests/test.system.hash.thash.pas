@@ -11,7 +11,6 @@
  **********************************************************************}
 unit Test.System.Hash.THash;
 
-{$IFDEF CLOSE_TO_DELPHI}{$DEFINE ENABLE_UNICODE}{$ENDIF}
 {$IFDEF ENABLE_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
 {$CODEPAGE UTF8}
 
