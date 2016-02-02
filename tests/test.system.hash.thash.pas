@@ -17,8 +17,7 @@ unit Test.System.Hash.THash;
 interface
 
 uses
-  Classes, SysUtils, System.Hash,
-  fpcunit, {testutils,} testregistry;
+  Classes, SysUtils, System.Hash, fpcunit, testregistry;
 
 type
   TTestTHash = class(TTestCase)

@@ -36,7 +36,7 @@
         <PackageName Value="FCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="6">
       <Unit0>
         <Filename Value="fpcunit_ngplus.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -51,6 +51,20 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="System.Hash"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="..\src\system.helpers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Helpers"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="..\src\system.helpers.strings.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="test.system.helpers.tguidhelper.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Helpers.TGuidHelper"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -73,7 +87,7 @@
         <Define0 Value="TEST"/>
         <Define1 Value="CONSOLETEST"/>
         <Define2 Value="ENABLE_UNICODE"/>
-        <Define3 Value="CLOSE_TO_DELPHI"/>
+        <Define3 Value="CLOSER_TO_DELPHI"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>

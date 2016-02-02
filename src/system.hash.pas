@@ -24,10 +24,10 @@ type
   EHashException = class(Exception);
 
   THash = record
-    class function DigestAsInteger(constref ADigest: TBytes): Integer; static;
-    class function DigestAsString(constref ADigest: TBytes): string;
+    class function DigestAsInteger(const ADigest: TBytes): Integer; static;
+    class function DigestAsString(const ADigest: TBytes): string;
       overload; static;
-    class function DigestAsStringGUID(constref ADigest: TBytes): string; static;
+    class function DigestAsStringGUID(const ADigest: TBytes): string; static;
     class function GetRandomString(const ALen: Integer = 10): string; static;
     class function ToBigEndian(AValue: Cardinal): Cardinal; overload; static;
       {$IFNDEF TEST}inline;{$ENDIF}
@@ -36,6 +36,9 @@ type
   end;
 
 implementation
+
+uses
+  Types, System.Helpers;
 
 const
   HC: array [0..66] of Char = (
@@ -47,7 +50,7 @@ const
   );
 
 { THash }
-class function THash.DigestAsInteger(constref ADigest: TBytes): Integer;
+class function THash.DigestAsInteger(const ADigest: TBytes): Integer;
 var
   MappedInt: PInteger absolute ADigest;
 begin
@@ -57,7 +60,7 @@ begin
   Result := MappedInt^;
 end;
 
-class function THash.DigestAsString(constref ADigest: TBytes): string;
+class function THash.DigestAsString(const ADigest: TBytes): string;
 var
   i: Integer;
 begin
@@ -66,29 +69,12 @@ begin
     Result := Result + HC[(ADigest[i] shr 4)] + HC[ADigest[i] and $0f];
 end;
 
-class function THash.DigestAsStringGUID(constref ADigest: TBytes): string;
+class function THash.DigestAsStringGUID(const ADigest: TBytes): string;
 var
-  {$IFDEF ENDIAN_BIG}
-  MappedGuid: PGuid absolute ADigest;
-  {$ELSE}
-  MappedGuid: PGuid absolute ADigest;
-  Guid: TGuid;
-  {$ENDIF}
+  TempGuid: TGUID;
 begin
-  if Length(ADigest) = 16 then
-  begin
-    {$IFDEF ENDIAN_BIG}
-    Result := GUIDToString(MappedGuid^);
-    {$ELSE}
-    Guid.D1 := SwapEndian(MappedGuid^.D1);
-    Guid.D2 := SwapEndian(MappedGuid^.D2);
-    Guid.D3 := SwapEndian(MappedGuid^.D3);
-    Move(MappedGuid^.D4[0], Guid.D4[0], SizeOf(Guid.D4));
-    Result := GUIDToString(Guid);
-    {$ENDIF}
-  end
-  else
-    raise EArgumentException.Create('Byte array for GUID must be exactly 16 bytes long');
+  TempGuid := TempGuid.Create(ADigest, TEndian.Big);
+  Result := TempGuid.ToString;
 end;
 
 class function THash.GetRandomString(const ALen: Integer): string;
@@ -114,7 +100,6 @@ class function THash.ToBigEndian(AValue: UInt64): UInt64;
 begin
   Result := NtoBE(AValue);
 end;
-
 
 end.
 
