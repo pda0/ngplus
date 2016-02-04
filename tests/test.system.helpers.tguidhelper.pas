@@ -11,34 +11,35 @@
  **********************************************************************}
 unit Test.System.Helpers.TGuidHelper;
 
-{$IFDEF ENABLE_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
-{$CODEPAGE UTF8}
+{$IFNDEF FPC}{$LEGACYIFEND ON}{$ENDIF FPC}
+{$I ngplus.inc}
 
 interface
 
 uses
-  Classes, SysUtils, Types, System.Helpers, fpcunit, testregistry;
+  {$IFDEF FPC}
+  fpcunit, testregistry,
+  {$ELSE}
+  TestFramework,
+  {$ENDIF FPC}
+  Classes, SysUtils, Types, System.Helpers;
 
 type
   TTestTGuidHelper = class(TTestCase)
   strict private
     FGuid: TGUID;
   private
-    {$IFDEF CLOSER_TO_DELPHI}
-    procedure FailCreate1;
-    {$ELSE}
+    {$IFDEF FPC}
     procedure FailCreate1A;
+    {$ENDIF FPC}
     procedure FailCreate1U;
-    {$ENDIF CLOSER_TO_DELPHI}
     procedure FailCreate4;
     procedure FailCreate5;
   published
-    {$IFDEF CLOSER_TO_DELPHI}
-    procedure TestCreate1;
-    {$ELSE}
+    {$IFDEF FPC}
     procedure TestCreate1A;
+    {$ENDIF FPC}
     procedure TestCreate1U;
-    {$ENDIF CLOSER_TO_DELPHI}
     procedure TestCreate2;
     procedure TestCreate3;
     procedure TestCreate4;
@@ -76,23 +77,7 @@ const
 
 { TTestTGuidHelper }
 
-{$IFDEF CLOSER_TO_DELPHI}
-procedure TTestTGuidHelper.FailCreate1;
-const
-  BAD_GUID: string = '***';
-begin
-  TGUID.Create(BAD_GUID);
-end;
-
-procedure TTestTGuidHelper.TestCreate1;
-const
-  GOOD_GUID: string = '{EC7E5BD7-3846-41E3-A6AF-12BBE7008E03}';
-begin
-  CheckTrue(IsEqualGUID(TEST_GUID_GOOD, TGUID.Create(GOOD_GUID)));
-  CheckException(FailCreate1, EConvertError, '''***'' is not a valid GUID value');
-end;
-
-{$ELSE}
+{$IFDEF FPC}
 procedure TTestTGuidHelper.FailCreate1A;
 const
   BAD_GUID: AnsiString = '***';
@@ -105,8 +90,9 @@ const
   GOOD_GUID: AnsiString = '{EC7E5BD7-3846-41E3-A6AF-12BBE7008E03}';
 begin
   CheckTrue(IsEqualGUID(TEST_GUID_GOOD, TGUID.Create(GOOD_GUID)));
-  CheckException(FailCreate1A, EConvertError, '''***'' is not a valid GUID value');
+  CheckException(FailCreate1A, EConvertError);
 end;
+{$ENDIF FPC}
 
 procedure TTestTGuidHelper.FailCreate1U;
 const
@@ -120,9 +106,8 @@ const
   GOOD_GUID: UnicodeString = '{EC7E5BD7-3846-41E3-A6AF-12BBE7008E03}';
 begin
   CheckTrue(IsEqualGUID(TEST_GUID_GOOD, TGUID.Create(GOOD_GUID)));
-  CheckException(FailCreate1U, EConvertError, '''***'' is not a valid GUID value');
+  CheckException(FailCreate1U, EConvertError);
 end;
-{$ENDIF CLOSER_TO_DELPHI}
 
 procedure TTestTGuidHelper.TestCreate2;
 begin
@@ -168,24 +153,26 @@ begin
     Bytes[i] := TEST_LONG_ARRAY[i];
 
   FGuid := TGuid.Create(Bytes, 2, TEndian.Big);
-  CheckEquals(RES_1_D1, FGuid.D1);
+  CheckEquals(Integer(RES_1_D1), Integer(FGuid.D1));
   CheckEquals(RES_1_D2, FGuid.D2);
   CheckEquals(RES_1_D3, FGuid.D3);
   for i := 0 to 7 do
     CheckEquals(Bytes[i + 10], FGuid.D4[i]);
 
   FGuid := TGuid.Create(Bytes, 0, TEndian.Big);
-  CheckEquals(RES_2_D1, FGuid.D1);
+  CheckEquals(Integer(RES_2_D1), Integer(FGuid.D1));
   CheckEquals(RES_2_D2, FGuid.D2);
   CheckEquals(RES_2_D3, FGuid.D3);
   for i := 0 to 7 do
     CheckEquals(Bytes[i + 8], FGuid.D4[i]);
 
-  CheckException(FailCreate4, EArgumentException, 'Byte array for GUID must be exactly 16 bytes long');
+  CheckException(FailCreate4, EArgumentException);
 end;
 
-{$PUSH}
-{$WARNINGS OFF}
+{$IFDEF FPC}
+  {$PUSH}
+  {$WARNINGS OFF}
+{$ENDIF FPC}
 procedure TTestTGuidHelper.FailCreate5;
 var
   A: Integer;
@@ -195,7 +182,9 @@ begin
   SetLength(D, 7);
   TGUID.Create(A, B, C, D);
 end;
-{$POP}
+{$IFDEF FPC}
+  {$POP}
+{$ENDIF FPC}
 
 procedure TTestTGuidHelper.TestCreate5;
 var
@@ -215,7 +204,7 @@ begin
     TGUID.Create(A, B, C, D)
   ));
 
-  CheckException(FailCreate5, EArgumentException, 'Byte array for GUID must be exactly 8 bytes long');
+  CheckException(FailCreate5, EArgumentException);
 end;
 
 procedure TTestTGuidHelper.TestCreate6;
@@ -297,7 +286,7 @@ begin
 end;
 
 initialization
-  RegisterTest('System.Helpers', TTestTGuidHelper);
+  RegisterTest('System.Helpers', TTestTGuidHelper.Suite);
 
 end.
 

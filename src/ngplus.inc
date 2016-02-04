@@ -9,22 +9,15 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit System.Helpers.Strings;
 
-{$I ngplus.inc}
+{$IFDEF FPC}
+  {$IFDEF WITH_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
+  {$CODEPAGE UTF8}
+  {$MODESWITCH ADVANCEDRECORDS}
+  {$MODESWITCH TYPEHELPERS}
+{$ENDIF FPC}
 
-interface
-
-resourcestring
-  { System.Helpers }
-  SInvalidGuidArray = 'Byte array for GUID must be exactly %d bytes long';
-
-  { System.Hash }
-  SHashCanNotUpdateMD5 = 'MD5: Cannot update a finalized hash';
-  SHashCanNotUpdateSHA1 = 'SHA1: Cannot update a finalized hash';
-  SHashCanNotUpdateSHA2 = 'SHA2: Cannot update a finalized hash';
-
-implementation
-
-end.
+{$IF DEFINED(WINDOWS) AND (NOT DEFINED(WITHOUT_WINAPI))}
+  {$DEFINE WITH_WINAPI}
+{$IFEND}
 

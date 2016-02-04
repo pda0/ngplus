@@ -11,10 +11,7 @@
  **********************************************************************}
 unit System.Helpers;
 
-{$IFDEF ENABLE_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
-{$CODEPAGE UTF8}
-{$MODESWITCH ADVANCEDRECORDS}
-{$MODESWITCH TYPEHELPERS}
+{$I ngplus.inc}
 
 interface
 
@@ -28,31 +25,17 @@ type
 
   TGuidHelper = record helper for System.TGUID
   public
-    {$IFDEF CLOSER_TO_DELPHI}
-    class function Create(const S: string): TGUID; overload; static;
-    {$ELSE}
     class function Create(const S: AnsiString): TGUID; overload; static;
     class function Create(const S: UnicodeString): TGUID; overload; static;
-    {$ENDIF CLOSER_TO_DELPHI}
-    class function Create(const Data; DataEndian: TEndian =
-      {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID;
-      overload; static;
-    class function Create(const B: TBytes; DataEndian: TEndian =
-      {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID;
-      overload; static;
-    class function Create(const B: TBytes; AStartIndex: Cardinal; DataEndian:
-      TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}):
-      TGUID; overload; static;
-    class function Create(A: Integer; B: SmallInt; C: SmallInt;
-      const D: TBytes): TGUID; overload; static;
-    class function Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F, G, H,
-      I, J, K: Byte): TGUID; overload; static;
-    class function Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H, I, J,
-      K: Byte): TGUID; overload; static;
+    class function Create(const Data; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
+    class function Create(const B: TBytes; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
+    class function Create(const B: TBytes; AStartIndex: Cardinal; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
+    class function Create(A: Integer; B: SmallInt; C: SmallInt; const D: TBytes): TGUID; overload; static;
+    class function Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F, G, H, I, J, K: Byte): TGUID; overload; static;
+    class function Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H, I, J, K: Byte): TGUID; overload; static;
     class function Empty: TGUID; static;
     class function NewGuid: TGUID; static;
-    function ToByteArray(DataEndian: TEndian =
-     {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TBytes;
+    function ToByteArray(DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TBytes;
     function ToString: string;
   end;
 
@@ -63,21 +46,15 @@ uses
 
 { TGuidHelper }
 
-{$IFDEF CLOSER_TO_DELPHI}
-class function TGuidHelper.Create(const S: string): TGUID;
-{$ELSE}
 class function TGuidHelper.Create(const S: AnsiString): TGUID;
-{$ENDIF CLOSER_TO_DELPHI}
 begin
   Result := StringToGUID(S);
 end;
 
-{$IFNDEF CLOSER_TO_DELPHI}
 class function TGuidHelper.Create(const S: UnicodeString): TGUID;
 begin
   Result := StringToGUID(AnsiString(S));
 end;
-{$ENDIF !CLOSER_TO_DELPHI}
 
 class function TGuidHelper.Create(const Data; DataEndian: TEndian): TGUID;
 begin
@@ -95,8 +72,7 @@ begin
   Result := Create(B, 0, DataEndian);
 end;
 
-class function TGuidHelper.Create(const B: TBytes; AStartIndex: Cardinal;
-  DataEndian: TEndian): TGUID;
+class function TGuidHelper.Create(const B: TBytes; AStartIndex: Cardinal; DataEndian: TEndian): TGUID;
 var
   MaxIndex: TDynArrayIndex;
 begin
@@ -107,11 +83,10 @@ begin
   if Length(B) >= MaxIndex then
     Result := Create(B[AStartIndex], DataEndian)
   else
-    raise EArgumentException.CreateFmt(SInvalidGuidArray, [SizeOf(TGUID)]);
+    raise EArgumentException.CreateResFmt(@SInvalidGuidArray, [SizeOf(TGUID)]);
 end;
 
-class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt;
-  const D: TBytes): TGUID;
+class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt; const D: TBytes): TGUID;
 begin
   if Length(D) = Length(Result.D4) then
   begin
@@ -124,8 +99,7 @@ begin
     raise EArgumentException.CreateFmt(SInvalidGuidArray, [8]);
 end;
 
-class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F,
-  G, H, I, J, K: Byte): TGUID;
+class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F, G, H, I, J, K: Byte): TGUID;
 begin
   Result.D1 := DWord(A);
   Result.D2 := Word(B);
@@ -140,8 +114,7 @@ begin
   Result.D4[7] := K;
 end;
 
-class function TGuidHelper.Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H,
-  I, J, K: Byte): TGUID;
+class function TGuidHelper.Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H, I, J, K: Byte): TGUID;
 begin
   Result.D1 := A;
   Result.D2 := B;

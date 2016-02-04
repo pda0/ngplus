@@ -11,13 +11,18 @@
  **********************************************************************}
 unit Test.System.Hash.THash;
 
-{$IFDEF ENABLE_UNICODE}{$MODE DELPHIUNICODE}{$ELSE}{$MODE DELPHI}{$ENDIF}{$H+}
-{$CODEPAGE UTF8}
+{$IFNDEF FPC}{$LEGACYIFEND ON}{$ENDIF FPC}
+{$I ngplus.inc}
 
 interface
 
 uses
-  Classes, SysUtils, System.Hash, fpcunit, testregistry;
+  {$IFDEF FPC}
+  fpcunit, testregistry,
+  {$ELSE}
+  TestFramework,
+  {$ENDIF FPC}
+  Classes, SysUtils, System.Hash;
 
 type
   TTestTHash = class(TTestCase)
@@ -61,13 +66,13 @@ begin
   Move(TEST_VAL, Digest[0], SizeOf(Integer));
   CheckEquals(TEST_VAL, THash.DigestAsInteger(Digest));
 
-  CheckException(FailDigestInteger, EHashException, 'Digest size must be 4 to Generate a Integer');
+  CheckException(FailDigestInteger, EHashException);
 
   SetLength(FBadDigest, 3);
-  CheckException(FailDigestInteger, EHashException, 'Digest size must be 4 to Generate a Integer');
+  CheckException(FailDigestInteger, EHashException);
 
   SetLength(FBadDigest, 5);
-  CheckException(FailDigestInteger, EHashException, 'Digest size must be 4 to Generate a Integer');
+  CheckException(FailDigestInteger, EHashException);
 end;
 
 procedure TTestTHash.TestDigestAsString;
@@ -101,7 +106,7 @@ begin
   Move(TEST_VAL[0], Digest[0], Length(TEST_VAL));
   CheckEquals('{01020304-0506-0708-090A-0B0C0D0E0F10}', THash.DigestAsStringGUID(Digest));
 
-  CheckException(FailDigestGuid, EArgumentException, 'Byte array for GUID must be exactly 16 bytes long');
+  CheckException(FailDigestGuid, EArgumentException);
 end;
 
 procedure TTestTHash.TestGetRandomString;
@@ -150,12 +155,12 @@ const
 var
   Val: UInt64 absolute TEST_VAL;
 begin
-  CheckEquals(TEST_RESULT, THash.ToBigEndian(Val));
+  CheckTrue(TEST_RESULT = THash.ToBigEndian(Val));
 end;
 
 
 initialization
-  RegisterTest('System.Hash', TTestTHash);
+  RegisterTest('System.Hash', TTestTHash.Suite);
 
 end.
 

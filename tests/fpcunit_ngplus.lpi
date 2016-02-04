@@ -36,7 +36,7 @@
         <PackageName Value="FCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="17">
       <Unit0>
         <Filename Value="fpcunit_ngplus.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -65,34 +65,105 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.TGuidHelper"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="test.system.hash.thashmd5.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashMD5"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="system.hash.helpers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Hash.Helpers"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\src\ngplus.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="test.system.hash.thashsha1.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA1"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="test.system.hash.thashsha2_224.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_224"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="test.system.hash.thashsha2_256.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_256"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="test.system.hash.thashsha2_384.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_384"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="test.system.hash.thashsha2_512.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_512"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="test.system.hash.thashsha2_512_224.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_512_224"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="test.system.hash.thashsha2_512_256.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashSHA2_512_256"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="test.system.hash.thashbobjenkins.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashBobJenkins"/>
+      </Unit16>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
+      <IncludeFiles Value="$(ProjOutDir);..\src"/>
       <OtherUnitFiles Value="..\src"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
         <SyntaxMode Value="Delphi"/>
+        <IncludeAssertionCode Value="True"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <Checks>
+        <RangeChecks Value="True"/>
+        <OverflowChecks Value="True"/>
+        <StackChecks Value="True"/>
+      </Checks>
+      <VerifyObjMethodCallValidity Value="True"/>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+        <TrashVariables Value="True"/>
+      </Debugging>
+    </Linking>
     <Other>
       <CustomOptions Value="-dTEST
 -dCONSOLETEST"/>
-      <OtherDefines Count="4">
+      <OtherDefines Count="6">
         <Define0 Value="TEST"/>
         <Define1 Value="CONSOLETEST"/>
-        <Define2 Value="ENABLE_UNICODE"/>
+        <Define2 Value="WITH_UNICODE"/>
         <Define3 Value="CLOSER_TO_DELPHI"/>
+        <Define4 Value="WITH_OPENSSL"/>
+        <Define5 Value="WITHOUT_WINAPI"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3" IgnoreAll="True">
+    <Exceptions Count="4" IgnoreAll="True">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -102,6 +173,9 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="RunError(201)"/>
+      </Item4>
     </Exceptions>
   </Debugging>
 </CONFIG>
