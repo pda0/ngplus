@@ -12,17 +12,17 @@
 unit Test.System.Helpers.TGuidHelper;
 
 {$IFNDEF FPC}{$LEGACYIFEND ON}{$ENDIF FPC}
-{$I ngplus.inc}
+{$I ../src/ngplus.inc}
 
 interface
 
 uses
   {$IFDEF FPC}
-  fpcunit, testregistry,
+  fpcunit, testregistry, System.Helpers,
   {$ELSE}
   TestFramework,
   {$ENDIF FPC}
-  Classes, SysUtils, Types, System.Helpers;
+  Classes, SysUtils, Types;
 
 type
   TTestTGuidHelper = class(TTestCase)
@@ -50,6 +50,9 @@ type
     procedure TestNewGuid;
     procedure TestToByteArray;
     procedure TestToString;
+    {$IFNDEF FPC}
+    procedure TestEqual;  // Free Pascal still does not supported this.
+    {$ENDIF !FPC}
   end;
 
 implementation
@@ -284,6 +287,19 @@ procedure TTestTGuidHelper.TestEmpty;
 begin
   CheckTrue(IsEqualGUID(TEST_GUID_EMPTY, TGUID.Empty));
 end;
+
+{$IFNDEF FPC}
+procedure TTestTGuidHelper.TestEqual;
+var
+  CopyGuid: TGUID;
+begin
+  CopyGuid := TEST_GUID;
+
+  CheckTrue(TEST_GUID = CopyGuid);
+  CheckFalse(TEST_GUID <> CopyGuid);
+  CheckFalse(TEST_GUID = TEST_GUID_GOOD);
+end;
+{$ENDIF !FPC}
 
 initialization
   RegisterTest('System.Helpers', TTestTGuidHelper.Suite);

@@ -1,4 +1,4 @@
-{**********************************************************************
+﻿{**********************************************************************
     Copyright(c) 2016 pda <pda2@yandex.ru>
 
     See the file COPYING.FPC, included in this distribution,
@@ -12,7 +12,7 @@
 unit Test.System.Hash.THashSHA2_384;
 
 {$IFNDEF FPC}{$LEGACYIFEND ON}{$ENDIF FPC}
-{$I ngplus.inc}
+{$I ../src/ngplus.inc}
 
 interface
 
@@ -59,10 +59,12 @@ type
     procedure TestUpdateTBytesZero;
     {$IFDEF FPC}
     procedure TestUpdateAnsiString;
+    procedure TestGetHMACAnsi;
+    procedure TestGetHMACAsBytesAnsi;
     {$ENDIF FPC}
     procedure TestUpdateUnicodeString;
-//    procedure TestGetHMAC;
-//    procedure TestGetHMACAsBytes;
+    procedure TestGetHMACUnicode;
+    procedure TestGetHMACAsBytesUnicode;
   end;
 
 implementation
@@ -90,9 +92,11 @@ end;
 
 procedure TTestTHashSHA2_384.TearDown;
 begin
+  {$IFDEF FPC}
   { We have to finalize record manually because fpcunit never frees TTestCase
     so our record never never runs out of scope. }
   Finalize(FHash);
+  {$ENDIF FPC}
 end;
 
 {$IFDEF CLOSER_TO_DELPHI}
@@ -321,19 +325,40 @@ begin
   );
 end;
 
-(* procedure TTestTHashSHA2_384.TestGetHMAC;
+{$IFDEF FPC}
+procedure TTestTHashSHA2_384.TestGetHMACAnsi;
 begin
   CheckEquals(
-    '2080378aab16d0fbb96fac09c4a676339b35318e6d17c79d6b5e46e641f6071794cfc93d024a2f4279b441b785c286bd',
-    FHash.GetHMAC('password', 'key', SHA384)
+    '6c1f2ee938fad2e24bd91298474382ca218c75db3d83e114b3d4367776d14d3551289e75e8209cd4b792302840234adc',
+    FHash.GetHMAC(AnsiString(''), AnsiString(''), SHA384)
   );
   CheckEquals(
+    'd7f4727e2c0b39ae0f1e40cc96f60242d5b7801841cea6fc592c5d3e1ae50700582a96cf35e1e554995fe4e03381c237',
+    FHash.GetHMAC(TEST_STR_ANSI, AnsiString('key'), SHA384)
+  );
+  CheckEquals(
+    '611ddfe3d7ea128324f14a4b843910770469774963893f0c2113aa25794448d53e5eec20714bf6c36dc1c1e7338a13d2',
+    FHash.GetHMAC(
+      TEST_STR_ANSI,
+      AnsiString('very____________________________________________________________long__________________________________________________________________key'),
+      SHA384
+    )
+  );
+end;
+{$ENDIF FPC}
+
+procedure TTestTHashSHA2_384.TestGetHMACUnicode;
+begin
+  CheckEquals(
     '6c1f2ee938fad2e24bd91298474382ca218c75db3d83e114b3d4367776d14d3551289e75e8209cd4b792302840234adc',
-    FHash.GetHMAC('', '', SHA384)
+    FHash.GetHMAC(UnicodeString(''), UnicodeString(''), SHA384)
+  );
+  CheckEquals(
+    'd94af50b5657bcb343a73b9c92fc4537b3ae03f75a3e13f64f71e580dc0ae7dc3f11367ea575afb3198df850d78ae966',
+    FHash.GetHMAC(TEST_STR_UNICODE, UnicodeString('key'), SHA384)
   );
 end;
 
-procedure TTestTHashSHA2_384.TestGetHMACAsBytes;
 const
   TEST_BYTES_RESULT_1: array [0..HASH_SHA384_SIZE - 1] of Byte = (
     $a9, $a1, $bc, $1a, $b8, $4c, $40, $9d, $48, $f2, $3f, $82, $28, $aa, $1c, $b1,
@@ -356,10 +381,13 @@ const
     $66, $17, $35, $d0, $3f, $c4, $14, $da, $99, $cc, $2f, $c0, $68, $ac, $2e, $94
   );
   TEST_BYTES_RESULT_5: array [0..HASH_SHA384_SIZE - 1] of Byte = (
-    $2c, $f9, $63, $f9, $56, $94, $46, $a0, $74, $40, $82, $cf, $71, $a8, $4d, $4e,
-    $6c, $cb, $09, $64, $25, $52, $3e, $e2, $c6, $1c, $79, $d8, $e8, $1c, $d4, $9a,
-    $0e, $88, $ad, $5a, $01, $f6, $01, $8e, $b9, $3b, $cb, $75, $13, $e8, $57, $2d
+    $6c, $9b, $36, $cf, $7b, $cb, $73, $8d, $2f, $4c, $c0, $ad, $56, $53, $a7, $d6,
+    $c5, $82, $96, $89, $e1, $ac, $38, $2e, $c1, $ff, $e4, $98, $f7, $89, $98, $d5,
+    $04, $46, $e7, $e1, $d6, $29, $95, $93, $a1, $6d, $2f, $fe, $9d, $4e, $7b, $19
   );
+
+{$IFDEF FPC}
+procedure TTestTHashSHA2_384.TestGetHMACAsBytesAnsi;
 var
   TestBytes, Result: TBytes;
   i: Integer;
@@ -367,17 +395,47 @@ begin
   SetLength(TestBytes, 4);
   TestBytes[0] := $10; TestBytes[1] := $11; TestBytes[2] := $12; TestBytes[3] := $13;
 
-  Result := FHash.GetHMACAsBytes('data', 'data', SHA384);
+  Result := FHash.GetHMACAsBytes(AnsiString('data'), AnsiString('data'), SHA384);
   CheckEquals(HASH_SHA384_SIZE, Length(Result));
   for i := 0 to High(TEST_BYTES_RESULT_1) do
     CheckEquals(TEST_BYTES_RESULT_1[i], Result[i]);
 
-  Result := FHash.GetHMACAsBytes(TestBytes, 'data', SHA384);
+  Result := FHash.GetHMACAsBytes(TestBytes, AnsiString('data'), SHA384);
   CheckEquals(HASH_SHA384_SIZE, Length(Result));
   for i := 0 to High(TEST_BYTES_RESULT_2) do
     CheckEquals(TEST_BYTES_RESULT_2[i], Result[i]);
 
-  Result := FHash.GetHMACAsBytes('data', TestBytes, SHA384);
+  Result := FHash.GetHMACAsBytes(AnsiString('data'), TestBytes, SHA384);
+  CheckEquals(HASH_SHA384_SIZE, Length(Result));
+  for i := 0 to High(TEST_BYTES_RESULT_3) do
+    CheckEquals(TEST_BYTES_RESULT_3[i], Result[i]);
+
+  Result := FHash.GetHMACAsBytes(TestBytes, TestBytes, SHA384);
+  CheckEquals(HASH_SHA384_SIZE, Length(Result));
+  for i := 0 to High(TEST_BYTES_RESULT_4) do
+    CheckEquals(TEST_BYTES_RESULT_4[i], Result[i]);
+end;
+{$ENDIF FPC}
+
+procedure TTestTHashSHA2_384.TestGetHMACAsBytesUnicode;
+var
+  TestBytes, Result: TBytes;
+  i: Integer;
+begin
+  SetLength(TestBytes, 4);
+  TestBytes[0] := $10; TestBytes[1] := $11; TestBytes[2] := $12; TestBytes[3] := $13;
+
+  Result := FHash.GetHMACAsBytes(UnicodeString('data'), UnicodeString('data'), SHA384);
+  CheckEquals(HASH_SHA384_SIZE, Length(Result));
+  for i := 0 to High(TEST_BYTES_RESULT_1) do
+    CheckEquals(TEST_BYTES_RESULT_1[i], Result[i]);
+
+  Result := FHash.GetHMACAsBytes(TestBytes, UnicodeString('data'), SHA384);
+  CheckEquals(HASH_SHA384_SIZE, Length(Result));
+  for i := 0 to High(TEST_BYTES_RESULT_2) do
+    CheckEquals(TEST_BYTES_RESULT_2[i], Result[i]);
+
+  Result := FHash.GetHMACAsBytes(UnicodeString('data'), TestBytes, SHA384);
   CheckEquals(HASH_SHA384_SIZE, Length(Result));
   for i := 0 to High(TEST_BYTES_RESULT_3) do
     CheckEquals(TEST_BYTES_RESULT_3[i], Result[i]);
@@ -390,15 +448,15 @@ begin
   { big }
   SetLength(TestBytes, 4096);
   for i := Low(TestBytes) to High(TestBytes) do
-    TestBytes[i] := i + 1;
+    TestBytes[i] := (i + 1) mod $ff;
   Result := FHash.GetHMACAsBytes(TestBytes, TestBytes, SHA384);
   CheckEquals(HASH_SHA384_SIZE, Length(Result));
   for i := 0 to High(TEST_BYTES_RESULT_5) do
     CheckEquals(TEST_BYTES_RESULT_5[i], Result[i]);
-end; *)
+end;
 
 initialization
-//  RegisterTest('System.Hash', TTestTHashSHA2_384.Suite);
+  RegisterTest('System.Hash', TTestTHashSHA2_384.Suite);
 
 end.
 

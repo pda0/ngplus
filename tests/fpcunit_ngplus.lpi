@@ -31,10 +31,13 @@
         <CommandLineParams Value="--all --all --progress --format=plain"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="2">
       <Item1>
-        <PackageName Value="FCL"/>
+        <PackageName Value="LCL"/>
       </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+      </Item2>
     </RequiredPackages>
     <Units Count="17">
       <Unit0>
@@ -68,56 +71,54 @@
       <Unit6>
         <Filename Value="test.system.hash.thashmd5.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashMD5"/>
       </Unit6>
       <Unit7>
-        <Filename Value="system.hash.helpers.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash.Helpers"/>
-      </Unit7>
-      <Unit8>
         <Filename Value="..\src\ngplus.inc"/>
         <IsPartOfProject Value="True"/>
-      </Unit8>
-      <Unit9>
+      </Unit7>
+      <Unit8>
         <Filename Value="test.system.hash.thashsha1.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA1"/>
-      </Unit9>
-      <Unit10>
+      </Unit8>
+      <Unit9>
         <Filename Value="test.system.hash.thashsha2_224.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_224"/>
-      </Unit10>
-      <Unit11>
+      </Unit9>
+      <Unit10>
         <Filename Value="test.system.hash.thashsha2_256.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_256"/>
-      </Unit11>
-      <Unit12>
+      </Unit10>
+      <Unit11>
         <Filename Value="test.system.hash.thashsha2_384.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_384"/>
-      </Unit12>
-      <Unit13>
+      </Unit11>
+      <Unit12>
         <Filename Value="test.system.hash.thashsha2_512.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_512"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="test.system.hash.thashsha2_512_224.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_512_224"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="test.system.hash.thashsha2_512_256.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Hash.THashSHA2_512_256"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="test.system.hash.thashbobjenkins.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashBobJenkins"/>
+      </Unit15>
+      <Unit16>
+        <Filename Value="..\src\system.hash.helpers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Hash.Helpers"/>
       </Unit16>
     </Units>
   </ProjectOptions>
@@ -141,14 +142,7 @@
         <OverflowChecks Value="True"/>
         <StackChecks Value="True"/>
       </Checks>
-      <VerifyObjMethodCallValidity Value="True"/>
     </CodeGeneration>
-    <Linking>
-      <Debugging>
-        <UseHeaptrc Value="True"/>
-        <TrashVariables Value="True"/>
-      </Debugging>
-    </Linking>
     <Other>
       <CustomOptions Value="-dTEST
 -dCONSOLETEST"/>

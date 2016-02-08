@@ -5,5 +5,11 @@
 *.o
 *.ppu
 *.rsj
+*.dcu
+*.ini
+*.identcache
+*.stat
 */backup
+*/__history
+*/__recovery
 tests/lib/*

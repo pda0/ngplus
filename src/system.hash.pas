@@ -19,11 +19,7 @@ unit System.Hash;
 interface
 
 uses
-  {$IF DEFINED(WITH_OPENSSL) OR DEFINED(WITH_WINAPI)}
-  System.Hash.Helpers,
-  {$ELSE}
-  {$IFEND}
-  SysUtils;
+  SysUtils, System.Hash.Helpers;
 
 type
   EHashException = class(Exception);
@@ -45,95 +41,77 @@ type
   end;
 
   THashMD5 = record
-  private const
-    {$IFNDEF WITH_OPENSSL}
-    {$IFNDEF WITH_WINAPI}HASH_SIZE = 16;{$ENDIF !WITH_WINAPI}
-    BLOCK_SIZE = 64;
-    {$ENDIF !WITH_OPENSSL}
   private
-    {$IF DEFINED(WITH_OPENSSL)}
-    {$ELSEIF  DEFINED(WITH_WINAPI)}
-    FHash: IExtHash;
-    {$ELSE}
-    {$IFEND}
+    FHash: IHashEngine;
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
   public
     class function Create: THashMD5; static; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
-    procedure Update(const AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: AnsiString); overload;
-    procedure Update(const Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload;
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
     function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashBytes(const AData: AnsiString): TBytes; overload; static;
-    class function GetHashBytes(const AData: UnicodeString): TBytes; overload; static;
-    class function GetHashString(const AString: AnsiString): string; overload; static;
-    class function GetHashString(const AString: UnicodeString): string; overload; static;
-    (* class function GetHMAC(const AData, AKey: string): string; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMACAsBytes(const AData, AKey: string): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData: string; const AKey: TBytes): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData: TBytes; const AKey: string): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData, AKey: TBytes): TBytes; overload; static; *)
+    class function GetHashBytes(constref AData: AnsiString): TBytes; overload; static;
+    class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
+    class function GetHashString(constref AString: AnsiString): string; overload; static;
+    class function GetHashString(constref AString: UnicodeString): string; overload; static;
+    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: UnicodeString; constref AKey: TBytes): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: AnsiString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: UnicodeString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: TBytes): TBytes; overload; static;
   end;
 
   THashSHA1 = record
-  private const
-    {$IFNDEF WITH_OPENSSL}
-    {$IFNDEF WITH_WINAPI}HASH_SIZE = 20;{$ENDIF !WITH_WINAPI}
-    BLOCK_SIZE = 64;
-    {$ENDIF !WITH_OPENSSL}
   private
-    {$IF DEFINED(WITH_OPENSSL)}
-    {$ELSEIF  DEFINED(WITH_WINAPI)}
-    FHash: IExtHash;
-    {$ELSE}
-    {$IFEND}
+    FHash: IHashEngine;
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
   public
     class function Create: THashSHA1; static; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
     function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashBytes(const AData: AnsiString): TBytes; overload; static;
-    class function GetHashBytes(const AData: UnicodeString): TBytes; overload; static;
-    class function GetHashString(const AString: AnsiString): string; overload; static;
-    class function GetHashString(const AString: UnicodeString): string; overload; static;
-    (* class function GetHMAC(const AData, AKey: string): string; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMACAsBytes(const AData, AKey: string): TBytes; overload;  static;
-    class function GetHMACAsBytes(const AData: string; const AKey: TBytes): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData: TBytes; const AKey: string): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData, AKey: TBytes): TBytes; overload; static; *)
+    class function GetHashBytes(constref AData: AnsiString): TBytes; overload; static;
+    class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
+    class function GetHashString(constref AString: AnsiString): string; overload; static;
+    class function GetHashString(constref AString: UnicodeString): string; overload; static;
+    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: UnicodeString; constref AKey: TBytes): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: AnsiString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: UnicodeString): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: TBytes): TBytes; overload; static;
   end;
 
   THashSHA2 = record
   public type
     TSHA2Version = (SHA224, SHA256, SHA384, SHA512, SHA512_224, SHA512_256);
-  private const
-    {$IFNDEF WITH_OPENSSL}
-      {$IFNDEF WITH_WINAPI}
-    HASH_SIZE = array [TSHA2Version] of Integer = (28, 32,  48,  64,  28,  32);
-      {$ENDIF !WITH_WINAPI}
-    BLOCK_SIZE: array [TSHA2Version] of Integer = (64, 64, 128, 128, 128, 128);
-    {$ENDIF !WITH_OPENSSL}
   private
-    {$IF DEFINED(WITH_OPENSSL)}
-    {$ELSEIF  DEFINED(WITH_WINAPI)}
-    FHash: IExtHash;
-    {$ELSE}
-    {$IFEND}
+    FHash: IHashEngine;
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; static;
   {$IFDEF CLOSER_TO_DELPHI}
   public
   {$ELSE}
@@ -145,21 +123,25 @@ type
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
     function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashBytes(const AData: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
-    class function GetHashBytes(const AData: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
-    class function GetHashString(const AString: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
-    class function GetHashString(const AString: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
-    (* class function GetHMAC(const AData, AKey: string; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMACAsBytes(const AData, AKey: string; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload;  static;
-    class function GetHMACAsBytes(const AData: string; const AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData: TBytes; const AKey: string; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
-    class function GetHMACAsBytes(const AData, AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static; *)
+    class function GetHashBytes(constref AData: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHashBytes(constref AData: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHashString(constref AString: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
+    class function GetHashString(constref AString: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
+    class function GetHMAC(constref AData, AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMACAsBytes(constref AData, AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: UnicodeString; constref AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData: TBytes; constref AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
+    class function GetHMACAsBytes(constref AData, AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
   end;
 
   THashBobJenkins = record
@@ -169,27 +151,23 @@ type
     procedure Reset(AInitialValue: Integer = 0);
     procedure Update(constref AData; ALength: HashLen); overload; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(const Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
     function HashAsBytes: TBytes;
     function HashAsInteger: Integer;
     function HashAsString: string;
-    class function GetHashBytes(const AData: AnsiString): TBytes; overload; static;
-    class function GetHashBytes(const AData: UnicodeString): TBytes; overload; static;
-    class function GetHashString(const AString: AnsiString): string; overload; static;
-    class function GetHashString(const AString: UnicodeString): string; overload; static;
-    class function GetHashValue(const AData: AnsiString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashValue(const AData: UnicodeString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHashBytes(constref AData: AnsiString): TBytes; overload; static;
+    class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
+    class function GetHashString(constref AString: AnsiString): string; overload; static;
+    class function GetHashString(constref AString: UnicodeString): string; overload; static;
+    class function GetHashValue(constref AData: AnsiString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHashValue(constref AData: UnicodeString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
     class function GetHashValue(constref AData; ALength: Integer; AInitialValue: Integer = 0): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
   end;
 
 implementation
 
 uses
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  jwawincrypt,
-  {$IFEND}
   Types, System.Helpers, System.Helpers.Strings;
 
 const
@@ -254,24 +232,14 @@ begin
   Result := NtoBE(AValue);
 end;
 
-(*{$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  {$ELSE}
-  {$IFEND} *)
-
 { THashMD5 }
 
 // packages/hash/src/md5.pp
-// packages/openssl/src/openssl.pas
 
 class function THashMD5.Create: THashMD5;
 begin
   Result.FFinalized := False;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  Result.FHash := TWinHash.Create(CALG_MD5);
-  {$ELSE}
-  {$IFEND}
+  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.MD5);
 end;
 
 procedure THashMD5.CheckFinalized;
@@ -282,82 +250,60 @@ end;
 
 procedure THashMD5.Reset;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.Reset;
-  {$ELSE}
-  {$IFEND}
   FFinalized := False;
 end;
 
 procedure THashMD5.Update(constref AData; ALength: HashLen);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   FHash.Update(@AData, ALength);
-  {$ELSE}
-  {$IFEND}
 end;
 
-procedure THashMD5.Update(const AData: TBytes; ALength: HashLen);
+procedure THashMD5.Update(constref AData: TBytes; ALength: HashLen);
+var
+  DataLen: PtrUInt;
 begin
   CheckFinalized;
   if ALength = 0 then
-    ALength := Length(AData);
+    DataLen := Length(AData)
+  else
+    DataLen := ALength;
 
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  FHash.Update(@AData[Low(AData)], ALength);
-  {$ELSE}
-  {$IFEND}
+  if DataLen > 0 then
+    FHash.Update(@AData[Low(AData)], DataLen);
 end;
 
-procedure THashMD5.Update(const Input: AnsiString);
+procedure THashMD5.Update(constref Input: AnsiString);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
     FHash.Update(@Input[Low(Input)], Length(Input));
-  {$ELSE}
-  {$IFEND}
 end;
 
-procedure THashMD5.Update(const Input: UnicodeString);
+procedure THashMD5.Update(constref Input: UnicodeString);
 var
   TmpStr: UTF8String;
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
   begin
     TmpStr := UTF8Encode(Input);
     FHash.Update(@TmpStr[Low(TmpStr)], Length(TmpStr));
   end;
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashMD5.GetBlockSize: Integer;
 begin
-  {$IFDEF WITH_OPENSSL}
-  Result :=
-  {$ELSE}
-  Result := THashMD5.BLOCK_SIZE;
-  {$ENDIF WITH_OPENSSL}
+  Result := FHash.GetBlockSize;
 end;
 
 function THashMD5.GetHashSize: Integer;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  Result :=
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   Result := FHash.GetHashSize;
-  {$ELSE}
-  Result := THashMD5.HASH_SIZE;
-  {$IFEND}
 end;
 
 function THashMD5.HashAsBytes: TBytes;
@@ -366,11 +312,7 @@ begin
     FFinalized := True;
 
   SetLength(Result, GetHashSize);
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.GetValue(@Result[Low(Result)]);
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashMD5.HashAsString: string;
@@ -378,7 +320,18 @@ begin
   Result := THash.DigestAsString(HashAsBytes);
 end;
 
-class function THashMD5.GetHashBytes(const AData: AnsiString): TBytes;
+class function THashMD5.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
+  KeyLen: PtrUInt): TBytes;
+var
+  TmpHash: THashMD5;
+begin
+  TmpHash := THashMD5.Create;
+  SetLength(Result, TmpHash.GetHashSize);
+
+  TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
+end;
+
+class function THashMD5.GetHashBytes(constref AData: AnsiString): TBytes;
 var
   TmpHash: THashMD5;
 begin
@@ -387,7 +340,7 @@ begin
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashMD5.GetHashBytes(const AData: UnicodeString): TBytes;
+class function THashMD5.GetHashBytes(constref AData: UnicodeString): TBytes;
 var
   TmpHash: THashMD5;
 begin
@@ -396,7 +349,7 @@ begin
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashMD5.GetHashString(const AString: AnsiString): string;
+class function THashMD5.GetHashString(constref AString: AnsiString): string;
 var
   TmpHash: THashMD5;
 begin
@@ -405,7 +358,7 @@ begin
   Result := TmpHash.HashAsString;
 end;
 
-class function THashMD5.GetHashString(const AString: UnicodeString): string;
+class function THashMD5.GetHashString(constref AString: UnicodeString): string;
 var
   TmpHash: THashMD5;
 begin
@@ -414,43 +367,145 @@ begin
   Result := TmpHash.HashAsString;
 end;
 
-(* class function THashMD5.GetHMAC(const AData, AKey: string): string;
+class function THashMD5.GetHMAC(constref AData, AKey: AnsiString): string;
 begin
-
+  Result := THash.DigestAsString(THashMD5.GetHMACAsBytes(AData, AKey));
 end;
 
-class function THashMD5.GetHMACAsBytes(const AData, AKey: string): TBytes;
+class function THashMD5.GetHMAC(constref AData, AKey: UnicodeString): string;
 begin
-
+  Result := THash.DigestAsString(THashMD5.GetHMACAsBytes(AData, AKey));
 end;
 
-class function THashMD5.GetHMACAsBytes(const AData: string; const AKey: TBytes):
-  TBytes;
+class function THashMD5.GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes;
+var
+  MappedData: PByte absolute AData;
+  MappedKey: PByte absolute AKey;
 begin
-
+  Result := THashMD5.InternalGetHMAC(MappedData, MappedKey,
+    Length(AData), Length(AKey));
 end;
 
-class function THashMD5.GetHMACAsBytes(const AData: TBytes; const AKey: string):
-  TBytes;
+class function THashMD5.GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes;
+var
+  TmpData, TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
 begin
+  TmpData := UTF8Encode(AData);
+  TmpKey := UTF8Encode(AKey);
 
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashMD5.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(TmpKey));
 end;
 
-class function THashMD5.GetHMACAsBytes(const AData, AKey: TBytes): TBytes;
+class function THashMD5.GetHMACAsBytes(constref AData: AnsiString;
+  constref AKey: TBytes): TBytes;
+var
+  MappedData: PByte absolute AData;
+  KeyPtr: PByte;
 begin
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
 
-end; *)
+  Result := THashMD5.InternalGetHMAC(MappedData, KeyPtr,
+    Length(AData), Length(AKey));
+end;
+
+class function THashMD5.GetHMACAsBytes(constref AData: UnicodeString;
+  constref AKey: TBytes): TBytes;
+var
+  TmpData: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpData := UTF8Encode(AData);
+
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashMD5.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(AKey));
+end;
+
+class function THashMD5.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: AnsiString): TBytes;
+var
+  MappedKey: PByte absolute AKey;
+  DataPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  Result := THashMD5.InternalGetHMAC(DataPtr, MappedKey,
+    Length(AData), Length(AKey));
+end;
+
+class function THashMD5.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: UnicodeString): TBytes;
+var
+  TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpKey := UTF8Encode(AKey);
+
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashMD5.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(TmpKey));
+end;
+
+class function THashMD5.GetHMACAsBytes(constref AData, AKey: TBytes): TBytes;
+var
+  DataPtr, KeyPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashMD5.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(AKey));
+end;
 
 { THashSHA1 }
 
 class function THashSHA1.Create: THashSHA1;
 begin
   Result.FFinalized := False;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  Result.FHash := TWinHash.Create(CALG_SHA1);
-  {$ELSE}
-  {$IFEND}
+  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.SHA1);
 end;
 
 procedure THashSHA1.CheckFinalized;
@@ -461,82 +516,60 @@ end;
 
 procedure THashSHA1.Reset;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.Reset;
-  {$ELSE}
-  {$IFEND}
   FFinalized := False;
 end;
 
 procedure THashSHA1.Update(constref AData; ALength: HashLen);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   FHash.Update(@AData, ALength);
-  {$ELSE}
-  {$IFEND}
 end;
 
 procedure THashSHA1.Update(constref AData: TBytes; ALength: HashLen);
+var
+  DataLen: PtrUInt;
 begin
   CheckFinalized;
   if ALength = 0 then
-    ALength := Length(AData);
+    DataLen := Length(AData)
+  else
+    DataLen := ALength;
 
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  FHash.Update(@AData[Low(AData)], ALength);
-  {$ELSE}
-  {$IFEND}
+  if DataLen > 0 then
+    FHash.Update(@AData[Low(AData)], DataLen);
 end;
 
-procedure THashSHA1.Update(const Input: AnsiString);
+procedure THashSHA1.Update(constref Input: AnsiString);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
     FHash.Update(@Input[Low(Input)], Length(Input));
-  {$ELSE}
-  {$IFEND}
 end;
 
-procedure THashSHA1.Update(const Input: UnicodeString);
+procedure THashSHA1.Update(constref Input: UnicodeString);
 var
   TmpStr: UTF8String;
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
   begin
     TmpStr := UTF8Encode(Input);
     FHash.Update(@TmpStr[Low(TmpStr)], Length(TmpStr));
   end;
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashSHA1.GetBlockSize: Integer;
 begin
-  {$IFDEF WITH_OPENSSL}
-  Result :=
-  {$ELSE}
-  Result := THashSHA1.BLOCK_SIZE;
-  {$ENDIF WITH_OPENSSL}
+  Result := FHash.GetBlockSize;
 end;
 
 function THashSHA1.GetHashSize: Integer;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  Result :=
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   Result := FHash.GetHashSize;
-  {$ELSE}
-  Result := THashSHA1.HASH_SIZE;
-  {$IFEND}
 end;
 
 function THashSHA1.HashAsBytes: TBytes;
@@ -545,11 +578,7 @@ begin
     FFinalized := True;
 
   SetLength(Result, GetHashSize);
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.GetValue(@Result[Low(Result)]);
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashSHA1.HashAsString: string;
@@ -557,7 +586,18 @@ begin
   Result := THash.DigestAsString(HashAsBytes);
 end;
 
-class function THashSHA1.GetHashBytes(const AData: AnsiString): TBytes;
+class function THashSHA1.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
+  KeyLen: PtrUInt): TBytes;
+var
+  TmpHash: THashSHA1;
+begin
+  TmpHash := THashSHA1.Create;
+  SetLength(Result, TmpHash.GetHashSize);
+
+  TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
+end;
+
+class function THashSHA1.GetHashBytes(constref AData: AnsiString): TBytes;
 var
   TmpHash: THashSHA1;
 begin
@@ -566,7 +606,7 @@ begin
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashSHA1.GetHashBytes(const AData: UnicodeString): TBytes;
+class function THashSHA1.GetHashBytes(constref AData: UnicodeString): TBytes;
 var
   TmpHash: THashSHA1;
 begin
@@ -575,7 +615,7 @@ begin
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashSHA1.GetHashString(const AString: AnsiString): string;
+class function THashSHA1.GetHashString(constref AString: AnsiString): string;
 var
   TmpHash: THashSHA1;
 begin
@@ -584,112 +624,223 @@ begin
   Result := TmpHash.HashAsString;
 end;
 
-class function THashSHA1.GetHashString(const AString: UnicodeString): string;
+class function THashSHA1.GetHashString(constref AString: UnicodeString): string;
 var
   TmpHash: THashSHA1;
 begin
   TmpHash := THashSHA1.Create;
   TmpHash.Update(AString);
   Result := TmpHash.HashAsString;
+end;
+
+class function THashSHA1.GetHMAC(constref AData, AKey: AnsiString): string;
+begin
+  Result := THash.DigestAsString(THashSHA1.GetHMACAsBytes(AData, AKey));
+end;
+
+class function THashSHA1.GetHMAC(constref AData, AKey: UnicodeString): string;
+begin
+  Result := THash.DigestAsString(THashSHA1.GetHMACAsBytes(AData, AKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes;
+var
+  MappedData: PByte absolute AData;
+  MappedKey: PByte absolute AKey;
+begin
+  Result := THashSHA1.InternalGetHMAC(MappedData, MappedKey,
+    Length(AData), Length(AKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes;
+var
+  TmpData, TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpData := UTF8Encode(AData);
+  TmpKey := UTF8Encode(AKey);
+
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(TmpKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData: AnsiString;
+  constref AKey: TBytes): TBytes;
+var
+  MappedData: PByte absolute AData;
+  KeyPtr: PByte;
+begin
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(MappedData, KeyPtr,
+    Length(AData), Length(AKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData: UnicodeString;
+  constref AKey: TBytes): TBytes;
+var
+  TmpData: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpData := UTF8Encode(AData);
+
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(AKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: AnsiString): TBytes;
+var
+  MappedKey: PByte absolute AKey;
+  DataPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(DataPtr, MappedKey,
+    Length(AData), Length(AKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: UnicodeString): TBytes;
+var
+  TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpKey := UTF8Encode(AKey);
+
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(TmpKey));
+end;
+
+class function THashSHA1.GetHMACAsBytes(constref AData, AKey: TBytes): TBytes;
+var
+  DataPtr, KeyPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA1.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(AKey));
 end;
 
 { THashSHA2 }
 
 class function THashSHA2.Create(AHashVersion: TSHA2Version): THashSHA2;
+const
+  SHA2_MAP: array [TSHA2Version] of TAvailableHashes = (
+    SHA2_224, SHA2_256, SHA2_384, SHA2_512, SHA2_512_224, SHA2_512_256
+  );
 begin
   Result.FVersion := AHashVersion;
   Result.FFinalized := False;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  Result.FHash := TWinHash.Create(0);
-  {$ELSE}
-  {$IFEND}
+  Result.FHash := System.Hash.Helpers.CreateHash(SHA2_MAP[AHashVersion]);
 end;
 
 procedure THashSHA2.CheckFinalized;
 begin
   if FFinalized then
-    raise EHashException.CreateRes(@SHashCanNotUpdateSHA1);
+    raise EHashException.CreateRes(@SHashCanNotUpdateSHA2);
 end;
 
 procedure THashSHA2.Reset;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.Reset;
-  {$ELSE}
-  {$IFEND}
   FFinalized := False;
 end;
 
 procedure THashSHA2.Update(constref AData; ALength: HashLen);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   FHash.Update(@AData, ALength);
-  {$ELSE}
-  {$IFEND}
 end;
 
 procedure THashSHA2.Update(constref AData: TBytes; ALength: HashLen);
+var
+  DataLen: PtrUInt;
 begin
   CheckFinalized;
   if ALength = 0 then
-    ALength := Length(AData);
+    DataLen := Length(AData)
+  else
+    DataLen := ALength;
 
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  FHash.Update(@AData[Low(AData)], ALength);
-  {$ELSE}
-  {$IFEND}
+  if DataLen > 0 then
+    FHash.Update(@AData[Low(AData)], DataLen);
 end;
 
-procedure THashSHA2.Update(const Input: AnsiString);
+procedure THashSHA2.Update(constref Input: AnsiString);
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
     FHash.Update(@Input[Low(Input)], Length(Input));
-  {$ELSE}
-  {$IFEND}
 end;
 
-procedure THashSHA2.Update(const Input: UnicodeString);
+procedure THashSHA2.Update(constref Input: UnicodeString);
 var
   TmpStr: UTF8String;
 begin
   CheckFinalized;
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+
   if Length(Input) > 0 then
   begin
     TmpStr := UTF8Encode(Input);
     FHash.Update(@TmpStr[Low(TmpStr)], Length(TmpStr));
   end;
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashSHA2.GetBlockSize: Integer;
 begin
-  {$IFDEF WITH_OPENSSL}
-  Result :=
-  {$ELSE}
-  Result := THashSHA2.BLOCK_SIZE[FVersion];
-  {$ENDIF WITH_OPENSSL}
+  Result := FHash.GetBlockSize;
 end;
 
 function THashSHA2.GetHashSize: Integer;
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  Result :=
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   Result := FHash.GetHashSize;
-  {$ELSE}
-  Result := THashSHA2.HASH_SIZE[FVersion];
-  {$IFEND}
 end;
 
 function THashSHA2.HashAsBytes: TBytes;
@@ -698,11 +849,7 @@ begin
     FFinalized := True;
 
   SetLength(Result, GetHashSize);
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
   FHash.GetValue(@Result[Low(Result)]);
-  {$ELSE}
-  {$IFEND}
 end;
 
 function THashSHA2.HashAsString: string;
@@ -710,40 +857,195 @@ begin
   Result := THash.DigestAsString(HashAsBytes);
 end;
 
-class function THashSHA2.GetHashBytes(const AData: AnsiString; AHashVersion: TSHA2Version): TBytes;
+class function THashSHA2.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
+  KeyLen: PtrUInt; AHashVersion: TSHA2Version): TBytes;
 var
   TmpHash: THashSHA2;
 begin
-  TmpHash := THashSHA2.Create;
+  TmpHash := THashSHA2.Create(AHashVersion);
+  SetLength(Result, TmpHash.GetHashSize);
+
+  TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
+end;
+
+class function THashSHA2.GetHashBytes(constref AData: AnsiString;
+  AHashVersion: TSHA2Version): TBytes;
+var
+  TmpHash: THashSHA2;
+begin
+  TmpHash := THashSHA2.Create(AHashVersion);
   TmpHash.Update(AData);
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashSHA2.GetHashBytes(const AData: UnicodeString; AHashVersion: TSHA2Version): TBytes;
+class function THashSHA2.GetHashBytes(constref AData: UnicodeString;
+  AHashVersion: TSHA2Version): TBytes;
 var
   TmpHash: THashSHA2;
 begin
-  TmpHash := THashSHA2.Create;
+  TmpHash := THashSHA2.Create(AHashVersion);
   TmpHash.Update(AData);
   Result := TmpHash.HashAsBytes;
 end;
 
-class function THashSHA2.GetHashString(const AString: AnsiString; AHashVersion: TSHA2Version): string;
+class function THashSHA2.GetHashString(constref AString: AnsiString;
+  AHashVersion: TSHA2Version): string;
 var
   TmpHash: THashSHA2;
 begin
-  TmpHash := THashSHA2.Create;
+  TmpHash := THashSHA2.Create(AHashVersion);
   TmpHash.Update(AString);
   Result := TmpHash.HashAsString;
 end;
 
-class function THashSHA2.GetHashString(const AString: UnicodeString; AHashVersion: TSHA2Version): string;
+class function THashSHA2.GetHashString(constref AString: UnicodeString;
+  AHashVersion: TSHA2Version): string;
 var
   TmpHash: THashSHA2;
 begin
-  TmpHash := THashSHA2.Create;
+  TmpHash := THashSHA2.Create(AHashVersion);
   TmpHash.Update(AString);
   Result := TmpHash.HashAsString;
+end;
+
+class function THashSHA2.GetHMAC(constref AData, AKey: AnsiString;
+  AHashVersion: TSHA2Version): string;
+begin
+  Result := THash.DigestAsString(THashSHA2.GetHMACAsBytes(AData, AKey,
+    AHashVersion));
+end;
+
+class function THashSHA2.GetHMAC(constref AData, AKey: UnicodeString;
+  AHashVersion: TSHA2Version): string;
+begin
+  Result := THash.DigestAsString(THashSHA2.GetHMACAsBytes(AData, AKey,
+    AHashVersion));
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData, AKey: AnsiString;
+  AHashVersion: TSHA2Version): TBytes;
+var
+  MappedData: PByte absolute AData;
+  MappedKey: PByte absolute AKey;
+begin
+  Result := THashSHA2.InternalGetHMAC(MappedData, MappedKey,
+    Length(AData), Length(AKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData, AKey: UnicodeString;
+  AHashVersion: TSHA2Version): TBytes;
+var
+  TmpData, TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpData := UTF8Encode(AData);
+  TmpKey := UTF8Encode(AKey);
+
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(TmpKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData: AnsiString;
+  constref AKey: TBytes; AHashVersion: TSHA2Version): TBytes;
+var
+  MappedData: PByte absolute AData;
+  KeyPtr: PByte;
+begin
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(MappedData, KeyPtr,
+    Length(AData), Length(AKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData: UnicodeString;
+  constref AKey: TBytes; AHashVersion: TSHA2Version): TBytes;
+var
+  TmpData: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpData := UTF8Encode(AData);
+
+  if Length(TmpData) > 0 then
+    DataPtr := @TmpData[Low(TmpData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(TmpData), Length(AKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: AnsiString; AHashVersion: TSHA2Version): TBytes;
+var
+  MappedKey: PByte absolute AKey;
+  DataPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(DataPtr, MappedKey,
+    Length(AData), Length(AKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData: TBytes;
+  constref AKey: UnicodeString; AHashVersion: TSHA2Version): TBytes;
+var
+  TmpKey: UTF8String;
+  DataPtr, KeyPtr: PByte;
+begin
+  TmpKey := UTF8Encode(AKey);
+
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(TmpKey) > 0 then
+    KeyPtr := @TmpKey[Low(TmpKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(TmpKey), AHashVersion);
+end;
+
+class function THashSHA2.GetHMACAsBytes(constref AData, AKey: TBytes;
+  AHashVersion: TSHA2Version): TBytes;
+var
+  DataPtr, KeyPtr: PByte;
+begin
+  if Length(AData) > 0 then
+    DataPtr := @AData[Low(AData)]
+  else
+    DataPtr := nil;
+
+  if Length(AKey) > 0 then
+    KeyPtr := @AKey[Low(AKey)]
+  else
+    KeyPtr := nil;
+
+  Result := THashSHA2.InternalGetHMAC(DataPtr, KeyPtr,
+    Length(AData), Length(AKey), AHashVersion);
 end;
 
 { THashBobJenkins }
@@ -768,12 +1070,12 @@ begin
 
 end;
 
-procedure THashBobJenkins.Update(const Input: AnsiString);
+procedure THashBobJenkins.Update(constref Input: AnsiString);
 begin
 
 end;
 
-procedure THashBobJenkins.Update(const Input: UnicodeString);
+procedure THashBobJenkins.Update(constref Input: UnicodeString);
 begin
 
 end;
@@ -793,37 +1095,38 @@ begin
 
 end;
 
-class function THashBobJenkins.GetHashBytes(const AData: AnsiString): TBytes;
+class function THashBobJenkins.GetHashBytes(constref AData: AnsiString): TBytes;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashBytes(const AData: UnicodeString): TBytes;
+class function THashBobJenkins.GetHashBytes(constref AData: UnicodeString): TBytes;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashString(const AString: AnsiString): string;
+class function THashBobJenkins.GetHashString(constref AString: AnsiString): string;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashString(const AString: UnicodeString): string;
+class function THashBobJenkins.GetHashString(constref AString: UnicodeString): string;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashValue(const AData: AnsiString): Integer;
+class function THashBobJenkins.GetHashValue(constref AData: AnsiString): Integer;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashValue(const AData: UnicodeString): Integer;
+class function THashBobJenkins.GetHashValue(constref AData: UnicodeString): Integer;
 begin
 
 end;
 
-class function THashBobJenkins.GetHashValue(constref AData; ALength: Integer; AInitialValue: Integer): Integer;
+class function THashBobJenkins.GetHashValue(constref AData; ALength: Integer;
+  AInitialValue: Integer): Integer;
 begin
 
 end;
