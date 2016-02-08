@@ -15,24 +15,13 @@ unit System.Hash.Helpers;
 
 {$I ngplus.inc}
 {$POINTERMATH ON}
-{$IFDEF CPU64}
-  {$ALIGN 8}
-  {$CODEALIGN VARMIN=8}
-  {$CODEALIGN LOCALMIN=8}
-{$ELSE}
-  {$ALIGN 4}
-  {$CODEALIGN VARMIN=4}
-  {$CODEALIGN LOCALMIN=4}
-{$ENDIF}
 
 interface
 
 uses
-  {$IF DEFINED(WITH_OPENSSL)}
-  openssl;
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-  JwaWinCrypt;
-  {$IFEND}
+  {$IFDEF WITH_OPENSSL}openssl, cTypes,{$ENDIF}
+  {$IFDEF WITH_WINAPI}JwaWinCrypt,{$ENDIF}
+  SysUtils;
 
 type
   IHashEngine = interface
@@ -63,6 +52,23 @@ type
   end;
 
   {$IF DEFINED(WITH_OPENSSL)}
+  {$IFDEF CPU64}{$PACKRECORDS 8}{$ELSE}{$PACKRECORDS 4}{$ENDIF}
+  TOpensslHash = class(TBaseHashEngine)
+  private
+    FContext: EVP_MD_CTX;
+    FDigest: TBytes;
+    FMd: PEVP_MD;
+    FHashing: Boolean;
+    class procedure OpensslCheck(RetVal: cInt); static;
+  public
+    class function Probe(const DigestName: PAnsiChar; out Md: PEVP_MD): Boolean; static;
+    constructor Create(Md: PEVP_MD; HashSize, BlockSize: Integer);
+    procedure Update(Data: PByte; Size: PtrUInt); override;
+    procedure Reset; override;
+    procedure GetValue(Data: PByte); override;
+    procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
+  end;
+  {$PACKRECORDS DEFAULT}
 
   {$ELSEIF DEFINED(WITH_WINAPI)}
 const
@@ -71,12 +77,14 @@ const
   CALG_SHA_512 = $0000800E; { WinXP SP3+ }
 
 type
+  {$IFDEF CPU64}{$PACKRECORDS 8}{$ELSE}{$PACKRECORDS 4}{$ENDIF}
   TWinCryptoAPIHash = class(TBaseHashEngine)
   private
     class var FHashCounter: {$IFDEF CPU64}QWord{$ELSE}Cardinal{$ENDIF};
     class var FHashingProvider: HCRYPTPROV;
     FHashHandle: HCRYPTHASH;
     FAlgId: ALG_ID;
+    class procedure WinCheck(RetVal: BOOL); static;
     class procedure Init;
     class procedure Done;
     class function GetHashingProvider: HCRYPTPROV;
@@ -93,17 +101,18 @@ type
     procedure GetValue(Data: PByte); override;
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
+  {$PACKRECORDS DEFAULT}
 {$IFEND}
 
 function CreateHash(AHash: TAvailableHashes): IHashEngine;
 
 implementation
+
 uses
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
-    JwaWinType, {$IFDEF TEST}JwaWinError,{$ENDIF}
-  {$IFEND}
-  SysUtils, Math;
+  {$IFDEF WITH_WINAPI}
+  JwaWinType, {$IFDEF TEST}JwaWinError,{$ENDIF}
+  {$ENDIF}
+  System.Hash;
 
 type
   THashParam = record
@@ -139,10 +148,81 @@ begin
   Result := FBlockSize;
 end;
 
-{$IF DEFINED(WITH_OPENSSL)}
+{$IFDEF WITH_OPENSSL}
+{ TOpensslHash }
 
-{$ELSEIF DEFINED(WITH_WINAPI)}
+class function TOpensslHash.Probe(const DigestName: PAnsiChar; out Md: PEVP_MD):
+  Boolean;
+begin
+  Md := EVP_get_digestbyname(DigestName);
+  Result := Assigned(Md);
+end;
+
+class procedure TOpensslHash.OpensslCheck(RetVal: cInt);
+var
+  ErrorString: AnsiString;
+  ErrorCode: cInt;
+begin
+  if RetVal = 0 then
+  begin
+    ErrorCode := ErrGetError;
+    SetLength(ErrorString, 256);
+    ErrErrorString(ErrorCode, ErrorString, Length(ErrorString));
+    SetLength(ErrorString, Pos(#0, ErrorString) - Low(ErrorString));
+    raise EHashException.Create(ErrorString);
+  end;
+end;
+
+constructor TOpensslHash.Create(Md: PEVP_MD; HashSize, BlockSize: Integer);
+begin
+  FMd := Md;
+  OpensslCheck(EVP_DigestInit(@FContext, FMd));
+  SetLength(FDigest, HashSize);
+  FHashing := True;
+
+  inherited Create(HashSize, BlockSize);
+end;
+
+procedure TOpensslHash.Update(Data: PByte; Size: PtrUInt);
+begin
+  OpensslCheck(EVP_DigestUpdate(@FContext, Data, Size));
+end;
+
+procedure TOpensslHash.Reset;
+begin
+  OpensslCheck(EVP_DigestInit(@FContext, FMd));
+  FHashing := True;
+end;
+
+procedure TOpensslHash.GetValue(Data: PByte);
+var
+  DigestLen: cuint;
+begin
+  if FHashing then
+  begin
+    DigestLen := Length(FDigest);
+    OpensslCheck(EVP_DigestFinal(@FContext, @FDigest[Low(FDigest)], @DigestLen));
+    FHashing := False;
+  end;
+
+  Move(FDigest[Low(FDigest)], Data^, GetHashSize);
+end;
+
+procedure TOpensslHash.GetHMAC(Data, Key, Result: PByte; DataSize, KeySize:
+  PtrUInt);
+begin
+
+end;
+{$ENDIF WITH_OPENSSL}
+
+{$IFDEF WITH_WINAPI}
 { TWinCryptoAPIHash }
+
+class procedure TWinCryptoAPIHash.WinCheck(RetVal: BOOL);
+begin
+  if not RetVal then
+    RaiseLastOSError;
+end;
 
 class procedure TWinCryptoAPIHash.Init;
 begin
@@ -173,7 +253,7 @@ begin
     if not CryptAcquireContext(HashingProvider, nil, MS_ENH_RSA_AES_PROV,
       PROV_RSA_AES, CRYPT_VERIFYCONTEXT or CRYPT_NEWKEYSET) then
     {$POP}
-      Win32Check(CryptAcquireContext(HashingProvider, nil, MS_ENHANCED_PROV,
+      WinCheck(CryptAcquireContext(HashingProvider, nil, MS_ENHANCED_PROV,
         PROV_RSA_FULL, CRYPT_VERIFYCONTEXT or CRYPT_NEWKEYSET));
 
     {$IFDEF CPU64}
@@ -225,7 +305,7 @@ begin
   {$IFDEF TEST}
   if Result then
   begin
-    Win32Check(CryptGetHashParam(HashHandle, HP_HASHSIZE, @ActualHashSize, SizeLen, 0));
+    WinCheck(CryptGetHashParam(HashHandle, HP_HASHSIZE, @ActualHashSize, SizeLen, 0));
     Assert(ActualHashSize = HashSize);
   end
   else
@@ -277,7 +357,7 @@ begin
   if FHashHandle <> 0 then
   begin
     ReleaseHashingProvider;
-    Win32Check(CryptDestroyHash(FHashHandle));
+    WinCheck(CryptDestroyHash(FHashHandle));
   end;
 
   FHashHandle := 0;
@@ -292,7 +372,7 @@ begin
   while Size <> 0 do
   begin
     Count := Min(High(DWord), Size);
-    Win32Check(CryptHashData(FHashHandle, Data, Count, 0));
+    WinCheck(CryptHashData(FHashHandle, Data, Count, 0));
 
     Size := Size - Count;
     Data := Data + Count;
@@ -310,7 +390,7 @@ var
   HashSize: DWord;
 begin
   HashSize := FHashSize;
-  Win32Check(CryptGetHashParam(FHashHandle, HP_HASHVAL, Data, HashSize, 0));
+  WinCheck(CryptGetHashParam(FHashHandle, HP_HASHVAL, Data, HashSize, 0));
 
   Assert(HashSize = FHashSize);
 end;
@@ -338,10 +418,10 @@ var
   procedure Cleanup(LastError: Integer = 0);
   begin
     if HmacHash <> 0 then
-      {$IFDEF TEST}Win32Check({$ENDIF}CryptDestroyHash(HmacHash){$IFDEF TEST}){$ENDIF};
+      {$IFDEF TEST}WinCheck({$ENDIF}CryptDestroyHash(HmacHash){$IFDEF TEST}){$ENDIF};
 
     if HashKey <> 0 then
-      {$IFDEF TEST}Win32Check({$ENDIF}CryptDestroyKey(HashKey){$IFDEF TEST}){$ENDIF};
+      {$IFDEF TEST}WinCheck({$ENDIF}CryptDestroyKey(HashKey){$IFDEF TEST}){$ENDIF};
 
     if Assigned(HmacKey) then
       FreeMem(HmacKey);
@@ -407,25 +487,40 @@ begin
 
   Cleanup;
 end;
-{$IFEND}
+{$ENDIF}
 
 function CreateHash(AHash: TAvailableHashes): IHashEngine;
-{$IFDEF WITH_WINAPI}
 const
+  {$IFDEF WITH_OPENSSL}
+  OPENSSL_MAP: array [TAvailableHashes] of PAnsiChar = (
+    'MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512',
+    {SHA2_512_224}nil, {SHA2_512_256}nil
+  );
+  {$ENDIF WITH_OPENSSL}
+  {$IFDEF WITH_WINAPI}
   CRYPTO_MAP: array [TAvailableHashes] of ALG_ID = (
     CALG_MD5, CALG_SHA1, {SHA2_224}0, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512,
     {SHA2_512_224}0, {SHA2_512_256}0
   );
+  {$ENDIF WITH_WINAPI}
 var
+  {$IFDEF WITH_OPENSSL}
+  Md: PEVP_MD;
+  {$ENDIF WITH_OPENSSL}
+  {$IFDEF WITH_WINAPI}
   AlgId: ALG_ID;
   HashHandle: HCRYPTHASH;
-  {$IFDEF TEST}
-  HashSize: Integer;
-  {$ENDIF TEST}
-{$ENDIF WITH_WINAPI}
+  {$IFDEF TEST}HashSize: Integer;{$ENDIF}
+  {$ENDIF WITH_WINAPI}
 begin
-  {$IF DEFINED(WITH_OPENSSL)}
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+  {$IFDEF WITH_OPENSSL}
+  if IsSSLloaded and TOpensslHash.Probe(OPENSSL_MAP[AHash], Md) then
+    Exit(TOpensslHash.Create(Md,
+      HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
+    );
+  {$ENDIF WITH_OPENSSL}
+
+  {$IFDEF WITH_WINAPI}
   //TODO: Vista+ CNG }
 
   { CryptoAPI }
@@ -437,20 +532,20 @@ begin
   if (AlgId <> 0) and TWinCryptoAPIHash.Probe(AlgId, HashHandle) then
   {$ENDIF}
     Exit(TWinCryptoAPIHash.Create(AlgId, HashHandle,
-      HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize));
+      HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
+    );
+  {$ENDIF WITH_WINAPI}
 
   raise Exception.Create('TODO: Not implemented yet');
-  {$ELSE}
-  {$IFEND}
 end;
 
-{$IF DEFINED(WITH_WINAPI)}
+{$IFDEF WITH_WINAPI}
 initialization
   TWinCryptoAPIHash.Init;
 
 finalization
   TWinCryptoAPIHash.Done;
 
-{$IFEND}
+{$ENDIF WITH_WINAPI}
 end.
 

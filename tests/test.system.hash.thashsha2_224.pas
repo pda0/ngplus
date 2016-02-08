@@ -202,7 +202,7 @@ end;
 {$IFDEF FPC}
 procedure TTestTHashSHA2_224.TestGetHashStringAnsi;
 begin
-  CheckEquals('730e109bd7a8a32b1cb9d9a09aa2325d2430587ddbc0c38bad911525', FHash.GetHashString(TEST_STR_ANSI));
+  CheckEquals('730e109bd7a8a32b1cb9d9a09aa2325d2430587ddbc0c38bad911525', FHash.GetHashString(TEST_STR_ANSI, SHA224));
 end;
 {$ENDIF FPC}
 

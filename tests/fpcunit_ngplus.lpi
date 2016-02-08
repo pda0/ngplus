@@ -52,12 +52,10 @@
       <Unit2>
         <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash"/>
       </Unit2>
       <Unit3>
         <Filename Value="..\src\system.helpers.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Helpers"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\src\system.helpers.strings.pas"/>
@@ -66,7 +64,6 @@
       <Unit5>
         <Filename Value="test.system.helpers.tguidhelper.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Helpers.TGuidHelper"/>
       </Unit5>
       <Unit6>
         <Filename Value="test.system.hash.thashmd5.pas"/>
@@ -79,7 +76,6 @@
       <Unit8>
         <Filename Value="test.system.hash.thashsha1.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA1"/>
       </Unit8>
       <Unit9>
         <Filename Value="test.system.hash.thashsha2_224.pas"/>
@@ -94,22 +90,18 @@
       <Unit11>
         <Filename Value="test.system.hash.thashsha2_384.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_384"/>
       </Unit11>
       <Unit12>
         <Filename Value="test.system.hash.thashsha2_512.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512"/>
       </Unit12>
       <Unit13>
         <Filename Value="test.system.hash.thashsha2_512_224.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512_224"/>
       </Unit13>
       <Unit14>
         <Filename Value="test.system.hash.thashsha2_512_256.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512_256"/>
       </Unit14>
       <Unit15>
         <Filename Value="test.system.hash.thashbobjenkins.pas"/>
@@ -143,16 +135,19 @@
         <StackChecks Value="True"/>
       </Checks>
     </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+        <TrashVariables Value="True"/>
+      </Debugging>
+    </Linking>
     <Other>
       <CustomOptions Value="-dTEST
 -dCONSOLETEST"/>
-      <OtherDefines Count="6">
+      <OtherDefines Count="3">
         <Define0 Value="TEST"/>
         <Define1 Value="CONSOLETEST"/>
-        <Define2 Value="WITH_UNICODE"/>
-        <Define3 Value="CLOSER_TO_DELPHI"/>
-        <Define4 Value="WITH_OPENSSL"/>
-        <Define5 Value="WITHOUT_WINAPI"/>
+        <Define2 Value="WITH_OPENSSL"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>
