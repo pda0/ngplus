@@ -45,72 +45,68 @@
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="test.system.hash.thash.pas"/>
+        <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THash"/>
       </Unit1>
       <Unit2>
-        <Filename Value="..\src\system.hash.pas"/>
+        <Filename Value="..\src\system.helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="..\src\system.helpers.pas"/>
+        <Filename Value="..\src\system.helpers.strings.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="..\src\system.helpers.strings.pas"/>
+        <Filename Value="..\src\ngplus.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="test.system.helpers.tguidhelper.pas"/>
+        <Filename Value="..\src\system.hash.helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="test.system.hash.thashmd5.pas"/>
+        <Filename Value="src\test.system.hash.thash.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="..\src\ngplus.inc"/>
+        <Filename Value="src\test.system.hash.thashbobjenkins.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="test.system.hash.thashsha1.pas"/>
+        <Filename Value="src\test.system.hash.thashmd5.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="test.system.hash.thashsha2_224.pas"/>
+        <Filename Value="src\test.system.hash.thashsha1.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_224"/>
       </Unit9>
       <Unit10>
-        <Filename Value="test.system.hash.thashsha2_256.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_224.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_256"/>
       </Unit10>
       <Unit11>
-        <Filename Value="test.system.hash.thashsha2_384.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_256.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="test.system.hash.thashsha2_512.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_384.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="test.system.hash.thashsha2_512_224.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="test.system.hash.thashsha2_512_256.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512_224.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="test.system.hash.thashbobjenkins.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512_256.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="..\src\system.hash.helpers.pas"/>
+        <Filename Value="src\test.system.helpers.tguidhelper.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash.Helpers"/>
       </Unit16>
     </Units>
   </ProjectOptions>
@@ -119,8 +115,8 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir);..\src"/>
-      <OtherUnitFiles Value="..\src"/>
-      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+      <OtherUnitFiles Value="..\src;src"/>
+      <UnitOutputDirectory Value="lib\Debug\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
@@ -138,16 +134,20 @@
     <Linking>
       <Debugging>
         <UseHeaptrc Value="True"/>
-        <TrashVariables Value="True"/>
       </Debugging>
     </Linking>
     <Other>
       <CustomOptions Value="-dTEST
--dCONSOLETEST"/>
-      <OtherDefines Count="3">
+-dCONSOLETEST
+-dWITH_OPENSSL
+-dWITHOUT_WINAPI"/>
+      <OtherDefines Count="6">
         <Define0 Value="TEST"/>
         <Define1 Value="CONSOLETEST"/>
-        <Define2 Value="WITH_OPENSSL"/>
+        <Define2 Value="WITH_UNICODE"/>
+        <Define3 Value="CLOSER_TO_DELPHI"/>
+        <Define4 Value="WITH_OPENSSL"/>
+        <Define5 Value="WITHOUT_WINAPI"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>

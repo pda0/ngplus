@@ -20,7 +20,7 @@ interface
 
 uses
   {$IFDEF WITH_OPENSSL}openssl, cTypes,{$ENDIF}
-  {$IFDEF WITH_WINAPI}JwaWinCrypt,{$ENDIF}
+  {$IFDEF WITH_WINAPI}Windows, JwaWinCrypt,{$ENDIF}
   SysUtils;
 
 type
@@ -51,15 +51,39 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); virtual; abstract;
   end;
 
-  {$IF DEFINED(WITH_OPENSSL)}
+{$IFDEF WITH_OPENSSL}
+const
+  HMAC_MAX_MD_CBLOCK = 128;
+
+type
+  {$PACKRECORDS C}
+  PHMAC_CTX = ^HMAC_CTX;
+  HMAC_CTX = record
+    md: PEVP_MD;
+    md_ctx, i_ctx, o_ctx: EVP_MD_CTX;
+    key_length: cuint;
+    key: array [0 .. HMAC_MAX_MD_CBLOCK - 1] of Byte;
+  end;
+
   {$IFDEF CPU64}{$PACKRECORDS 8}{$ELSE}{$PACKRECORDS 4}{$ENDIF}
   TOpensslHash = class(TBaseHashEngine)
+  private type
+    THMAC_Init_ex = function(ctx: PHMAC_CTX; const key: PByte; len: cint; md: PEVP_MD; impl: PENGINE): cint; cdecl;
+    THMAC_Update = function(ctx: PHMAC_CTX; const data: PByte; len: csize_t): cint; cdecl;
+    THMAC_Final = function(ctx: PHMAC_CTX; md: PByte; var len: cuint): cint; cdecl;
   private
+    class var _HMAC_Init_ex: THMAC_Init_ex;
+    class var _HMAC_Update: THMAC_Update;
+    class var _HMAC_Final: THMAC_Final;
     FContext: EVP_MD_CTX;
     FDigest: TBytes;
     FMd: PEVP_MD;
     FHashing: Boolean;
+    class procedure Wipe;
     class procedure OpensslCheck(RetVal: cInt); static;
+    class function HMAC_Init_ex(ctx: PHMAC_CTX; const key: PByte; len: cint; md: PEVP_MD; impl: PENGINE): cint;
+    class function HMAC_Update(ctx: PHMAC_CTX; const data: PByte; len: csize_t): cint;
+    class function HMAC_Final(ctx: PHMAC_CTX; md: PByte; var len: cuint): cint;
   public
     class function Probe(const DigestName: PAnsiChar; out Md: PEVP_MD): Boolean; static;
     constructor Create(Md: PEVP_MD; HashSize, BlockSize: Integer);
@@ -69,8 +93,9 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
   {$PACKRECORDS DEFAULT}
+{$ENDIF WITH_OPENSSL}
 
-  {$ELSEIF DEFINED(WITH_WINAPI)}
+{$IFDEF WITH_WINAPI}
 const
   CALG_SHA_256 = $0000800C; { WinXP SP3+ }
   CALG_SHA_384 = $0000800D; { WinXP SP3+ }
@@ -102,15 +127,18 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
   {$PACKRECORDS DEFAULT}
-{$IFEND}
+{$ENDIF WITH_WINAPI}
 
 function CreateHash(AHash: TAvailableHashes): IHashEngine;
 
 implementation
 
 uses
+  {$IFDEF WITH_OPENSSL}
+  dynlibs,
+  {$ENDIF}
   {$IFDEF WITH_WINAPI}
-  JwaWinType, {$IFDEF TEST}JwaWinError,{$ENDIF}
+  JwaWinType, {$IFDEF TEST}JwaWinError,{$ENDIF} Math,
   {$ENDIF}
   System.Hash;
 
@@ -151,6 +179,13 @@ end;
 {$IFDEF WITH_OPENSSL}
 { TOpensslHash }
 
+class procedure TOpensslHash.Wipe;
+begin
+  _HMAC_Init_ex := nil;
+  _HMAC_Update := nil;
+  _HMAC_Final := nil;
+end;
+
 class function TOpensslHash.Probe(const DigestName: PAnsiChar; out Md: PEVP_MD):
   Boolean;
 begin
@@ -171,6 +206,57 @@ begin
     SetLength(ErrorString, Pos(#0, ErrorString) - Low(ErrorString));
     raise EHashException.Create(ErrorString);
   end;
+end;
+
+class function TOpensslHash.HMAC_Init_ex(ctx: PHMAC_CTX; const key: PByte;
+  len: cint; md: PEVP_MD; impl: PENGINE): cint;
+const
+  HMAC_Init_ex_Name: PAnsiChar = 'HMAC_Init_ex';
+begin
+  if (SSLUtilHandle <> 0) and IsSSLloaded then
+  begin
+    if not Assigned(_HMAC_Init_ex) then
+      _HMAC_Init_ex := GetProcAddress(SSLUtilHandle, HMAC_Init_ex_Name);
+
+    if Assigned(_HMAC_Init_ex) then
+      Exit(_HMAC_Init_ex(ctx, key, len, md, impl));
+  end;
+
+  Result := 0;
+end;
+
+class function TOpensslHash.HMAC_Update(ctx: PHMAC_CTX; const data: PByte;
+  len: csize_t): cint;
+const
+  HMAC_Update_Name: PAnsiChar = 'HMAC_Update';
+begin
+  if (SSLUtilHandle <> 0) and IsSSLloaded then
+  begin
+    if not Assigned(_HMAC_Update) then
+      _HMAC_Update := GetProcAddress(SSLUtilHandle, HMAC_Update_Name);
+
+    if Assigned(_HMAC_Update) then
+      Exit(_HMAC_Update(ctx, data, len));
+  end;
+
+  Result := 0;
+end;
+
+class function TOpensslHash.HMAC_Final(ctx: PHMAC_CTX; md: PByte; var len:
+  cuint): cint;
+const
+  HMAC_Final_Name: PAnsiChar = 'HMAC_Final';
+begin
+  if (SSLUtilHandle <> 0) and IsSSLloaded then
+  begin
+    if not Assigned(_HMAC_Final) then
+      _HMAC_Final := GetProcAddress(SSLUtilHandle, HMAC_Final_Name);
+
+    if Assigned(_HMAC_Final) then
+      Exit(_HMAC_Final(ctx, md, len));
+  end;
+
+  Result := 0;
 end;
 
 constructor TOpensslHash.Create(Md: PEVP_MD; HashSize, BlockSize: Integer);
@@ -210,8 +296,29 @@ end;
 
 procedure TOpensslHash.GetHMAC(Data, Key, Result: PByte; DataSize, KeySize:
   PtrUInt);
+const
+  DummyKey: AnsiChar = #0;
+var
+  ctx: HMAC_CTX;
+  KeyLen: cint;
+  ResLen: cuint;
 begin
+  Assert(KeySize < High(KeyLen));
+  KeyLen := cint(KeySize);
 
+  if KeyLen = 0 then
+    Key := @DummyKey;
+
+  {$PUSH}
+  {$HINTS OFF}
+  FillChar(ctx, SizeOf(ctx), 0);
+  {$POP}
+  OpensslCheck(HMAC_Init_ex(@ctx, Key, KeyLen, FMd, nil));
+
+  OpensslCheck(HMAC_Update(@ctx, Data, DataSize));
+
+  ResLen := GetHashSize;
+  OpensslCheck(HMAC_Final(@ctx, Result, ResLen));
 end;
 {$ENDIF WITH_OPENSSL}
 
@@ -259,7 +366,7 @@ begin
     {$IFDEF CPU64}
     if InterlockedCompareExchange64(FHashingProvider, HashingProvider, 0) <> 0 then
     {$ELSE}
-    if InterlockedCompareExchange(FHashingProvider, HashingProvider, 0) <> 0 then
+    if InterlockedCompareExchange(LongInt(FHashingProvider), HashingProvider, 0) <> 0 then
     {$ENDIF}
       { Oops, some other thread is already initialized this class before us... }
       CryptReleaseContext(HashingProvider, 0);
@@ -269,7 +376,7 @@ begin
   {$IFDEF CPU64}
   InterlockedIncrement64(FHashCounter);
   {$ELSE}
-  InterlockedIncrement(FHashCounter);
+  InterlockedIncrement(LongInt(FHashCounter));
   {$ENDIF}
 
   Assert(Result <> 0);
@@ -282,7 +389,7 @@ begin
   {$IFDEF CPU64}
   InterlockedDecrement64(FHashCounter);
   {$ELSE}
-  InterlockedDecrement(FHashCounter);
+  InterlockedDecrement(LongInt(FHashCounter));
   {$ENDIF}
 end;
 
@@ -539,13 +646,21 @@ begin
   raise Exception.Create('TODO: Not implemented yet');
 end;
 
-{$IFDEF WITH_WINAPI}
 initialization
+  {$IFDEF WITH_OPENSSL}
+  TOpensslHash.Wipe;
+  {$ENDIF}
+  {$IFDEF WITH_WINAPI}
   TWinCryptoAPIHash.Init;
+  {$ENDIF}
 
 finalization
+  {$IFDEF WITH_OPENSSL}
+  TOpensslHash.Wipe;
+  {$ENDIF}
+  {$IFDEF WITH_WINAPI}
   TWinCryptoAPIHash.Done;
+  {$ENDIF}
 
-{$ENDIF WITH_WINAPI}
 end.
 
