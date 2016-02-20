@@ -70,9 +70,12 @@ begin
   Result := 'Calibration';
 end;
 
+{$PUSH}
+{$HINTS OFF}
 procedure TCalibration.Setup(Seq: Integer);
 begin
 end;
+{$POP}
 
 procedure TCalibration.Run;
 begin
@@ -103,7 +106,7 @@ class procedure TPerfTestRunner.PrepareCore;
 const
   BURN_TIME = 10000; { 10 sec to force CPU increase its frequency }
 var
-  EndTick: Cardinal;
+  EndTick: QWord;
   DummyInt, DummyRes: Int64;
   DummyFloat: Double;
 begin
@@ -111,8 +114,8 @@ begin
   DummyFloat := 0;
   DummyRes := 1;
 
-  EndTick := TThread.GetTickCount + BURN_TIME;
-  while EndTick > TThread.GetTickCount do
+  EndTick := TThread.GetTickCount64 + BURN_TIME;
+  while EndTick > TThread.GetTickCount64 do
   begin
     DummyFloat := DummyFloat + DummyRes;
     DummyInt := DummyInt + DummyRes;
@@ -154,8 +157,9 @@ const
 var
   RunTime, k, b: Double;
   j, RepCount: Int64;
+  StartTime, EndTime: QWord;
   TestName: string;
-  i, StartTime, EndTime: Cardinal;
+  i: Cardinal;
 begin
   TestName := PerfTest.Name;
   SetLength(Result, Seq);
@@ -177,36 +181,27 @@ begin
   begin
     PerfTest.Setup(i);
 
-    while True do
+      StartTime := TThread.GetTickCount64;
+
+    Write(Format(NFO_TPL, [TestName, i + 1, Seq, 'RUNNING']), #13);
+    j := 0;
+    RepCount := ScaleCount(Round(k * i + b));
+    while j < RepCount do
     begin
-      StartTime := TThread.GetTickCount;
+      PerfTest.Run;
+      Inc(j);
+    end;
+    EndTime := TThread.GetTickCount64;
 
-      Write(Format(NFO_TPL, [TestName, i + 1, Seq, 'RUNNING']), #13);
-      j := 0;
-      RepCount := ScaleCount(Round(k * i + b));
-      while j < RepCount do
-      begin
-        PerfTest.Run;
-        Inc(j);
-      end;
-      EndTime := TThread.GetTickCount;
-
-      if EndTime < StartTime then
-        Writeln(Format(NFO_TPL, [TestName, Seq, Seq, 'OVERFLOW']), #13)
-      else begin
-        RunTime := EndTime - StartTime - RepCount * FOverhead;
-
-        if RunTime > 0 then
-        begin
-          Result[i].CPS := Round( (1000 * RepCount) / RunTime );
-          Result[i].AvgTime := 1 / Result[i].CPS;
-        end
-        else begin
-          Result[i].CPS := 0;
-          Result[i].AvgTime := 0;
-        end;
-        Break;
-      end;
+    RunTime := EndTime - StartTime - RepCount * FOverhead;
+    if RunTime > 0 then
+    begin
+      Result[i].CPS := Round( (1000 * RepCount) / RunTime );
+      Result[i].AvgTime := 1 / Result[i].CPS;
+    end
+    else begin
+      Result[i].CPS := 0;
+      Result[i].AvgTime := 0;
     end;
   end;
 

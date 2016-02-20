@@ -19,8 +19,8 @@ unit System.Hash.Helpers;
 interface
 
 uses
-  {$IFDEF WITH_OPENSSL}openssl, cTypes,{$ENDIF}
-  {$IFDEF WITH_WINAPI}Windows, JwaWinCrypt,{$ENDIF}
+  {$IFDEF WITH_OPENSSL}openssl, cTypes, dynlibs,{$ENDIF}
+  {$IFDEF WITH_WINAPI}Windows, JwaWinType, JwaWinCrypt, dynlibs,{$ENDIF}
   SysUtils;
 
 type
@@ -71,10 +71,11 @@ type
     THMAC_Init_ex = function(ctx: PHMAC_CTX; const key: PByte; len: cint; md: PEVP_MD; impl: PENGINE): cint; cdecl;
     THMAC_Update = function(ctx: PHMAC_CTX; const data: PByte; len: csize_t): cint; cdecl;
     THMAC_Final = function(ctx: PHMAC_CTX; md: PByte; var len: cuint): cint; cdecl;
+  private class var
+    _HMAC_Init_ex: THMAC_Init_ex;
+    _HMAC_Update: THMAC_Update;
+    _HMAC_Final: THMAC_Final;
   private
-    class var _HMAC_Init_ex: THMAC_Init_ex;
-    class var _HMAC_Update: THMAC_Update;
-    class var _HMAC_Final: THMAC_Final;
     FContext: EVP_MD_CTX;
     FDigest: TBytes;
     FMd: PEVP_MD;
@@ -103,13 +104,18 @@ const
 
 type
   {$IFDEF CPU64}{$PACKRECORDS 8}{$ELSE}{$PACKRECORDS 4}{$ENDIF}
-  TWinCryptoAPIHash = class(TBaseHashEngine)
+  TAbstractWinHash = class(TBaseHashEngine)
+  protected
+    class procedure WinCheck(RetVal: BOOL); static;
+  end;
+
+  TWinCryptoAPIHash = class(TAbstractWinHash)
+  private class var
+    FHashCounter: {$IFDEF CPU64}QWord{$ELSE}Cardinal{$ENDIF};
+    FHashingProvider: HCRYPTPROV;
   private
-    class var FHashCounter: {$IFDEF CPU64}QWord{$ELSE}Cardinal{$ENDIF};
-    class var FHashingProvider: HCRYPTPROV;
     FHashHandle: HCRYPTHASH;
     FAlgId: ALG_ID;
-    class procedure WinCheck(RetVal: BOOL); static;
     class procedure Init;
     class procedure Done;
     class function GetHashingProvider: HCRYPTPROV;
@@ -126,21 +132,73 @@ type
     procedure GetValue(Data: PByte); override;
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
+
+  TWinCNGHash = class(TAbstractWinHash)
+  private const
+    {$IFDEF TEST}
+    BCRYPT_OBJECT_LENGTH: LPCWSTR = 'KeyObjectLength';
+    {$ENDIF}
+    BCRYPT_HASH_LENGTH: LPCWSTR = 'HashDigestLength';
+    BCRYPT_ALG_HANDLE_HMAC_FLAG: DWord = $00000008;
+    BCRYPT_HASH_REUSABLE_FLAG: DWord = $00000020;
+  private type
+    BCRYPT_ALG_HANDLE = THandle;
+    BCRYPT_HANDLE = THandle;
+    BCRYPT_HASH_HANDLE = THandle;
+    TBCryptOpenAlgorithmProvider = function(out phAlgorithm: BCRYPT_ALG_HANDLE; pszAlgId, pszImplementation: LPCWSTR; dwFlags: ULONG): NTSTATUS; stdcall;
+    TBCryptCloseAlgorithmProvider = function(hAlgorithm: BCRYPT_ALG_HANDLE; dwFlags: ULONG): NTSTATUS; stdcall;
+    TBCryptGetProperty = function(hObject: BCRYPT_HANDLE; pszProperty: LPCWSTR; pbOutput: PUCHAR; cbOutput: ULONG; out pcbResult: ULONG; dwFlags: ULONG): NTSTATUS; stdcall;
+    TBCryptCreateHash = function(hAlgorithm: BCRYPT_ALG_HANDLE; out phHash: BCRYPT_HASH_HANDLE; pbHashObject: PUCHAR; cbHashObject: ULONG; pbSecret: PUCHAR; cbSecret: ULONG; dwFlags: ULONG): NTSTATUS; stdcall;
+    TBCryptDestroyHash = function(hHash: BCRYPT_HASH_HANDLE): NTSTATUS; stdcall;
+    TBCryptHashData = function(hHash: BCRYPT_HASH_HANDLE; pbInput: PUCHAR; cbInput, dwFlags: ULONG): NTSTATUS; stdcall;
+    TBCryptFinishHash = function(hHash: BCRYPT_HASH_HANDLE; pbOutput: PUCHAR; cbOutput, dwFlags: ULONG): NTSTATUS; stdcall;
+  private class var
+    FUsageCounter: {$IFDEF CPU64}QWord{$ELSE}LongInt{$ENDIF};
+    FBCryphHandle: TLibHandle;
+    _BCryptOpenAlgorithmProvider, _BCryptCloseAlgorithmProvider,
+    _BCryptGetProperty, _BCryptCreateHash, _BCryptDestroyHash, _BCryptHashData,
+    _BCryptFinishHash: Pointer;
+  private
+    FAlgId: LPCWSTR;
+    FAlgHandle: BCRYPT_ALG_HANDLE;
+    FHashHandle: BCRYPT_HASH_HANDLE;
+    FHashBlock, FHashResult: PByte;
+    FFinished: Boolean;
+    class procedure Init;
+    class procedure Done;
+    class procedure Wipe;
+    class procedure NtCheck(RetVal: NTSTATUS); static;
+    class function BCryptLoaded: Boolean;
+    class function BCryptOpenAlgorithmProvider(out phAlgorithm: BCRYPT_ALG_HANDLE; pszAlgId, pszImplementation: LPCWSTR; dwFlags: ULONG): NTSTATUS;
+    class function BCryptCloseAlgorithmProvider(hAlgorithm: BCRYPT_ALG_HANDLE; dwFlags: ULONG): NTSTATUS;
+    class function BCryptGetProperty(hObject: BCRYPT_HANDLE; pszProperty: LPCWSTR; pbOutput: PUCHAR; cbOutput: ULONG; out pcbResult: ULONG; dwFlags: ULONG): NTSTATUS;
+    class function BCryptCreateHash(hAlgorithm: BCRYPT_ALG_HANDLE; out phHash: BCRYPT_HASH_HANDLE; pbHashObject: PUCHAR; cbHashObject: ULONG; pbSecret: PUCHAR; cbSecret: ULONG; dwFlags: ULONG): NTSTATUS;
+    class function BCryptDestroyHash(hHash: BCRYPT_HASH_HANDLE): NTSTATUS;
+    class function BCryptHashData(hHash: BCRYPT_HASH_HANDLE; pbInput: PUCHAR; cbInput, dwFlags: ULONG): NTSTATUS;
+    class function BCryptFinishHash(hHash: BCRYPT_HASH_HANDLE; pbOutput: PUCHAR; cbOutput, dwFlags: ULONG): NTSTATUS;
+    class function Probe(AlgId: LPCWSTR; ForHmac: Boolean; out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF TEST};HashSize: Integer{$ENDIF}): Boolean; static;
+    procedure CreateHashObject(Key: PByte; KeyLen: PtrUInt);
+    procedure DestroyHashObject;
+  public
+    constructor Create(AlgId: LPCWSTR; AlgHandle: BCRYPT_ALG_HANDLE; HashSize, BlockSize: Integer);
+    destructor Destroy; override;
+    procedure Update(Data: PByte; Size: PtrUInt); override;
+    procedure Reset; override;
+    procedure GetValue(Data: PByte); override;
+    procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
+  end;
   {$PACKRECORDS DEFAULT}
 {$ENDIF WITH_WINAPI}
 
-function CreateHash(AHash: TAvailableHashes): IHashEngine;
+function CreateHash(AHash: TAvailableHashes; ForHmac: Boolean = False): IHashEngine;
 
 implementation
 
 uses
-  {$IFDEF WITH_OPENSSL}
-  dynlibs,
-  {$ENDIF}
   {$IFDEF WITH_WINAPI}
-  JwaWinType, {$IFDEF TEST}JwaWinError,{$ENDIF} Math,
+  JwaWinBase, JwaNtStatus, {$IFDEF TEST}JwaWinError,{$ENDIF} Math,
   {$ENDIF}
-  System.Hash;
+  System.Hash, System.Helpers.Strings;
 
 type
   THashParam = record
@@ -323,13 +381,15 @@ end;
 {$ENDIF WITH_OPENSSL}
 
 {$IFDEF WITH_WINAPI}
-{ TWinCryptoAPIHash }
+{ TAbstractWinHash }
 
-class procedure TWinCryptoAPIHash.WinCheck(RetVal: BOOL);
+class procedure TAbstractWinHash.WinCheck(RetVal: BOOL);
 begin
   if not RetVal then
     RaiseLastOSError;
 end;
+
+{ TWinCryptoAPIHash }
 
 class procedure TWinCryptoAPIHash.Init;
 begin
@@ -349,24 +409,31 @@ end;
 class function TWinCryptoAPIHash.GetHashingProvider: HCRYPTPROV;
 const
   PROV_RSA_AES = 24; { WinXP SP3+ }
-  MS_ENH_RSA_AES_PROV = 'Microsoft Enhanced RSA and AES Cryptographic Provider'; { WinXP SP3+ }
+  MS_ENH_RSA_AES_PROV: PChar = 'Microsoft Enhanced RSA and AES Cryptographic Provider'; { Windows Server 2003+ }
+  MS_ENH_RSA_AES_PROV_XP: PChar = 'Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)'; { Windows XP SP3 }
 var
   HashingProvider: HCRYPTPROV;
+  ProvName: PChar;
 begin
   if FHashingProvider = 0 then
   begin
+    if CheckWin32Version(5, 2) then
+      ProvName := MS_ENH_RSA_AES_PROV
+    else
+      ProvName := MS_ENH_RSA_AES_PROV_XP;
+
     {$PUSH}
     {$HINTS OFF} { HashingProvider will initialized in this call }
-    if not CryptAcquireContext(HashingProvider, nil, MS_ENH_RSA_AES_PROV,
+    if not CryptAcquireContext(HashingProvider, nil, ProvName,
       PROV_RSA_AES, CRYPT_VERIFYCONTEXT or CRYPT_NEWKEYSET) then
     {$POP}
       WinCheck(CryptAcquireContext(HashingProvider, nil, MS_ENHANCED_PROV,
         PROV_RSA_FULL, CRYPT_VERIFYCONTEXT or CRYPT_NEWKEYSET));
 
     {$IFDEF CPU64}
-    if InterlockedCompareExchange64(FHashingProvider, HashingProvider, 0) <> 0 then
+    if System.InterlockedCompareExchange64(FHashingProvider, HashingProvider, 0) <> 0 then
     {$ELSE}
-    if InterlockedCompareExchange(LongInt(FHashingProvider), HashingProvider, 0) <> 0 then
+    if System.InterlockedCompareExchange(LongInt(FHashingProvider), HashingProvider, 0) <> 0 then
     {$ENDIF}
       { Oops, some other thread is already initialized this class before us... }
       CryptReleaseContext(HashingProvider, 0);
@@ -374,9 +441,9 @@ begin
 
   Result := FHashingProvider;
   {$IFDEF CPU64}
-  InterlockedIncrement64(FHashCounter);
+  System.InterlockedIncrement64(FHashCounter);
   {$ELSE}
-  InterlockedIncrement(LongInt(FHashCounter));
+  System.InterlockedIncrement(FHashCounter);
   {$ENDIF}
 
   Assert(Result <> 0);
@@ -387,9 +454,9 @@ begin
   Assert(FHashCounter <> 0);
 
   {$IFDEF CPU64}
-  InterlockedDecrement64(FHashCounter);
+  System.InterlockedDecrement64(FHashCounter);
   {$ELSE}
-  InterlockedDecrement(LongInt(FHashCounter));
+  System.InterlockedDecrement(FHashCounter);
   {$ENDIF}
 end;
 
@@ -423,9 +490,9 @@ end;
 
 constructor TWinCryptoAPIHash.Create(AlgId: ALG_ID; HashHandle: HCRYPTHASH; HashSize, BlockSize: Integer);
 begin
+  inherited Create(HashSize, BlockSize);
   FAlgId := AlgId;
   FHashHandle := HashHandle;
-  inherited Create(HashSize, BlockSize);
 
   Assert(FHashHandle <> 0);
 end;
@@ -550,7 +617,7 @@ begin
   {$POP}
   HmacInfo.HashAlgid := FAlgId;
 
-  HmacKeyLen := DWord(SizeOf(HmacKey) + KeySize);
+  HmacKeyLen := DWord(SizeOf(THMACKey) + KeySize);
   GetMem(HmacKey, HmacKeyLen);
   HmacKey^.Header.bType := PLAINTEXTKEYBLOB;
   HmacKey^.Header.bVersion := CUR_BLOB_VERSION;
@@ -594,9 +661,375 @@ begin
 
   Cleanup;
 end;
+
+{ TWinCNGHash }
+
+class procedure TWinCNGHash.Init;
+begin
+  FUsageCounter := 0;
+  FBCryphHandle := 0;
+  Wipe;
+end;
+
+class procedure TWinCNGHash.Done;
+begin
+  Wipe;
+  if (FBCryphHandle <> 0) and (FUsageCounter = 0) then
+  begin
+    UnloadLibrary(FBCryphHandle);
+    FBCryphHandle := 0;
+  end;
+end;
+
+class procedure TWinCNGHash.Wipe;
+begin
+  _BCryptOpenAlgorithmProvider := nil;
+  _BCryptCloseAlgorithmProvider := nil;
+  _BCryptGetProperty := nil;
+  _BCryptCreateHash := nil;
+  _BCryptDestroyHash := nil;
+  _BCryptHashData := nil;
+  _BCryptFinishHash := nil;
+end;
+
+class procedure TWinCNGHash.NtCheck(RetVal: NTSTATUS);
+const
+  NTDLL: RawByteString = 'ntdll.dll';
+var
+  ErrorText: string;
+  NtLibHandle: TLibHandle;
+begin
+  {$IFDEF TEST}
+  if not NT_SUCCESS(RetVal) then
+  {$ELSE}
+  if NT_ERROR(RetVal) then
+  {$ENDIF}
+  begin
+    NtLibHandle := 0;
+    if not GetModuleHandleEx(0, LPCSTR(NTDLL), NtLibHandle) then
+      NtLibHandle := SafeLoadLibrary(NTDLL);
+
+    SetLength(ErrorText, $ffff);
+    {$PUSH}
+    {$HINTS OFF}
+    {$RANGECHECKS OFF}
+    SetLength(
+      ErrorText,
+      Windows.FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM or FORMAT_MESSAGE_FROM_HMODULE or
+        FORMAT_MESSAGE_IGNORE_INSERTS, LPCVOID(NtLibHandle), RetVal,
+        MakeLangId(LANG_ENGLISH, SUBLANG_DEFAULT), PChar(ErrorText),
+        Length(ErrorText) - 1, nil
+      )
+    );
+    {$POP}
+    UnloadLibrary(NtLibHandle);
+
+    raise EHashException.CreateResFmt(@SNTError, [RetVal, ErrorText]);
+  end;
+end;
+
+class function TWinCNGHash.BCryptLoaded: Boolean;
+const
+  LIBBCRYPT: RawByteString = 'bcrypt.dll';
+  BC_OPEN_ALG_PROV_NAME: AnsiString = 'BCryptOpenAlgorithmProvider';
+  BC_CLOSE_ALG_PROV_NAME: AnsiString = 'BCryptCloseAlgorithmProvider';
+  BC_GET_PROP_NAME: AnsiString = 'BCryptGetProperty';
+  BC_CREATE_HASH_NAME: AnsiString = 'BCryptCreateHash';
+  BC_DESTROY_HASH_NAME: AnsiString = 'BCryptDestroyHash';
+  BC_HASH_DATA_NAME: AnsiString = 'BCryptHashData';
+  BC_HASH_FINISH_NAME: AnsiString = 'BCryptFinishHash';
+var
+  LibHandle: TLibHandle;
+
+  function FailGetProc(var Proc: Pointer; ProcName: AnsiString): Boolean;
+  var
+    TmpAddr: Pointer;
+  begin
+    if not Assigned(Proc) then
+    begin
+      TmpAddr := GetProcedureAddress(FBCryphHandle, ProcName);
+      {$PUSH}
+      {$HINTS OFF}
+      {$IFDEF CPU64}
+      System.InterlockedCompareExchange64(QWord(Proc), QWord(TmpAddr), 0);
+      {$ELSE}
+      System.InterlockedCompareExchange(LongInt(Proc), LongInt(TmpAddr), 0);
+      {$ENDIF}
+      {$POP}
+    end;
+    Result := not Assigned(Proc);
+  end;
+begin
+  Result := False;
+  if FBCryphHandle = 0 then
+  begin
+    if not CheckWin32Version(6, 0) then
+      Exit;
+
+    LibHandle := 0;
+    if not GetModuleHandleEx(0, LPCSTR(LIBBCRYPT), LibHandle) then
+      LibHandle := SafeLoadLibrary(LIBBCRYPT);
+    if (LibHandle <> 0) and
+      {$IFDEF CPU64}
+      (System.InterlockedCompareExchange64(FBCryphHandle, LibHandle, 0) <> 0) then
+      {$ELSE}
+      (System.InterlockedCompareExchange(LongInt(FBCryphHandle), LibHandle, 0) <> 0) then
+      {$ENDIF}
+      { Another thread is already load this library }
+      UnloadLibrary(FBCryphHandle);
+
+    if FBCryphHandle = 0 then
+      Exit;
+  end;
+
+  if FailGetProc(_BCryptOpenAlgorithmProvider, BC_OPEN_ALG_PROV_NAME) then Exit;
+  if FailGetProc(_BCryptCloseAlgorithmProvider, BC_CLOSE_ALG_PROV_NAME) then Exit;
+  if FailGetProc(_BCryptGetProperty, BC_GET_PROP_NAME) then Exit;
+  if FailGetProc(_BCryptCreateHash, BC_CREATE_HASH_NAME) then Exit;
+  if FailGetProc(_BCryptDestroyHash, BC_DESTROY_HASH_NAME) then Exit;
+  if FailGetProc(_BCryptHashData, BC_HASH_DATA_NAME) then Exit;
+  if FailGetProc(_BCryptFinishHash, BC_HASH_FINISH_NAME) then Exit;
+  Result := True;
+end;
+
+class function TWinCNGHash.BCryptOpenAlgorithmProvider(out phAlgorithm:
+  BCRYPT_ALG_HANDLE; pszAlgId, pszImplementation: LPCWSTR; dwFlags: ULONG):
+  NTSTATUS;
+begin
+  {$IFDEF CPU64}
+  System.InterlockedIncrement64(FUsageCounter);
+  {$ELSE}
+  System.InterlockedIncrement(FUsageCounter);
+  {$ENDIF}
+
+  if Assigned(_BCryptOpenAlgorithmProvider) or BCryptLoaded then
+    Result := TBCryptOpenAlgorithmProvider
+      (_BCryptOpenAlgorithmProvider)(phAlgorithm, pszAlgId, pszImplementation, dwFlags)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+
+  if NT_ERROR(Result) then
+  begin
+    {$IFDEF CPU64}
+    System.InterlockedDecrement64(FUsageCounter);
+    {$ELSE}
+    System.InterlockedDecrement(LongInt(FUsageCounter));
+    {$ENDIF}
+  end;
+end;
+
+class function TWinCNGHash.BCryptCloseAlgorithmProvider(hAlgorithm:
+  BCRYPT_ALG_HANDLE; dwFlags: ULONG): NTSTATUS;
+begin
+  if Assigned(_BCryptCloseAlgorithmProvider) or BCryptLoaded then
+  begin
+    Result := TBCryptCloseAlgorithmProvider(_BCryptCloseAlgorithmProvider)
+      (hAlgorithm, dwFlags);
+
+    {$IFDEF CPU64}
+    System.InterlockedDecrement64(FUsageCounter);
+    {$ELSE}
+    System.InterlockedDecrement(LongInt(FUsageCounter));
+    {$ENDIF}
+  end
+  else
+    Result := STATUS_NOT_SUPPORTED;
+end;
+
+class function TWinCNGHash.BCryptGetProperty(hObject: BCRYPT_HANDLE;
+  pszProperty: LPCWSTR; pbOutput: PUCHAR; cbOutput: ULONG; out pcbResult: ULONG;
+  dwFlags: ULONG): NTSTATUS;
+begin
+  if Assigned(_BCryptGetProperty) or BCryptLoaded then
+    Result := TBCryptGetProperty(_BCryptGetProperty)
+      (hObject, pszProperty, pbOutput, cbOutput, pcbResult,dwFlags)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+
+  {$IFDEF CPU64}
+  System.InterlockedDecrement64(FUsageCounter);
+  {$ELSE}
+  System.InterlockedDecrement(LongInt(FUsageCounter));
+  {$ENDIF}
+end;
+
+class function TWinCNGHash.BCryptCreateHash(hAlgorithm: BCRYPT_ALG_HANDLE;
+  out phHash: BCRYPT_HASH_HANDLE; pbHashObject: PUCHAR; cbHashObject: ULONG;
+  pbSecret: PUCHAR; cbSecret: ULONG; dwFlags: ULONG): NTSTATUS;
+begin
+  if Assigned(_BCryptCreateHash) or BCryptLoaded then
+    Result := TBCryptCreateHash(_BCryptCreateHash)
+      (hAlgorithm, phHash, pbHashObject, cbHashObject, pbSecret, cbSecret, dwFlags)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+end;
+
+class function TWinCNGHash.BCryptDestroyHash(hHash: BCRYPT_HASH_HANDLE):
+  NTSTATUS;
+begin
+  if Assigned(_BCryptDestroyHash) or BCryptLoaded then
+    Result := TBCryptDestroyHash(_BCryptDestroyHash)(hHash)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+end;
+
+class function TWinCNGHash.BCryptHashData(hHash: BCRYPT_HASH_HANDLE; pbInput:
+  PUCHAR; cbInput, dwFlags: ULONG): NTSTATUS;
+begin
+  if Assigned(_BCryptHashData) or BCryptLoaded then
+    Result := TBCryptHashData(_BCryptHashData)(hHash, pbInput, cbInput, dwFlags)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+end;
+
+class function TWinCNGHash.BCryptFinishHash(hHash: BCRYPT_HASH_HANDLE;
+  pbOutput: PUCHAR; cbOutput, dwFlags: ULONG): NTSTATUS;
+begin
+  if Assigned(_BCryptFinishHash) or BCryptLoaded then
+    Result := TBCryptFinishHash(_BCryptFinishHash)
+      (hHash, pbOutput, cbOutput, dwFlags)
+  else
+    Result := STATUS_NOT_SUPPORTED;
+end;
+
+class function TWinCNGHash.Probe(AlgId: LPCWSTR; ForHmac: Boolean;
+  out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF TEST};HashSize: Integer{$ENDIF}):
+  Boolean;
+const
+  MS_PRIMITIVE_PROVIDER: LPCWSTR = 'Microsoft Primitive Provider';
+var
+  {$IFDEF TEST}
+  ActualHashSize, ResLen,
+  {$ENDIF}
+  Flags: DWord;
+begin
+  if ForHmac then
+    Flags := BCRYPT_ALG_HANDLE_HMAC_FLAG
+  else
+    Flags := 0;
+
+  Result := not NT_ERROR(BCryptOpenAlgorithmProvider(AlgHandle, AlgId,
+    MS_PRIMITIVE_PROVIDER, Flags));
+
+  if Result then
+  begin
+    Result := not NT_ERROR(BCryptGetProperty(AlgHandle, BCRYPT_HASH_LENGTH,
+      @ActualHashSize, SizeOf(ActualHashSize), ResLen, 0));
+    if Result then
+    begin
+      Assert(ActualHashSize = HashSize);
+      Result := Result and (ActualHashSize = HashSize);
+    end;
+  end;
+end;
+
+procedure TWinCNGHash.CreateHashObject(Key: PByte; KeyLen: PtrUInt);
+var
+  HBlockSize, Flags: DWord;
+begin
+  Assert(KeyLen >= 0);
+
+  if Assigned(FHashBlock) then
+    HBlockSize := DWord(GetBlockSize)
+  else
+    HBlockSize := 0;
+
+  if CheckWin32Version(6, 2) then
+    { Only Windows 8+ have reusable hash objects support }
+    Flags := BCRYPT_HASH_REUSABLE_FLAG
+  else
+    Flags := 0;
+
+  NtCheck(BCryptCreateHash(FAlgHandle, FHashHandle, FHashBlock, HBlockSize,
+    Key, DWord(KeyLen), Flags));
+end;
+
+procedure TWinCNGHash.DestroyHashObject;
+begin
+  if FHashHandle <> 0 then
+  begin
+    NtCheck(BCryptDestroyHash(FHashHandle));
+    FHashHandle := 0;
+  end;
+end;
+
+constructor TWinCNGHash.Create(AlgId: LPCWSTR; AlgHandle: BCRYPT_ALG_HANDLE;
+  HashSize, BlockSize: Integer);
+var
+  HBlockSize, ResLen: DWord;
+begin
+  inherited Create(HashSize, BlockSize);
+  FAlgId := AlgId;
+  FAlgHandle := AlgHandle;
+  FHashHandle := 0;
+  GetMem(FHashResult, HashSize);
+  FHashBlock := nil;
+  if not CheckWin32Version(6, 1) then
+  begin
+    { Only Windows 7+ have its own memory management }
+    NtCheck(BCryptGetProperty(FAlgHandle, BCRYPT_OBJECT_LENGTH, @HBlockSize,
+      SizeOf(HBlockSize), ResLen, 0));
+    Assert(BlockSize = HBlockSize);
+    GetMem(FHashBlock, HBlockSize);
+  end;
+  FFinished := False;
+  CreateHashObject(nil, 0);
+
+  Assert(FHashHandle <> 0);
+end;
+
+destructor TWinCNGHash.Destroy;
+begin
+  DestroyHashObject;
+
+  FreeMem(FHashResult);
+  if Assigned(FHashBlock) then
+    FreeMem(FHashBlock);
+
+  NtCheck(BCryptCloseAlgorithmProvider(FAlgHandle, 0));
+
+  inherited;
+end;
+
+procedure TWinCNGHash.Update(Data: PByte; Size: PtrUInt);
+begin
+  NtCheck(BCryptHashData(FHashHandle, Data, Size, 0));
+end;
+
+procedure TWinCNGHash.Reset;
+begin
+  if not (FFinished and CheckWin32Version(6, 2)) then
+  begin
+    { Windows 8+ have reusable hash objects support }
+    DestroyHashObject;
+    CreateHashObject(nil, 0);
+  end;
+
+  FFinished := False;
+end;
+
+procedure TWinCNGHash.GetValue(Data: PByte);
+begin
+  if not FFinished then
+  begin
+    NtCheck(BCryptFinishHash(FHashHandle, FHashResult, GetHashSize, 0));
+    FFinished := True;
+  end;
+
+  Move(FHashResult^, Data^, GetHashSize);
+end;
+
+procedure TWinCNGHash.GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt);
+begin
+  DestroyHashObject;
+  CreateHashObject(Key, KeySize);
+  Update(Data, DataSize);
+  GetValue(Result);
+end;
 {$ENDIF}
 
-function CreateHash(AHash: TAvailableHashes): IHashEngine;
+function CreateHash(AHash: TAvailableHashes; ForHmac: Boolean): IHashEngine;
 const
   {$IFDEF WITH_OPENSSL}
   OPENSSL_MAP: array [TAvailableHashes] of PAnsiChar = (
@@ -609,14 +1042,20 @@ const
     CALG_MD5, CALG_SHA1, {SHA2_224}0, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512,
     {SHA2_512_224}0, {SHA2_512_256}0
   );
+  CNG_MAP: array [TAvailableHashes] of LPCWSTR = (
+    'MD5', 'SHA1', {SHA224}nil, 'SHA256', 'SHA384', 'SHA512',
+    {SHA2_512_224}nil, {SHA2_512_256}nil
+  );
   {$ENDIF WITH_WINAPI}
 var
   {$IFDEF WITH_OPENSSL}
   Md: PEVP_MD;
   {$ENDIF WITH_OPENSSL}
   {$IFDEF WITH_WINAPI}
-  AlgId: ALG_ID;
-  HashHandle: HCRYPTHASH;
+  CngAlgId: LPCWSTR;
+  CaAlgId: ALG_ID;
+  CngAlgHandle: TWinCNGHash.BCRYPT_ALG_HANDLE;
+  CaHashHandle: HCRYPTHASH;
   {$IFDEF TEST}HashSize: Integer;{$ENDIF}
   {$ENDIF WITH_WINAPI}
 begin
@@ -628,17 +1067,30 @@ begin
   {$ENDIF WITH_OPENSSL}
 
   {$IFDEF WITH_WINAPI}
-  //TODO: Vista+ CNG }
+  { Vista+ CNG }
+(*  if CheckWin32Version(6, 0) then
+  begin
+    CngAlgId := CNG_MAP[AHash];
+    {$IFDEF TEST}
+    HashSize := HASH_PARAMS[AHash].HashSize;
+    if Assigned(CngAlgId) and TWinCNGHash.Probe(CngAlgId, ForHmac, CngAlgHandle, HashSize) then
+    {$ELSE}
+    if Assigned(CngAlgId) and TWinCNGHash.Probe(CngAlgId, ForHmac, CngAlgHandle) then
+    {$ENDIF}
+      Exit(TWinCNGHash.Create(CngAlgId, CngAlgHandle,
+        HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
+      );
+  end; *)
 
   { CryptoAPI }
-  AlgId := CRYPTO_MAP[AHash];
+  CaAlgId := CRYPTO_MAP[AHash];
   {$IFDEF TEST}
   HashSize := HASH_PARAMS[AHash].HashSize;
-  if (AlgId <> 0) and TWinCryptoAPIHash.Probe(AlgId, HashHandle, HashSize) then
+  if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle, HashSize) then
   {$ELSE}
-  if (AlgId <> 0) and TWinCryptoAPIHash.Probe(AlgId, HashHandle) then
+  if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle) then
   {$ENDIF}
-    Exit(TWinCryptoAPIHash.Create(AlgId, HashHandle,
+    Exit(TWinCryptoAPIHash.Create(CaAlgId, CaHashHandle,
       HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
     );
   {$ENDIF WITH_WINAPI}
@@ -651,6 +1103,7 @@ initialization
   TOpensslHash.Wipe;
   {$ENDIF}
   {$IFDEF WITH_WINAPI}
+  TWinCNGHash.Init;
   TWinCryptoAPIHash.Init;
   {$ENDIF}
 
@@ -659,6 +1112,7 @@ finalization
   TOpensslHash.Wipe;
   {$ENDIF}
   {$IFDEF WITH_WINAPI}
+  TWinCNGHash.Done;
   TWinCryptoAPIHash.Done;
   {$ENDIF}
 

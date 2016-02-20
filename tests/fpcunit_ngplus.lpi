@@ -47,6 +47,7 @@
       <Unit1>
         <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Hash"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\src\system.helpers.pas"/>
@@ -55,6 +56,7 @@
       <Unit3>
         <Filename Value="..\src\system.helpers.strings.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Helpers.Strings"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\src\ngplus.inc"/>
@@ -63,6 +65,7 @@
       <Unit5>
         <Filename Value="..\src\system.hash.helpers.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Hash.Helpers"/>
       </Unit5>
       <Unit6>
         <Filename Value="src\test.system.hash.thash.pas"/>
@@ -75,6 +78,7 @@
       <Unit8>
         <Filename Value="src\test.system.hash.thashmd5.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashMD5"/>
       </Unit8>
       <Unit9>
         <Filename Value="src\test.system.hash.thashsha1.pas"/>
@@ -130,17 +134,18 @@
         <OverflowChecks Value="True"/>
         <StackChecks Value="True"/>
       </Checks>
+      <TargetCPU Value="i386"/>
+      <TargetOS Value="win32"/>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <UseHeaptrc Value="True"/>
+        <TrashVariables Value="True"/>
       </Debugging>
     </Linking>
     <Other>
       <CustomOptions Value="-dTEST
--dCONSOLETEST
--dWITH_OPENSSL
--dWITHOUT_WINAPI"/>
+-dCONSOLETEST"/>
       <OtherDefines Count="6">
         <Define0 Value="TEST"/>
         <Define1 Value="CONSOLETEST"/>

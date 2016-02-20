@@ -24,6 +24,9 @@ resourcestring
   SHashCanNotUpdateSHA1 = 'SHA1: Cannot update a finalized hash';
   SHashCanNotUpdateSHA2 = 'SHA2: Cannot update a finalized hash';
 
+  { System.Hash.Helpers }
+  SNTError = 'NT error, (Code %d):' + LineEnding + '%s';
+
 implementation
 
 end.

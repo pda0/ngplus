@@ -46,8 +46,9 @@ type
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
+    class function Create(ForHmac: Boolean): THashMD5; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
   public
-    class function Create: THashMD5; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create: THashMD5; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
@@ -78,8 +79,9 @@ type
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
+    class function Create(ForHmac: Boolean): THashSHA1; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
   public
-    class function Create: THashSHA1; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create: THashSHA1; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
@@ -112,6 +114,7 @@ type
     FFinalized: Boolean;
     procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; static;
+    class function Create(AHashVersion: TSHA2Version; ForHmac: Boolean): THashSHA2; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
   {$IFDEF CLOSER_TO_DELPHI}
   public
   {$ELSE}
@@ -119,7 +122,7 @@ type
   {$ENDIF CLOSER_TO_DELPHI}
     FVersion: TSHA2Version;
   public
-    class function Create(AHashVersion: TSHA2Version = TSHA2Version.SHA256): THashSHA2; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create(AHashVersion: TSHA2Version = TSHA2Version.SHA256): THashSHA2; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
     procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
@@ -238,8 +241,13 @@ end;
 
 class function THashMD5.Create: THashMD5;
 begin
+  Result := Create(False);
+end;
+
+class function THashMD5.Create(ForHmac: Boolean): THashMD5;
+begin
   Result.FFinalized := False;
-  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.MD5);
+  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.MD5, ForHmac);
 end;
 
 procedure THashMD5.CheckFinalized;
@@ -325,7 +333,7 @@ class function THashMD5.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
 var
   TmpHash: THashMD5;
 begin
-  TmpHash := THashMD5.Create;
+  TmpHash := THashMD5.Create(True);
   SetLength(Result, TmpHash.GetHashSize);
 
   TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
@@ -504,8 +512,13 @@ end;
 
 class function THashSHA1.Create: THashSHA1;
 begin
+  Result := Create(False);
+end;
+
+class function THashSHA1.Create(ForHmac: Boolean): THashSHA1;
+begin
   Result.FFinalized := False;
-  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.SHA1);
+  Result.FHash := System.Hash.Helpers.CreateHash(TAvailableHashes.SHA1, ForHmac);
 end;
 
 procedure THashSHA1.CheckFinalized;
@@ -591,7 +604,7 @@ class function THashSHA1.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
 var
   TmpHash: THashSHA1;
 begin
-  TmpHash := THashSHA1.Create;
+  TmpHash := THashSHA1.Create(True);
   SetLength(Result, TmpHash.GetHashSize);
 
   TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
@@ -769,6 +782,12 @@ end;
 { THashSHA2 }
 
 class function THashSHA2.Create(AHashVersion: TSHA2Version): THashSHA2;
+begin
+  Result := Create(AHashVersion, False);
+end;
+
+class function THashSHA2.Create(AHashVersion: TSHA2Version; ForHmac: Boolean):
+  THashSHA2;
 const
   SHA2_MAP: array [TSHA2Version] of TAvailableHashes = (
     SHA2_224, SHA2_256, SHA2_384, SHA2_512, SHA2_512_224, SHA2_512_256
@@ -776,7 +795,7 @@ const
 begin
   Result.FVersion := AHashVersion;
   Result.FFinalized := False;
-  Result.FHash := System.Hash.Helpers.CreateHash(SHA2_MAP[AHashVersion]);
+  Result.FHash := System.Hash.Helpers.CreateHash(SHA2_MAP[AHashVersion], ForHmac);
 end;
 
 procedure THashSHA2.CheckFinalized;
@@ -862,7 +881,7 @@ class function THashSHA2.InternalGetHMAC(constref AData, AKey: PByte; DataLen,
 var
   TmpHash: THashSHA2;
 begin
-  TmpHash := THashSHA2.Create(AHashVersion);
+  TmpHash := THashSHA2.Create(AHashVersion, True);
   SetLength(Result, TmpHash.GetHashSize);
 
   TmpHash.FHash.GetHMAC(AData, AKey, @Result[Low(Result)], DataLen, KeyLen);
