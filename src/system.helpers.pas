@@ -16,6 +16,9 @@ unit System.Helpers;
 interface
 
 uses
+  {$IFDEF WINDOWS}
+  Windows,
+  {$ENDIF}
   Types, SysUtils;
 
 type
@@ -38,6 +41,101 @@ type
     function ToByteArray(DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TBytes;
     function ToString: string;
   end;
+
+  TLocaleID = {$IFDEF WINDOWS}LCID{$ELSE}DWord{$ENDIF};
+  TLocaleOptions = (loInvariantLocale, loUserLocale);
+  TStringSplitOptions = (None, ExcludeEmpty);
+
+  TShortStringHelper = record helper for ShortString
+  public
+
+    class function ToInteger(const S: ShortString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: ShortString): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: ShortString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): ShortString; overload;
+    function ToLowerInvariant: ShortString;
+
+  end;
+
+  TAnsiStringHelper = record helper for AnsiString
+  public
+
+    class function ToInteger(const S: AnsiString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: AnsiString): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: string; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): AnsiString; overload;
+    function ToLowerInvariant: AnsiString;
+
+  end;
+
+  TRawByteStringHelper = record helper for RawByteString
+  public
+
+    class function ToInteger(const S: RawByteString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: RawByteString): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: RawByteString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): RawByteString; overload;
+    function ToLowerInvariant: RawByteString;
+
+  end;
+
+  TUTF8StringHelper = record helper for UTF8String
+  public
+
+    class function ToInteger(const S: UTF8String): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: UTF8String): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: UTF8String; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): UTF8String; overload;
+    function ToLowerInvariant: UTF8String;
+
+  end;
+
+  TWideStringHelper = record helper for WideString
+  public
+
+    class function ToInteger(const S: WideString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: WideString): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: WideString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): WideString; overload;
+    function ToLowerInvariant: WideString;
+
+  end;
+
+  TUnicodeStringHelper = record helper for UnicodeString
+  public
+
+    class function ToInteger(const S: UnicodeString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    //class function ToInt64(const S: UnicodeString): Int64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToInteger: Integer; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    //function ToInt64: Int64; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+
+    function ToLower: UnicodeString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function ToLower(LocaleID: TLocaleID): UnicodeString; overload;
+    function ToLowerInvariant: UnicodeString;
+
+  end;
+
 
 implementation
 
@@ -180,6 +278,241 @@ begin
   Result := GuidToString(Self);
   {$IFEND}
 end;
+
+{ TShortStringHelper }
+
+class function TShortStringHelper.ToInteger(const S: ShortString): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TShortStringHelper.ToInt64(const S: ShortString): Int64;
+//begin
+
+//end;
+
+function TShortStringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TShortStringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TShortStringHelper.ToLower: ShortString;
+begin
+
+end;
+
+function TShortStringHelper.ToLower(LocaleID: TLocaleID): ShortString;
+begin
+
+end;
+
+function TShortStringHelper.ToLowerInvariant: ShortString;
+begin
+
+end;
+
+
+{ TAnsiStringHelper }
+
+class function TAnsiStringHelper.ToInteger(const S: AnsiString): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TAnsiStringHelper.ToInt64(const S: AnsiString): Int64;
+//begin
+
+//end;
+
+function TAnsiStringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TAnsiStringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TAnsiStringHelper.ToLower: AnsiString;
+begin
+
+end;
+
+function TAnsiStringHelper.ToLower(LocaleID: TLocaleID): AnsiString;
+begin
+
+end;
+
+function TAnsiStringHelper.ToLowerInvariant: AnsiString;
+begin
+
+end;
+
+
+{ TRawByteStringHelper }
+
+class function TRawByteStringHelper.ToInteger(const S: RawByteString): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TRawByteStringHelper.ToInt64(const S: RawByteString): Int64;
+//begin
+
+//end;
+
+function TRawByteStringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TRawByteStringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TRawByteStringHelper.ToLower: RawByteString;
+begin
+
+end;
+
+function TRawByteStringHelper.ToLower(LocaleID: TLocaleID): RawByteString;
+begin
+
+end;
+
+function TRawByteStringHelper.ToLowerInvariant: RawByteString;
+begin
+
+end;
+
+
+{ TUTF8StringHelper }
+
+class function TUTF8StringHelper.ToInteger(const S: UTF8String): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TUTF8StringHelper.ToInt64(const S: UTF8String): Int64;
+//begin
+
+//end;
+
+function TUTF8StringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TUTF8StringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TUTF8StringHelper.ToLower: UTF8String;
+begin
+
+end;
+
+function TUTF8StringHelper.ToLower(LocaleID: TLocaleID): UTF8String;
+begin
+
+end;
+
+function TUTF8StringHelper.ToLowerInvariant: UTF8String;
+begin
+
+end;
+
+
+{ TWideStringHelper }
+
+class function TWideStringHelper.ToInteger(const S: WideString): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TWideStringHelper.ToInt64(const S: WideString): Int64;
+//begin
+
+//end;
+
+function TWideStringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TWideStringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TWideStringHelper.ToLower: WideString;
+begin
+
+end;
+
+function TWideStringHelper.ToLower(LocaleID: TLocaleID): WideString;
+begin
+
+end;
+
+function TWideStringHelper.ToLowerInvariant: WideString;
+begin
+
+end;
+
+
+{ TUnicodeStringHelper }
+
+class function TUnicodeStringHelper.ToInteger(const S: UnicodeString): Integer;
+begin
+  Result := SysUtils.StrToInt(S);
+end;
+
+//class function TUnicodeStringHelper.ToInt64(const S: UnicodeString): Int64;
+//begin
+
+//end;
+
+function TUnicodeStringHelper.ToInteger: Integer;
+begin
+  Result := Self.ToInteger(Self);
+end;
+
+//function TUnicodeStringHelper.ToInt64: Int64;
+//begin
+
+//end;
+
+
+function TUnicodeStringHelper.ToLower: UnicodeString;
+begin
+
+end;
+
+function TUnicodeStringHelper.ToLower(LocaleID: TLocaleID): UnicodeString;
+begin
+
+end;
+
+function TUnicodeStringHelper.ToLowerInvariant: UnicodeString;
+begin
+
+end;
+
+
 
 end.
 

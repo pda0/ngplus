@@ -124,7 +124,7 @@ type
     procedure CreateHashObject;
     procedure DestroyHashObject;
   public
-    class function Probe(AlgId: ALG_ID; out HashHandle: HCRYPTHASH{$IFDEF TEST};HashSize: Integer{$ENDIF}): Boolean; static;
+    class function Probe(AlgId: ALG_ID; out HashHandle: HCRYPTHASH{$IFDEF _TEST};HashSize: Integer{$ENDIF}): Boolean; static;
     constructor Create(AlgId: ALG_ID; HashHandle: HCRYPTHASH; HashSize, BlockSize: Integer);
     destructor Destroy; override;
     procedure Update(Data: PByte; Size: PtrUInt); override;
@@ -135,7 +135,7 @@ type
 
   TWinCNGHash = class(TAbstractWinHash)
   private const
-    {$IFDEF TEST}
+    {$IFDEF _TEST}
     BCRYPT_OBJECT_LENGTH: LPCWSTR = 'KeyObjectLength';
     {$ENDIF}
     BCRYPT_HASH_LENGTH: LPCWSTR = 'HashDigestLength';
@@ -176,7 +176,7 @@ type
     class function BCryptDestroyHash(hHash: BCRYPT_HASH_HANDLE): NTSTATUS;
     class function BCryptHashData(hHash: BCRYPT_HASH_HANDLE; pbInput: PUCHAR; cbInput, dwFlags: ULONG): NTSTATUS;
     class function BCryptFinishHash(hHash: BCRYPT_HASH_HANDLE; pbOutput: PUCHAR; cbOutput, dwFlags: ULONG): NTSTATUS;
-    class function Probe(AlgId: LPCWSTR; ForHmac: Boolean; out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF TEST};HashSize: Integer{$ENDIF}): Boolean; static;
+    class function Probe(AlgId: LPCWSTR; ForHmac: Boolean; out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF _TEST};HashSize: Integer{$ENDIF}): Boolean; static;
     procedure CreateHashObject(Key: PByte; KeyLen: PtrUInt);
     procedure DestroyHashObject;
   public
@@ -196,7 +196,7 @@ implementation
 
 uses
   {$IFDEF WITH_WINAPI}
-  JwaWinBase, JwaNtStatus, {$IFDEF TEST}JwaWinError,{$ENDIF} Math,
+  JwaWinBase, JwaNtStatus, {$IFDEF _TEST}JwaWinError,{$ENDIF} Math,
   {$ENDIF}
   System.Hash, System.Helpers.Strings;
 
@@ -460,23 +460,23 @@ begin
   {$ENDIF}
 end;
 
-class function TWinCryptoAPIHash.Probe(AlgId: ALG_ID; out HashHandle: HCRYPTHASH{$IFDEF TEST};HashSize: Integer{$ENDIF}): Boolean;
+class function TWinCryptoAPIHash.Probe(AlgId: ALG_ID; out HashHandle: HCRYPTHASH{$IFDEF _TEST};HashSize: Integer{$ENDIF}): Boolean;
 var
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   SizeLen: DWord;
   ActualHashSize: Integer;
-  {$ENDIF TEST}
+  {$ENDIF _TEST}
   LastError: Integer;
 begin
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   SizeLen := SizeOf(ActualHashSize);
   Assert(SizeLen = SizeOf(DWord));
-  {$ENDIF TEST}
+  {$ENDIF _TEST}
 
   HashHandle := GetHashObject(AlgId, LastError);
   Result := HashHandle <> 0;
 
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   if Result then
   begin
     WinCheck(CryptGetHashParam(HashHandle, HP_HASHSIZE, @ActualHashSize, SizeLen, 0));
@@ -485,7 +485,7 @@ begin
   else
     if (LastError <> 0) and (LastError <> NTE_BAD_ALGID) then
       RaiseLastOSError(LastError);
-  {$ENDIF TEST}
+  {$ENDIF _TEST}
 end;
 
 constructor TWinCryptoAPIHash.Create(AlgId: ALG_ID; HashHandle: HCRYPTHASH; HashSize, BlockSize: Integer);
@@ -586,16 +586,16 @@ var
   HmacKey: PHMACKey;
   HashKey: HCRYPTKEY;
   HmacHash: HCRYPTHASH;
-  {$IFDEF TEST}HMACSize, HMACSizeLen,{$ENDIF}
+  {$IFDEF _TEST}HMACSize, HMACSizeLen,{$ENDIF}
   HmacKeyLen, HashSize, Count: DWord;
 
   procedure Cleanup(LastError: Integer = 0);
   begin
     if HmacHash <> 0 then
-      {$IFDEF TEST}WinCheck({$ENDIF}CryptDestroyHash(HmacHash){$IFDEF TEST}){$ENDIF};
+      {$IFDEF _TEST}WinCheck({$ENDIF}CryptDestroyHash(HmacHash){$IFDEF _TEST}){$ENDIF};
 
     if HashKey <> 0 then
-      {$IFDEF TEST}WinCheck({$ENDIF}CryptDestroyKey(HashKey){$IFDEF TEST}){$ENDIF};
+      {$IFDEF _TEST}WinCheck({$ENDIF}CryptDestroyKey(HashKey){$IFDEF _TEST}){$ENDIF};
 
     if Assigned(HmacKey) then
       FreeMem(HmacKey);
@@ -647,14 +647,14 @@ begin
   end;
 
   HashSize := FHashSize;
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   HMACSizeLen := SizeOf(HMACSize);
   Assert(HMACSizeLen = SizeOf(DWord));
   if not CryptGetHashParam(HmacHash, HP_HASHSIZE, @HMACSize, HMACSizeLen, 0) then
     Cleanup(GetLastOSError);
 
   Assert(HMACSize = HashSize);
-  {$ENDIF TEST}
+  {$ENDIF _TEST}
 
   if not CryptGetHashParam(HmacHash, HP_HASHVAL, Result, HashSize, 0) then
     Cleanup(GetLastOSError);
@@ -699,7 +699,7 @@ var
   ErrorText: string;
   NtLibHandle: TLibHandle;
 begin
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   if not NT_SUCCESS(RetVal) then
   {$ELSE}
   if NT_ERROR(RetVal) then
@@ -894,12 +894,12 @@ begin
 end;
 
 class function TWinCNGHash.Probe(AlgId: LPCWSTR; ForHmac: Boolean;
-  out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF TEST};HashSize: Integer{$ENDIF}):
+  out AlgHandle: BCRYPT_ALG_HANDLE{$IFDEF _TEST};HashSize: Integer{$ENDIF}):
   Boolean;
 const
   MS_PRIMITIVE_PROVIDER: LPCWSTR = 'Microsoft Primitive Provider';
 var
-  {$IFDEF TEST}
+  {$IFDEF _TEST}
   ActualHashSize, ResLen,
   {$ENDIF}
   Flags: DWord;
@@ -1056,7 +1056,7 @@ var
   CaAlgId: ALG_ID;
   CngAlgHandle: TWinCNGHash.BCRYPT_ALG_HANDLE;
   CaHashHandle: HCRYPTHASH;
-  {$IFDEF TEST}HashSize: Integer;{$ENDIF}
+  {$IFDEF _TEST}HashSize: Integer;{$ENDIF}
   {$ENDIF WITH_WINAPI}
 begin
   {$IFDEF WITH_OPENSSL}
@@ -1071,7 +1071,7 @@ begin
 (*  if CheckWin32Version(6, 0) then
   begin
     CngAlgId := CNG_MAP[AHash];
-    {$IFDEF TEST}
+    {$IFDEF _TEST}
     HashSize := HASH_PARAMS[AHash].HashSize;
     if Assigned(CngAlgId) and TWinCNGHash.Probe(CngAlgId, ForHmac, CngAlgHandle, HashSize) then
     {$ELSE}
@@ -1083,17 +1083,22 @@ begin
   end; *)
 
   { CryptoAPI }
-  CaAlgId := CRYPTO_MAP[AHash];
-  {$IFDEF TEST}
-  HashSize := HASH_PARAMS[AHash].HashSize;
-  if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle, HashSize) then
-  {$ELSE}
-  if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle) then
-  {$ENDIF}
-    Exit(TWinCryptoAPIHash.Create(CaAlgId, CaHashHandle,
-      HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
-    );
-  {$ENDIF WITH_WINAPI}
+  { Looks like Windows prior Vista have a bug in HMAC computation code, causing
+    wrong result if Data is empty }
+  if (not ForHmac) or CheckWin32Version(6, 0) then
+  begin
+    CaAlgId := CRYPTO_MAP[AHash];
+    {$IFDEF _TEST}
+    HashSize := HASH_PARAMS[AHash].HashSize;
+    if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle, HashSize) then
+    {$ELSE}
+    if (CaAlgId <> 0) and TWinCryptoAPIHash.Probe(CaAlgId, CaHashHandle) then
+    {$ENDIF}
+      Exit(TWinCryptoAPIHash.Create(CaAlgId, CaHashHandle,
+        HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
+      );
+    {$ENDIF WITH_WINAPI}
+  end;
 
   raise Exception.Create('TODO: Not implemented yet');
 end;

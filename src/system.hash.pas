@@ -36,34 +36,34 @@ type
       overload; static;
     class function DigestAsStringGUID(const ADigest: TBytes): string; static;
     class function GetRandomString(const ALen: Integer = 10): string; static;
-    class function ToBigEndian(AValue: Cardinal): Cardinal; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function ToBigEndian(AValue: UInt64): UInt64; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function ToBigEndian(AValue: Cardinal): Cardinal; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function ToBigEndian(AValue: UInt64): UInt64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
   end;
 
   THashMD5 = record
   private
     FHash: IHashEngine;
     FFinalized: Boolean;
-    procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure CheckFinalized; {$IFNDEF _TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
-    class function Create(ForHmac: Boolean): THashMD5; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create(ForHmac: Boolean): THashMD5; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
   public
-    class function Create: THashMD5; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create: THashMD5; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Reset; {$IFNDEF _TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
-    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF _TEST}inline;{$ENDIF}
     procedure Update(constref Input: AnsiString); overload;
-    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetBlockSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetHashSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsBytes: TBytes; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsString: string; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHashBytes(constref AData: AnsiString): TBytes; overload; static;
     class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
     class function GetHashString(constref AString: AnsiString): string; overload; static;
     class function GetHashString(constref AString: UnicodeString): string; overload; static;
-    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes): TBytes; overload; static;
@@ -77,26 +77,26 @@ type
   private
     FHash: IHashEngine;
     FFinalized: Boolean;
-    procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure CheckFinalized; {$IFNDEF _TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt): TBytes; static;
-    class function Create(ForHmac: Boolean): THashSHA1; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create(ForHmac: Boolean): THashSHA1; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
   public
-    class function Create: THashSHA1; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create: THashSHA1; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Reset; {$IFNDEF _TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
-    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetBlockSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetHashSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsBytes: TBytes; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsString: string; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHashBytes(constref AData: AnsiString): TBytes; overload; static;
     class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
     class function GetHashString(constref AString: AnsiString): string; overload; static;
     class function GetHashString(constref AString: UnicodeString): string; overload; static;
-    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: AnsiString): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHMACAsBytes(constref AData, AKey: AnsiString): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData, AKey: UnicodeString): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes): TBytes; overload; static;
@@ -112,9 +112,9 @@ type
   private
     FHash: IHashEngine;
     FFinalized: Boolean;
-    procedure CheckFinalized; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure CheckFinalized; {$IFNDEF _TEST}inline;{$ENDIF}
     class function InternalGetHMAC(constref AData, AKey: PByte; DataLen, KeyLen: PtrUInt; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; static;
-    class function Create(AHashVersion: TSHA2Version; ForHmac: Boolean): THashSHA2; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create(AHashVersion: TSHA2Version; ForHmac: Boolean): THashSHA2; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
   {$IFDEF CLOSER_TO_DELPHI}
   public
   {$ELSE}
@@ -122,22 +122,22 @@ type
   {$ENDIF CLOSER_TO_DELPHI}
     FVersion: TSHA2Version;
   public
-    class function Create(AHashVersion: TSHA2Version = TSHA2Version.SHA256): THashSHA2; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Reset; {$IFNDEF TEST}inline;{$ENDIF}
+    class function Create(AHashVersion: TSHA2Version = TSHA2Version.SHA256): THashSHA2; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Reset; {$IFNDEF _TEST}inline;{$ENDIF}
     procedure Update(constref AData; ALength: HashLen); overload;
-    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetBlockSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function GetHashSize: Integer; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsBytes: TBytes; {$IFNDEF TEST}inline;{$ENDIF}
-    function HashAsString: string; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetBlockSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function GetHashSize: Integer; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsBytes: TBytes; {$IFNDEF _TEST}inline;{$ENDIF}
+    function HashAsString: string; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHashBytes(constref AData: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
     class function GetHashBytes(constref AData: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
     class function GetHashString(constref AString: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
     class function GetHashString(constref AString: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static;
-    class function GetHMAC(constref AData, AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHMAC(constref AData, AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function GetHMAC(constref AData, AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): string; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function GetHMACAsBytes(constref AData, AKey: AnsiString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData, AKey: UnicodeString; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
     class function GetHMACAsBytes(constref AData: AnsiString; constref AKey: TBytes; AHashVersion: TSHA2Version = TSHA2Version.SHA256): TBytes; overload; static;
@@ -152,10 +152,10 @@ type
   public
     class function Create: THashBobJenkins; static;
     procedure Reset(AInitialValue: Integer = 0);
-    procedure Update(constref AData; ALength: HashLen); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: AnsiString); overload; {$IFNDEF TEST}inline;{$ENDIF}
-    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF TEST}inline;{$ENDIF}
+    procedure Update(constref AData; ALength: HashLen); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref AData: TBytes; ALength: HashLen = 0); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: AnsiString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
+    procedure Update(constref Input: UnicodeString); overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function HashAsBytes: TBytes;
     function HashAsInteger: Integer;
     function HashAsString: string;
@@ -163,9 +163,9 @@ type
     class function GetHashBytes(constref AData: UnicodeString): TBytes; overload; static;
     class function GetHashString(constref AString: AnsiString): string; overload; static;
     class function GetHashString(constref AString: UnicodeString): string; overload; static;
-    class function GetHashValue(constref AData: AnsiString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashValue(constref AData: UnicodeString): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
-    class function GetHashValue(constref AData; ALength: Integer; AInitialValue: Integer = 0): Integer; overload; static; {$IFNDEF TEST}inline;{$ENDIF}
+    class function GetHashValue(constref AData: AnsiString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function GetHashValue(constref AData: UnicodeString): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
+    class function GetHashValue(constref AData; ALength: Integer; AInitialValue: Integer = 0): Integer; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
   end;
 
 implementation

@@ -11,7 +11,9 @@
  **********************************************************************}
 unit Perf.Test;
 
-{$IFNDEF FPC}{$LEGACYIFEND ON}{$ENDIF FPC}
+{$I ../src/delphi.inc}
+{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
+{$I ../src/ngplus.inc}  
 
 interface
 
