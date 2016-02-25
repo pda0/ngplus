@@ -9,6 +9,8 @@
 *.ini
 *.identcache
 *.stat
+*.local
+*.res
 */backup
 */*/backup
 */__history

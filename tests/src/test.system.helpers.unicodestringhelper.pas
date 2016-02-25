@@ -1,4 +1,4 @@
-{**********************************************************************
+﻿{**********************************************************************
     Copyright(c) 2016 pda <pda2@yandex.ru>
 
     See the file COPYING.FPC, included in this distribution,
@@ -25,51 +25,963 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE3_PLUS)}
 type
   TTestUnicodeStringHelper = class(TTestCase)
-  strict private
-    FStr: UnicodeString;
   private
+    procedure JoinOffRange;
+    procedure ToBooleanEmpty;
+    procedure TDoubleEmpty;
+    procedure TExtendedEmpty;
     procedure TIntegerEmpty;
+    procedure TIntegerToBig;
+    procedure TSingleEmpty;
+    {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
+    procedure TInt64Empty;
+    {$IFEND}
   published
-
+    procedure TestCreate;
+    procedure TestCompare;
+    procedure TestCompareOrdinal;
+    procedure TestCompareText;
+    procedure TestCompareTo;
+    procedure TestContains;
+    procedure TestCopy;
+    procedure TestCopyTo;
+    procedure TestCountChar;
+    procedure TestDeQuotedString;
+    procedure TestEnds;
+    procedure TestEquals;
+    procedure TestFormat;
+    procedure TestIndexOf;
+    procedure TestIndexOfAny;
+    procedure TestInsert;
+    procedure TestIsDelimiter;
+    procedure TestEmpty;
+    procedure TestJoin;
+    procedure TestLastDelimiter;
+    procedure TestLastIndexOf;
+    procedure TestLastIndexOfAny;
+    procedure TestLowerCase;
+    procedure TestPadding;
+    procedure TestQuotedString;
+    procedure TestRemove;
+    procedure TestReplace;
+    procedure TestSplit;
+    procedure TestStartsWith;
+    procedure TestSubstring;
+    procedure TestToBoolean;
+    procedure TestToCharArray;
+    procedure TestToDouble;
+    procedure TestToExtended;
     procedure TestToInteger;
     procedure TestToLower;
     procedure TestToLowerInvariant;
-
+    procedure TestToSingle;
+    procedure TestToUpper;
+    procedure TestToUpperInvariant;
+    procedure TestTrim;
+    procedure TestTrimLeft;
+    procedure TestTrimRight;
+    procedure TestUpperCase;
+    procedure TestChars;
+    procedure TestLength;
+    {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
+    procedure TestParse;
+    {$IFEND}
+    {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
+    procedure TestToInt64;
+    procedure TestIndexOfAnyUnquoted;
+    {$IFEND}
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE3_PLUS)}
+const
+  TEST_STR: UnicodeString = 'This is a string.';
+  TEST_INT64: Int64 = 3000000000;
+
+type
+  TUChar = {$IFDEF FPC}UnicodeChar{$ELSE}WideChar{$ENDIF};
+
 { TTestUnicodeStringHelper }
+
+procedure TTestUnicodeStringHelper.TestCreate;
+var
+  Str: UnicodeString;
+begin
+  Str := UnicodeString.Create(TUChar('a'), 10);
+  CheckEquals(UnicodeString('aaaaaaaaaa'), Str);
+
+  Str := UnicodeString.Create([]);
+  CheckEquals(UnicodeString(''), Str);
+
+  Str := UnicodeString.Create(['1', '2', '3', '4', '5']);
+  CheckEquals(UnicodeString('12345'), Str);
+
+  Str := UnicodeString.Create(['1', '2', '3', '4', '5'], 1, 2);
+  CheckEquals(UnicodeString('23'), Str);
+end;
+
+procedure TTestUnicodeStringHelper.TestCompare;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := 'String A';
+  Str2 := 'String B';
+  CheckTrue(UnicodeString.Compare(Str1, Str2) < 0);
+  CheckEquals(0, UnicodeString.Compare('String B', Str2));
+  CheckFalse(UnicodeString.Compare('String B', 'String A') < 0);
+
+  Str2 := 'String a';
+  CheckNotEquals(0, UnicodeString.Compare(Str1, Str2));
+  CheckEquals(0, UnicodeString.Compare(Str1, Str2, True));
+  CheckNotEquals(0, UnicodeString.Compare(Str1, Str2, False));
+end;
+
+procedure TTestUnicodeStringHelper.TestCompareOrdinal;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := 'String A';
+  Str2 := 'String B';
+  CheckEquals(0, UnicodeString.CompareOrdinal('String B', Str2));
+  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, Str2));
+  CheckEquals(1, UnicodeString.CompareOrdinal(Str2, Str1));
+
+  CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 0, Str2, 0, 7));
+  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 0, Str2, 0, 8));
+  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 1));  //!!!
+  CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 0));
+
+  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 2));
+  CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 7 + Low(Str1), Str2, 7 + Low(Str2), 1));
+  CheckEquals(0, UnicodeString.CompareOrdinal('', ''));
+end;
+
+procedure TTestUnicodeStringHelper.TestCompareText;
+begin
+  CheckEquals(0, UnicodeString.CompareText('', ''));
+  CheckEquals(-1, UnicodeString.CompareText('1', '2'));
+  CheckEquals(1, UnicodeString.CompareText('2', '1'));
+  CheckEquals(0, UnicodeString.CompareText(
+    UnicodeString('HeLlo 123'),
+    UnicodeString('hello 123')
+  ));
+  CheckFalse(0 = UnicodeString.CompareText(
+    UnicodeString('HeLlo ПрИвЕт aLlÔ 您好 123'),
+    UnicodeString('hello привет allô 您好 123')
+  ));
+end;
+
+procedure TTestUnicodeStringHelper.TestCompareTo;
+var
+  Str: UnicodeString;
+begin
+  Str := 'String A';
+  CheckEquals(0, Str.CompareTo('String A'));
+  CheckEquals(-1, Str.CompareTo('String B'));
+  CheckEquals(-32, Str.CompareTo('String a'));
+end;
+
+procedure TTestUnicodeStringHelper.TestContains;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckTrue(Str.Contains('This'));
+  CheckTrue(Str.Contains('str'));
+  CheckFalse(Str.Contains('suxx'));
+  CheckFalse(Str.Contains(''));
+
+  Str := '';
+  CheckFalse(Str.Contains(''));
+end;
+
+procedure TTestUnicodeStringHelper.TestCopy;
+begin
+  CheckEquals(TEST_STR, UnicodeString.Copy(TEST_STR));
+end;
+
+procedure TTestUnicodeStringHelper.TestCopyTo;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := TEST_STR;
+  Str2 := 'S';
+  Str2.CopyTo(0, Str1[10 + Low(Str1)], 0, Str2.Length);
+
+  CheckEquals(UnicodeString('This is a String.'), Str1);
+end;
+
+procedure TTestUnicodeStringHelper.TestCountChar;
+var
+  Str: UnicodeString;
+begin
+  Str := 'This string contains 5 occurrences of s';
+
+  CheckEquals(5, Str.CountChar('s'));
+end;
+
+procedure TTestUnicodeStringHelper.TestDeQuotedString;
+var
+  Str1, Str2, Str3: UnicodeString;
+begin
+  Str1 := 'This function illustrates the functionality of the QuotedString method.';
+  Str2 := '''This function illustrates the functionality of the QuotedString method.''';
+  Str3 := 'fThis ffunction illustrates the ffunctionality off the QuotedString method.f';
+  CheckEquals(Str1, Str2.DeQuotedString);
+  CheckEquals(Str1, Str3.DeQuotedString('f'));
+end;
+
+procedure TTestUnicodeStringHelper.TestEnds;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckTrue(UnicodeString.EndsText('string.', Str));
+  CheckTrue(Str.EndsWith('String.', True));
+  CheckFalse(Str.EndsWith('String.', False));
+  CheckTrue(Str.EndsWith('string.'));
+  CheckFalse(Str.EndsWith('String.'));
+  CheckFalse(Str.EndsWith('This is a string!!'));
+end;
+
+procedure TTestUnicodeStringHelper.TestEquals;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := 'A';
+  Str2 := 'A';
+
+  CheckTrue(UnicodeString.Equals(Str1, Str1));
+  CheckTrue(UnicodeString.Equals('B', 'B'));
+  CheckFalse(UnicodeString.Equals('B', 'C'));
+  CheckTrue(Str1.Equals(Str1));
+  CheckTrue(Str1 = Str2);
+  CheckFalse(Str1 <> Str2);
+  CheckTrue(Str1 = 'A');
+  CheckTrue('A' = Str1);
+end;
+
+procedure TTestUnicodeStringHelper.TestFormat;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := 'This is a %s';
+  Str2 := 'string.';
+
+  CheckEquals(TEST_STR, UnicodeString.Format(Str1, ['string.']));
+  CheckEquals(TEST_STR, UnicodeString.Format(Str1, [UnicodeString(Str2)]));
+end;
+
+procedure TTestUnicodeStringHelper.TestIndexOf;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(3, Str.IndexOf('s', 0, 5));
+  CheckEquals(2, Str.IndexOf('is', 0));
+  CheckEquals(16, Str.IndexOf('.'));
+  CheckEquals(-1, Str.IndexOf('?'));
+  CheckEquals(-1, Str.IndexOf(''));
+  CheckEquals(-1, Str.IndexOf('s', 8, 2));
+  CheckEquals(10, Str.IndexOf('s', 8, 3));
+  CheckEquals(-1, Str.IndexOf('s', 8, 1));
+
+  Str := '';
+  CheckEquals(-1, Str.IndexOf('s'));
+  CheckEquals(-1, Str.IndexOf('s', 0, 0));
+end;
+
+procedure TTestUnicodeStringHelper.TestIndexOfAny;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(3, Str.IndexOfAny(['w', 's', 'a']));
+  CheckEquals(6, Str.IndexOfAny(['w', 's', 'a'], 4));
+  CheckEquals(-1, Str.IndexOfAny(['w', 's', 'a'], 4, 2));
+  CheckEquals(6, Str.IndexOfAny(['w', 's', 'a'], 4, 3));
+  CheckEquals(-1, Str.IndexOfAny([]));
+
+  Str := '';
+  CheckEquals(-1, Str.IndexOfAny(['w', 's', 'a']));
+  CheckEquals(-1, Str.IndexOfAny(['T'], 0, 0));
+end;
+
+procedure TTestUnicodeStringHelper.TestInsert;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := 'This a string.';
+  Str2 := '';
+
+  CheckEquals(TEST_STR, Str1.Insert(5, 'is '));
+  CheckEquals(UnicodeString('Yes. This is a string.'), Str1.Insert(0, 'Yes. '));
+  CheckEquals(UnicodeString('Yes. This is a string.!'), Str1.Insert(22, '!'));
+  CheckEquals(UnicodeString('Yes. This is a string.!!'), Str1.Insert(100, '!'));
+
+  CheckEquals(UnicodeString('@'), Str2.Insert(0, '@'));
+end;
+
+procedure TTestUnicodeStringHelper.TestIsDelimiter;
+var
+  Str: UnicodeString;
+begin
+  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  CheckFalse(Str.IsDelimiter('is', 0));
+  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
+
+  Str := TEST_STR;
+
+  CheckTrue(Str.IsDelimiter('is', 5));
+  CheckTrue(Str.IsDelimiter('is', 6));
+  CheckFalse(Str.IsDelimiter('is', 7));
+  CheckFalse(Str.IsDelimiter('is', 20));
+end;
+
+procedure TTestUnicodeStringHelper.TestEmpty;
+var
+  Str: UnicodeString;
+begin
+  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  CheckTrue(Str.IsEmpty);
+  CheckTrue(UnicodeString.IsNullOrEmpty(Str));
+  CheckTrue(UnicodeString.IsNullOrWhiteSpace(Str));
+  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
+  Str := #0;
+  CheckFalse(Str.IsEmpty);
+  CheckFalse(UnicodeString.IsNullOrEmpty(Str));
+  CheckTrue(UnicodeString.IsNullOrWhiteSpace(Str));
+
+  Str := TEST_STR;
+  CheckFalse(Str.IsEmpty);
+  CheckFalse(UnicodeString.IsNullOrEmpty(Str));
+  CheckFalse(UnicodeString.IsNullOrWhiteSpace(Str));
+
+  Str := #$00#$01#$02#$03#$04#$05#$06#$07#$08#$09#$0a#$0b#$0c#$0d#$0e#$0f#$10+
+    #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
+  CheckTrue(UnicodeString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestUnicodeStringHelper.JoinOffRange;
+begin
+  UnicodeString.Join(',', ['String1', 'String2', 'String3'], 3, 2);
+end;
+
+procedure TTestUnicodeStringHelper.TestJoin;
+var
+  UStr: UnicodeString;
+begin
+  CheckEquals(UnicodeString(''),
+    UnicodeString.Join(',', [], 0, 0));
+  CheckEquals(UnicodeString('String1,String2,String3'),
+    UnicodeString.Join(',', ['String1', 'String2', 'String3']));
+  CheckEquals(UnicodeString('String1String2String3'),
+    UnicodeString.Join('', ['String1', 'String2', 'String3']));
+  CheckEquals(UnicodeString('String1->String2->String3'),
+    UnicodeString.Join('->', ['String1', 'String2', 'String3']));
+  CheckEquals(UnicodeString('String2,String3'),
+    UnicodeString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
+  CheckException(JoinOffRange, ERangeError);
+  CheckEquals(UnicodeString('String1'),
+    UnicodeString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
+  CheckEquals(UnicodeString(''),
+    UnicodeString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
+
+  UStr := 'Строка';
+  CheckEquals(
+    UnicodeString('String,Строка,True,10,') + UnicodeString(SysUtils.FloatToStr(3.14)) + UnicodeString(',TTestUnicodeStringHelper'),
+    UnicodeString.Join(',', ['String', UStr, True, 10, 3.14, Self])
+  );
+end;
+
+procedure TTestUnicodeStringHelper.TestLastDelimiter;
+var
+  Str: UnicodeString;
+begin
+  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  CheckEquals(-1, Str.LastDelimiter('is'));
+  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
+
+  Str := TEST_STR;
+
+  CheckEquals(13, Str.LastDelimiter('is'));
+end;
+
+procedure TTestUnicodeStringHelper.TestLastIndexOf;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(-1, Str.LastIndexOf(TUChar('s'), 16, 5));
+  CheckEquals(16, Str.LastIndexOf(TUChar('.')));
+  CheckEquals(-1, Str.LastIndexOf(TUChar('?')));
+  CheckEquals(-1, Str.LastIndexOf(TUChar('s'), 8, 2));
+  CheckEquals(6, Str.LastIndexOf(TUChar('s'), 8, 3));
+  CheckEquals(-1, Str.LastIndexOf(TUChar('s'), 8, 1));
+
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('s'), 16, 5));
+  CheckEquals(5, Str.LastIndexOf(UnicodeString('is'), 16));
+  CheckEquals(16, Str.LastIndexOf(UnicodeString('.')));
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('?')));
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('')));
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('s'), 8, 2));
+  CheckEquals(6, Str.LastIndexOf(UnicodeString('s'), 8, 3));
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('s'), 8, 1));
+
+  Str := '';
+  CheckEquals(-1, Str.LastIndexOf(TUChar('s')));
+  CheckEquals(-1, Str.LastIndexOf(TUChar('s'), 0, 0));
+
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('s')));
+  CheckEquals(-1, Str.LastIndexOf(UnicodeString('s'), 0, 0));
+end;
+
+procedure TTestUnicodeStringHelper.TestLastIndexOfAny;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(0, Str.LastIndexOfAny(['T'], 0));
+  CheckEquals(-1, Str.LastIndexOfAny(['T'], 0, 0));
+  CheckEquals(0, Str.LastIndexOfAny(['T'], 0, 1));
+  CheckEquals(10, Str.LastIndexOfAny(['w', 's', 'a']));
+  CheckEquals(10, Str.LastIndexOfAny(['w', 's', 'a'], 11));
+  CheckEquals(10, Str.LastIndexOfAny(['w', 's', 'a'], 11, 2));
+  CheckEquals(-1, Str.LastIndexOfAny(['w', 's', 'a'], 11, 1));
+  CheckEquals(3, Str.LastIndexOfAny(['w', 's', 'a'], 4, 2));
+  CheckEquals(-1, Str.LastIndexOfAny(['w', 's', 'a'], 4, 1));
+  CheckEquals(-1, Str.LastIndexOfAny(['w', 's', 'a'], 4, 0));
+  CheckEquals(-1, Str.LastIndexOfAny([]));
+
+  Str := '';
+  CheckEquals(-1, Str.LastIndexOfAny(['w', 's', 'a']));
+  CheckEquals(-1, Str.LastIndexOfAny(['T'], 0, 0));
+end;
+
+procedure TTestUnicodeStringHelper.TestLowerCase;
+begin
+  CheckEquals('testАБВГ', UnicodeString.LowerCase('TESTАБВГ', loInvariantLocale));
+  CheckEquals('testабвг', UnicodeString.LowerCase('TESTАБВГ', loUserLocale));
+end;
+
+procedure TTestUnicodeStringHelper.TestPadding;
+var
+  Str1, Str2: UnicodeString;
+begin
+  Str1 := '';
+  Str2 := '';
+  CheckEquals(UnicodeString(''), Str1.PadLeft(0));
+  CheckEquals(UnicodeString('  '), Str1.PadLeft(2));
+  CheckEquals(UnicodeString(''), Str2.PadRight(0));
+  CheckEquals(UnicodeString('  '), Str2.PadRight(2));
+
+  Str1 := '12345';
+  Str2 := '123';
+
+  CheckEquals(UnicodeString('12345'), Str1.PadLeft(5));
+  CheckEquals(UnicodeString('  123'), Str2.PadLeft(5));
+  CheckEquals(UnicodeString('123'), Str2.PadLeft(0));
+
+  CheckEquals(UnicodeString('12345'), Str1.PadRight(5));
+  CheckEquals(UnicodeString('123  '), Str2.PadRight(5));
+  CheckEquals(UnicodeString('123'), Str2.PadRight(0));
+end;
+
+procedure TTestUnicodeStringHelper.TestQuotedString;
+var
+  Str1: UnicodeString;
+begin
+  Str1 := 'This function illustrates the functionality of the QuotedString method.';
+  CheckEquals(UnicodeString('''This function illustrates the functionality of the QuotedString method.'''), Str1.QuotedString);
+  CheckEquals(UnicodeString('fThis ffunction illustrates the ffunctionality off the QuotedString method.f'), Str1.QuotedString(TUChar('f')));
+end;
+
+procedure TTestUnicodeStringHelper.TestRemove;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(UnicodeString('This'), Str.Remove(4));
+  CheckEquals(UnicodeString('This string.'), Str.Remove(5, 5));
+end;
+
+procedure TTestUnicodeStringHelper.TestReplace;
+var
+  Str: UnicodeString;
+begin
+  Str := TEST_STR;
+
+  CheckEquals(UnicodeString('This is one string.'), Str.Replace('a', 'one'));
+  CheckEquals(UnicodeString('This is 1 string.'), Str.Replace(
+    TUChar('a'),
+    TUChar('1'))
+  );
+end;
+
+procedure TTestUnicodeStringHelper.TestSplit;
+var
+  Str1: UnicodeString;
+  ResList: TArray<UnicodeString>;
+begin
+  Str1 := 'one, two, and three., four';
+
+  ResList := Str1.Split([#$2c{','}]);
+  CheckEquals(4, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' and three.'), ResList[2]);
+  CheckEquals(UnicodeString(' four'), ResList[3]);
+
+  ResList := Str1.Split([',']);
+  CheckEquals(4, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' and three.'), ResList[2]);
+  CheckEquals(UnicodeString(' four'), ResList[3]);
+
+  ResList := Str1.Split([#$2c{','}], 2);
+  CheckEquals(2, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+
+  ResList := Str1.Split([','], 2);
+  CheckEquals(2, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+
+  ResList := Str1.Split([#$2c{','}, #$2e{'.'}]);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' and three'), ResList[2]);
+  CheckEquals(UnicodeString(''), ResList[3]);
+  CheckEquals(UnicodeString(' four'), ResList[4]);
+
+  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], None);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' and three'), ResList[2]);
+  CheckEquals(UnicodeString(''), ResList[3]);
+  CheckEquals(UnicodeString(' four'), ResList[4]);
+
+  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], ExcludeEmpty);
+  CheckEquals(4, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' and three'), ResList[2]);
+  CheckEquals(UnicodeString(' four'), ResList[3]);
+
+  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], ExcludeEmpty);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' '), ResList[2]);
+  CheckEquals(UnicodeString(' three'), ResList[3]);
+  CheckEquals(UnicodeString(' four'), ResList[4]);
+
+  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], 5, None);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString('one'), ResList[0]);
+  CheckEquals(UnicodeString(' two'), ResList[1]);
+  CheckEquals(UnicodeString(' '), ResList[2]);
+  CheckEquals(UnicodeString(' three'), ResList[3]);
+  CheckEquals(UnicodeString(''), ResList[4]);
+
+  Str1 := ',one, two, and three., four,';
+  ResList := Str1.Split([#$2c{','}]);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString(''), ResList[0]);
+  CheckEquals(UnicodeString('one'), ResList[1]);
+  CheckEquals(UnicodeString(' two'), ResList[2]);
+  CheckEquals(UnicodeString(' and three.'), ResList[3]);
+  CheckEquals(UnicodeString(' four'), ResList[4]);
+
+  Str1 := '不one不 two不 and three.不 four不';
+  ResList := Str1.Split([TUChar('不')]);
+  CheckEquals(5, Length(ResList));
+  CheckEquals(UnicodeString(''), ResList[0]);
+  CheckEquals(UnicodeString('one'), ResList[1]);
+  CheckEquals(UnicodeString(' two'), ResList[2]);
+  CheckEquals(UnicodeString(' and three.'), ResList[3]);
+  CheckEquals(UnicodeString(' four'), ResList[4]);
+end;
+
+procedure TTestUnicodeStringHelper.TestStartsWith;
+var
+  Str1: UnicodeString;
+begin
+  Str1 := TEST_STR;
+
+  CheckTrue(Str1.StartsWith('This'));
+  CheckFalse(Str1.StartsWith('THIS', False));
+  CheckTrue(Str1.StartsWith('THIS', True));
+end;
+
+procedure TTestUnicodeStringHelper.TestSubstring;
+var
+  Str: UnicodeString;
+begin
+  Str := 'This is a string.';
+
+  CheckEquals(UnicodeString('is a string.'), Str.Substring(5));
+  CheckEquals(UnicodeString('is'), Str.Substring(5, 2));
+  CheckEquals(UnicodeString('.'), Str.Substring(16));
+  CheckEquals(UnicodeString(''), Str.Substring(17));
+  CheckEquals(UnicodeString(''), Str.Substring(17, 10));
+  CheckEquals(UnicodeString('This is a string.'), Str.Substring(0));
+end;
+
+procedure TTestUnicodeStringHelper.ToBooleanEmpty;
+begin
+  UnicodeString.ToBoolean('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToBoolean;
+var
+  Str: UnicodeString;
+begin
+  Str := '0';
+  CheckFalse(Str.ToBoolean);
+
+  CheckFalse(UnicodeString.ToBoolean('0'));
+  CheckFalse(UnicodeString.ToBoolean('0' + TUChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckTrue(UnicodeString.ToBoolean('-1'));
+  CheckTrue(UnicodeString.ToBoolean('1'));
+  CheckTrue(UnicodeString.ToBoolean('11' + TUChar(FormatSettings.DecimalSeparator) + '12'));
+  CheckTrue(UnicodeString.ToBoolean(UnicodeString(SysUtils.TrueBoolStrs[0])));
+  CheckFalse(UnicodeString.ToBoolean(UnicodeString(SysUtils.FalseBoolStrs[0])));
+  CheckTrue(UnicodeString.ToBoolean('TRUE'));
+  CheckException(ToBooleanEmpty, EConvertError);
+end;
+
+procedure TTestUnicodeStringHelper.TestToCharArray;
+var
+  Str: UnicodeString;
+  CharList: TArray<TUChar>;
+begin
+  Str := '123';
+
+  CharList := Str.ToCharArray;
+  CheckEquals(3, Length(CharList));
+  CheckEquals(TUChar('1'), CharList[0]);
+  CheckEquals(TUChar('2'), CharList[1]);
+  CheckEquals(TUChar('3'), CharList[2]);
+
+  CharList := Str.ToCharArray(1, 2);
+  CheckEquals(2, Length(CharList));
+  CheckEquals(TUChar('2'), CharList[0]);
+  CheckEquals(TUChar('3'), CharList[1]);
+
+  CharList := Str.ToCharArray(0, 0);
+  CheckEquals(0, Length(CharList));
+end;
+
+procedure TTestUnicodeStringHelper.TDoubleEmpty;
+begin
+  UnicodeString.ToDouble('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToDouble;
+var
+  Str, StrVal: UnicodeString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToDouble);
+
+  StrVal := '1' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToDouble(StrVal));
+  StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToDouble(StrVal));
+  CheckException(TDoubleEmpty, EConvertError);
+end;
+
+procedure TTestUnicodeStringHelper.TExtendedEmpty;
+begin
+  UnicodeString.ToExtended('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToExtended;
+var
+  Str: UnicodeString;
+  StrVal: UnicodeString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToExtended);
+
+  StrVal := '1' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToExtended(StrVal));
+  StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToExtended(StrVal));
+  CheckException(TExtendedEmpty, EConvertError);
+end;
 
 procedure TTestUnicodeStringHelper.TIntegerEmpty;
 begin
   UnicodeString.ToInteger('');
 end;
 
-procedure TTestUnicodeStringHelper.TestToInteger;
+procedure TTestUnicodeStringHelper.TIntegerToBig;
 begin
-  FStr := '1';
-  CheckEquals(StrToInt('1'), FStr.ToInteger);
+  UnicodeString.ToInteger('3000000000');
+end;
 
-  CheckEquals(StrToInt('2'), UnicodeString.ToInteger('2'));
-  CheckEquals(StrToInt('-1'), UnicodeString.ToInteger('-1'));
+procedure TTestUnicodeStringHelper.TestToInteger;
+var
+  Str: UnicodeString;
+begin
+  Str := '1';
+  CheckEquals(1, Str.ToInteger);
+
+  CheckEquals(2, UnicodeString.ToInteger('2'));
+  CheckEquals(-1, UnicodeString.ToInteger('-1'));
   CheckException(TIntegerEmpty, EConvertError);
+  CheckException(TIntegerToBig, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestToLower;
+var
+  Str: UnicodeString;
 begin
+  Str := '123ONE';
+  CheckEquals(UnicodeString('123one'), Str.ToLower);
 
+  {$IFDEF WINDOWS}
+  Str := 'ONEОДИН不怕当小白鼠';
+  {$HINTS OFF}
+  CheckEquals('oneодин不怕当小白鼠', Str.ToLower($0409)); { English - United States }
+  CheckEquals('oneодин不怕当小白鼠', Str.ToLower($0419)); { Russian }
+
+  { See http://lotusnotus.com/lotusnotus_en.nsf/dx/dotless-i-tolowercase-and-touppercase-functions-use-responsibly.htm }
+  Str := 'TITLE';
+  CheckEquals('tıtle', Str.ToLower($041f)); { Turkish }
+  Str := 'TİTLE';
+  CheckEquals(UnicodeString('title'), Str.ToLower($041f)); { Turkish }
+  {$HINTS ON}
+  {$ENDIF}
 end;
 
 procedure TTestUnicodeStringHelper.TestToLowerInvariant;
+var
+  Str: UnicodeString;
 begin
-
+  Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
+  {$HINTS OFF}
+  CheckEquals('hello привет allô 您好 123', Str.ToLowerInvariant);
+  {$HINTS ON}
 end;
 
+procedure TTestUnicodeStringHelper.TSingleEmpty;
+begin
+  UnicodeString.ToSingle('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToSingle;
+var
+  Str: UnicodeString;
+  StrVal: UnicodeString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
+  StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
+  CheckException(TSingleEmpty, EConvertError);
+end;
+
+procedure TTestUnicodeStringHelper.TestToUpper;
+var
+  Str: UnicodeString;
+begin
+  Str := '123one';
+  CheckEquals(UnicodeString('123ONE'), Str.ToUpper);
+
+  {$IFDEF WINDOWS}
+  Str := 'oneодин不怕当小白鼠';
+  {$HINTS OFF}
+  CheckEquals('ONEОДИН不怕当小白鼠', Str.ToUpper($0409)); { English - United States }
+  CheckEquals('ONEОДИН不怕当小白鼠', Str.ToUpper($0419)); { Russian }
+
+  { See http://lotusnotus.com/lotusnotus_en.nsf/dx/dotless-i-tolowercase-and-touppercase-functions-use-responsibly.htm }
+  Str := 'tıtle';
+  CheckEquals(UnicodeString('TITLE'), Str.ToUpper($041f)); { Turkish }
+  Str := 'title';
+  CheckEquals(UnicodeString('TİTLE'), Str.ToUpper($041f)); { Turkish }
+  {$HINTS ON}
+  {$ENDIF}
+end;
+
+procedure TTestUnicodeStringHelper.TestToUpperInvariant;
+var
+  Str: UnicodeString;
+begin
+  Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
+  {$HINTS OFF}
+  CheckEquals('HELLO ПРИВЕТ ALLÔ 您好 123', Str.ToUpperInvariant);
+  {$HINTS ON}
+end;
+
+procedure TTestUnicodeStringHelper.TestTrim;
+var
+  Str1, Str2, Str3: UnicodeString;
+begin
+  Str1 := '';
+  Str2 := 'test';
+  Str3 := '  test  ';
+
+  CheckEquals(UnicodeString(''), Str1.Trim);
+  CheckEquals(UnicodeString('test'), Str2.Trim);
+  CheckEquals(UnicodeString('test'), Str3.Trim);
+  CheckEquals(UnicodeString('es'), Str2.Trim(['t']));
+  CheckEquals(UnicodeString('s'), Str2.Trim(['t', 'e']));
+  CheckEquals(UnicodeString(''), Str2.Trim(['t', 'e', 's', '@']));
+  CheckEquals(UnicodeString('  test  '), Str3.Trim(['t', 'e', 's', '@']));
+end;
+
+procedure TTestUnicodeStringHelper.TestTrimLeft;
+var
+  Str1, Str2, Str3: UnicodeString;
+begin
+  Str1 := '';
+  Str2 := 'test';
+  Str3 := '  test  ';
+
+  CheckEquals(UnicodeString(''), Str1.TrimLeft);
+  CheckEquals(UnicodeString('test'), Str2.TrimLeft);
+  CheckEquals(UnicodeString('test  '), Str3.TrimLeft);
+  CheckEquals(UnicodeString('est'), Str2.TrimLeft(['t']));
+  CheckEquals(UnicodeString('st'), Str2.TrimLeft(['t', 'e']));
+  CheckEquals(UnicodeString(''), Str2.TrimLeft(['t', 'e', 's', '@']));
+  CheckEquals(UnicodeString('  test  '), Str3.TrimLeft(['t', 'e', 's', '@']));
+end;
+
+procedure TTestUnicodeStringHelper.TestTrimRight;
+var
+  Str1, Str2, Str3: UnicodeString;
+begin
+  Str1 := '';
+  Str2 := 'test';
+  Str3 := '  test  ';
+
+  CheckEquals(UnicodeString(''), Str1.TrimRight);
+  CheckEquals(UnicodeString('test'), Str2.TrimRight);
+  CheckEquals(UnicodeString('  test'), Str3.TrimRight);
+  CheckEquals(UnicodeString('tes'), Str2.TrimRight(['t']));
+  CheckEquals(UnicodeString('te'), Str2.TrimRight(['t', 's']));
+  CheckEquals(UnicodeString(''), Str2.TrimRight(['t', 'e', 's', '@']));
+  CheckEquals(UnicodeString('  test  '), Str3.TrimRight(['t', 'e', 's', '@']));
+end;
+
+procedure TTestUnicodeStringHelper.TestUpperCase;
+begin
+  CheckEquals('TESTабвг', UnicodeString.UpperCase('testабвг', loInvariantLocale));
+  CheckEquals('TESTАБВГ', UnicodeString.UpperCase('testабвг', loUserLocale));
+end;
+
+procedure TTestUnicodeStringHelper.TestChars;
+var
+  Str: UnicodeString;
+begin
+  Str := '不怕当小白鼠';
+
+  {$HINTS OFF}
+  CheckEquals('不', Str.Chars[0]);
+  CheckEquals('怕', Str.Chars[1]);
+  CheckEquals('当', Str.Chars[2]);
+  CheckEquals('小', Str.Chars[3]);
+  CheckEquals('白', Str.Chars[4]);
+  CheckEquals('鼠', Str.Chars[5]);
+  {$HINTS ON}
+end;
+
+procedure TTestUnicodeStringHelper.TestLength;
+var
+  Str: UnicodeString;
+begin
+  Str := '不怕当小白鼠';
+
+  CheckEquals(6, Str.Length);
+end;
+
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
+procedure TTestUnicodeStringHelper.TestParse;
+begin
+  CheckEquals(UnicodeString('-1'), UnicodeString.Parse(Integer(-1)));
+  CheckEquals(UnicodeString('3000000000'), UnicodeString.Parse(TEST_INT64));
+  CheckEquals(UnicodeString('-1'), UnicodeString.Parse(True));   //!!!
+  CheckEquals(UnicodeString('0'), UnicodeString.Parse(False));   //!!!
+  CheckEquals(UnicodeString(FloatToStr(1.5)), UnicodeString.Parse(1.5));
+end;
+{$IFEND}
+
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
+procedure TTestUnicodeStringHelper.TInt64Empty;
+begin
+  UnicodeString.ToInt64('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToInt64;
+var
+  Str: UnicodeString;
+begin
+  Str := '3000000000';
+  CheckEquals(TEST_INT64, Str.ToInt64);
+
+  CheckEquals(TEST_INT64, UnicodeString.ToInt64('3000000000'));
+  CheckEquals(-TEST_INT64, UnicodeString.ToInt64('-3000000000'));
+  CheckException(TInt64Empty, EConvertError);
+end;
+
+procedure TTestUnicodeStringHelper.TestIndexOfAnyUnquoted;
+var
+  Str: UnicodeString;
+begin
+  Str := '"This" is it';
+  CheckEquals(7, Str.IndexOfAnyUnquoted(['i'], '"', '"'));
+
+  Str := '"This is it';
+  CheckEquals(-1, Str.IndexOfAnyUnquoted(['i'], '"', '"'));
+
+  Str := '"This" "is" "it"';
+  CheckEquals(-1, Str.IndexOfAnyUnquoted(['i'], '"', '"'));
+
+  Str := '<This <is>> it';
+  CheckEquals(12, Str.IndexOfAnyUnquoted(['i'], '<', '>'));
+
+  Str := '"This" is it';
+  CheckEquals(3, Str.IndexOfAnyUnquoted(['i'], '"', '"', 1)); //!!! 2 in http://docwiki.embarcadero.com/Libraries/Seattle/en/System.SysUtils.TStringHelper.IndexOfAnyUnquoted
+
+  Str := 'This" "is" "it';
+  CheckEquals(-1, Str.IndexOfAnyUnquoted(['i'], '"', '"', 5));
+
+  CheckEquals(-1, Str.IndexOfAnyUnquoted([], '"', '"'));
+
+  Str := '';
+  CheckEquals(-1, Str.IndexOfAnyUnquoted([], '"', '"'));
+  CheckEquals(-1, Str.IndexOfAnyUnquoted(['w', 's', 'a'], '"', '"'));
+  CheckEquals(-1, Str.IndexOfAnyUnquoted(['T'], '"', '"', 0, 0));
+end;
+{$IFEND}
+
 initialization
+  { Initialization of TrueBoolStrs/FalseBoolStrs arrays }
+  SysUtils.BoolToStr(True, True);
   RegisterTest('System.Helpers', TTestUnicodeStringHelper.Suite);
+{$IFEND}
 
 end.
 

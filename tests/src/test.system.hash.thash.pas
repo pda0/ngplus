@@ -25,6 +25,7 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils, System.Hash;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 type
   TTestTHash = class(TTestCase)
   strict private
@@ -41,9 +42,11 @@ type
     procedure TestToBigEndianCardinal;
     procedure TestToBigEndianUInt64;
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 { TTestTHash }
 
 procedure TTestTHash.SetUp;
@@ -162,6 +165,7 @@ end;
 
 initialization
   RegisterTest('System.Hash', TTestTHash.Suite);
+{$IFEND}
 
 end.
 

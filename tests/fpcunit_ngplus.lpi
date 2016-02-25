@@ -39,7 +39,7 @@
         <PackageName Value="FCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="24">
+    <Units Count="25">
       <Unit0>
         <Filename Value="fpcunit_ngplus.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -47,7 +47,6 @@
       <Unit1>
         <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\src\system.helpers.pas"/>
@@ -71,52 +70,42 @@
       <Unit6>
         <Filename Value="src\test.system.hash.thash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THash"/>
       </Unit6>
       <Unit7>
         <Filename Value="src\test.system.hash.thashbobjenkins.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashBobJenkins"/>
       </Unit7>
       <Unit8>
         <Filename Value="src\test.system.hash.thashmd5.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashMD5"/>
       </Unit8>
       <Unit9>
         <Filename Value="src\test.system.hash.thashsha1.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA1"/>
       </Unit9>
       <Unit10>
         <Filename Value="src\test.system.hash.thashsha2_224.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_224"/>
       </Unit10>
       <Unit11>
         <Filename Value="src\test.system.hash.thashsha2_256.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_256"/>
       </Unit11>
       <Unit12>
         <Filename Value="src\test.system.hash.thashsha2_384.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_384"/>
       </Unit12>
       <Unit13>
         <Filename Value="src\test.system.hash.thashsha2_512.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512"/>
       </Unit13>
       <Unit14>
         <Filename Value="src\test.system.hash.thashsha2_512_224.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512_224"/>
       </Unit14>
       <Unit15>
         <Filename Value="src\test.system.hash.thashsha2_512_256.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashSHA2_512_256"/>
       </Unit15>
       <Unit16>
         <Filename Value="src\test.system.helpers.tguidhelper.pas"/>
@@ -157,6 +146,10 @@
         <Filename Value="..\src\delphi.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
+      <Unit24>
+        <Filename Value="..\src\system.helpers.tstringhelper.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit24>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -183,7 +176,6 @@
     <Linking>
       <Debugging>
         <UseHeaptrc Value="True"/>
-        <TrashVariables Value="True"/>
       </Debugging>
     </Linking>
     <Other>

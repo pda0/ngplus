@@ -35,6 +35,7 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
+        <SanitizedProjectName>NGPlus</SanitizedProjectName>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <BRCC_IncludePath>..\src;$(BRCC_IncludePath)</BRCC_IncludePath>
         <VerInfo_Locale>1033</VerInfo_Locale>
@@ -79,17 +80,18 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="test.system.helpers.tguidhelper.pas"/>
-        <DCCReference Include="test.system.hash.thash.pas"/>
-        <DCCReference Include="test.system.hash.thashbobjenkins.pas"/>
-        <DCCReference Include="test.system.hash.thashmd5.pas"/>
-        <DCCReference Include="test.system.hash.thashsha1.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_224.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_256.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_384.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_512.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_512_224.pas"/>
-        <DCCReference Include="test.system.hash.thashsha2_512_256.pas"/>
+        <DCCReference Include="src\test.system.helpers.tguidhelper.pas"/>
+        <DCCReference Include="src\test.system.helpers.unicodestringhelper.pas"/>
+        <DCCReference Include="src\test.system.hash.thash.pas"/>
+        <DCCReference Include="src\test.system.hash.thashmd5.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha1.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_224.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_256.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_384.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_512.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_512_224.pas"/>
+        <DCCReference Include="src\test.system.hash.thashsha2_512_256.pas"/>
+        <DCCReference Include="src\test.system.hash.thashbobjenkins.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -127,33 +129,18 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Debug\NGPlus.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="lib\Win32\Debug\NGPlus.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>NGPlus.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -507,12 +494,27 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
@@ -530,6 +532,8 @@
             <UnitTesting>
                 <TestFramework>DUnit / Delphi Win32</TestFramework>
                 <TestRunner>GUI</TestRunner>
+                <TestProjectName/>
+                <SourceProjectName/>
             </UnitTesting>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>

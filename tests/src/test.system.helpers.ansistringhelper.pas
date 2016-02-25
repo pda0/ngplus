@@ -11,18 +11,12 @@
  **********************************************************************}
 unit Test.System.Helpers.AnsiStringHelper;
 
-{$I ../src/delphi.inc}
-{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
 {$I ../src/ngplus.inc}
 
 interface
 
 uses
-  {$IFDEF FPC}
   fpcunit, testregistry, System.Helpers,
-  {$ELSE}
-  TestFramework,
-  {$ENDIF FPC}
   Classes, SysUtils;
 
 type

@@ -25,6 +25,7 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils, System.Hash;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 type
   TTestTHashBobJenkins = class(TTestCase)
   strict private
@@ -37,14 +38,16 @@ type
     procedure TestResetRaw;
     procedure TestResetTBytes;
     procedure TestResetString;
-    //TODO: Reset with different seed
+    procedure TestResetSeed;
     procedure TestHashAsString;
+    procedure TestHashAsInteger;
     procedure TestHashAsBytes;
     {$IFDEF FPC}
     procedure TestGetHashStringAnsi;
     {$ENDIF FPC}
     procedure TestGetHashStringUnicode;
     procedure TestGetHashBytes;
+    procedure TestGetHashValue;
     procedure TestUpdateRaw;
     procedure TestUpdateRawZero;
     procedure TestUpdateTBytes;
@@ -54,11 +57,12 @@ type
     procedure TestUpdateAnsiString;
     {$ENDIF FPC}
     procedure TestUpdateUnicodeString;
-    //TODO: Ext tests
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 { TTestTHashBobJenkins }
 
 const
@@ -138,12 +142,37 @@ begin
   CheckEquals(HASH_BJ_UNINIT, FHash.HashAsString);
 end;
 
+procedure TTestTHashBobJenkins.TestResetSeed;
+begin
+  FHash.Reset;
+  FHash.Update('BlahBlahBlah');
+  CheckEquals('C8E45C9F', FHash.HashAsString);
+
+  FHash.Reset(0);
+  FHash.Update('BlahBlahBlah');
+  CheckEquals('C8E45C9F', FHash.HashAsString);
+
+  FHash.Reset(1);
+  FHash.Update('BlahBlahBlah');
+  CheckEquals('6A460C0A', FHash.HashAsString);
+
+  FHash.Reset(-1);
+  FHash.Update('BlahBlahBlah');
+  CheckEquals('4D037C3B', FHash.HashAsString);
+end;
+
 procedure TTestTHashBobJenkins.TestHashAsString;
 begin
   FHash.Update(TEST_STR_UNICODE);
   CheckEquals('937B0BAF', FHash.HashAsString);
   { Ready hash value must be available more than once }
   CheckEquals('937B0BAF', FHash.HashAsString);
+end;
+
+procedure TTestTHashBobJenkins.TestHashAsInteger;
+begin
+  FHash.Update(TEST_STR_UNICODE);
+  CheckEquals(-1820652625, FHash.HashAsInteger);
 end;
 
 procedure TTestTHashBobJenkins.TestHashAsBytes;
@@ -161,7 +190,7 @@ end;
 {$IFDEF FPC}
 procedure TTestTHashBobJenkins.TestGetHashStringAnsi;
 begin
-  CheckEquals('7D92DC8F', FHash.GetHashString(TEST_STR_ANSI));
+  CheckEquals('93C92F2A', FHash.GetHashString(TEST_STR_ANSI));
 end;
 {$ENDIF FPC}
 
@@ -179,6 +208,21 @@ begin
   CheckEquals(HASH_BJ_SIZE, Length(Result));
   for i := 0 to High(TEST_BYTES_RESULT) do
     CheckEquals(TEST_BYTES_RESULT[i], Result[i]);
+end;
+
+procedure TTestTHashBobJenkins.TestGetHashValue;
+var
+  TestVal: Cardinal;
+begin
+  CheckEquals(-1820652625, FHash.GetHashValue(TEST_STR_UNICODE));
+  {$IFDEF FPC}
+  CheckEquals(-1815531734, FHash.GetHashValue(TEST_STR_ANSI));
+  {$ENDIF FPC}
+
+  TestVal := THash.ToBigEndian(Cardinal($01020304));
+  CheckEquals(71290333, FHash.GetHashValue(TestVal, SizeOf(TestVal)));
+  CheckEquals(71290333, FHash.GetHashValue(TestVal, SizeOf(TestVal), 0));
+  CheckEquals(-1585773311, FHash.GetHashValue(TestVal, SizeOf(TestVal), 1));
 end;
 
 procedure TTestTHashBobJenkins.TestUpdateRaw;
@@ -251,11 +295,12 @@ procedure TTestTHashBobJenkins.TestUpdateUnicodeString;
 begin
   FHash.Update(UnicodeString('支持楼主，'));
   FHash.Update(UnicodeString('不怕当小白鼠'));
-  CheckEquals('937B0BAF', FHash.HashAsString);
+  CheckEquals('3929B92D', FHash.HashAsString);
 end;
 
 initialization
-//  RegisterTest('System.Hash', TTestTHashBobJenkins.Suite);
+  RegisterTest('System.Hash', TTestTHashBobJenkins.Suite);
+{$IFEND}
 
 end.
 

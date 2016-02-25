@@ -25,6 +25,7 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils, Types;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE2_PLUS)}
 type
   TTestTGuidHelper = class(TTestCase)
   strict private
@@ -55,9 +56,11 @@ type
     procedure TestEqual;  // Free Pascal still does not supported this.
     {$ENDIF !FPC}
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE2_PLUS)}
 const
   TEST_GUID: TGUID = (
     D1: $00010203; D2: $0405; D3: $0607; D4:($08, $09, $0a, $0b, $0c, $0d, $0e, $0f)
@@ -173,10 +176,7 @@ begin
   CheckException(FailCreate4, EArgumentException);
 end;
 
-{$IFDEF FPC}
-  {$PUSH}
-  {$WARNINGS OFF}
-{$ENDIF FPC}
+{$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
 procedure TTestTGuidHelper.FailCreate5;
 var
   A: Integer;
@@ -186,9 +186,7 @@ begin
   SetLength(D, 7);
   TGUID.Create(A, B, C, D);
 end;
-{$IFDEF FPC}
-  {$POP}
-{$ENDIF FPC}
+{$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
 
 procedure TTestTGuidHelper.TestCreate5;
 var
@@ -304,6 +302,7 @@ end;
 
 initialization
   RegisterTest('System.Helpers', TTestTGuidHelper.Suite);
+{$IFEND}
 
 end.
 

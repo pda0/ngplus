@@ -25,6 +25,7 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils, System.Hash;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 type
   TTestTHashMD5 = class(TTestCase)
   strict private
@@ -64,9 +65,11 @@ type
     procedure TestGetHMACUnicode;
     procedure TestGetHMACAsBytesUnicode;
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 { TTestTHashMD5 }
 
 const
@@ -396,6 +399,7 @@ end;
 
 initialization
   RegisterTest('System.Hash', TTestTHashMD5.Suite);
+{$IFEND}
 
 end.
 

@@ -25,6 +25,7 @@ uses
   {$ENDIF FPC}
   Classes, SysUtils, System.Hash;
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_SEATTLE_PLUS)}
 type
   TTestTHashSHA2_224 = class(TTestCase)
   strict private
@@ -67,9 +68,11 @@ type
     procedure TestGetHMACUnicode;
     procedure TestGetHMACAsBytesUnicode;
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(FPC) OR DEFINED(DELPHI_SEATTLE_PLUS)}
 { TTestTHashSHA2_224 }
 
 const
@@ -419,6 +422,7 @@ end;
 
 initialization
   //RegisterTest('System.Hash', TTestTHashSHA2_224.Suite);
+{$IFEND}
 
 end.
 
