@@ -19,8 +19,11 @@ unit System.Hash.Helpers;
 interface
 
 uses
-  {$IFDEF WITH_OPENSSL}openssl, cTypes, dynlibs,{$ENDIF}
-  {$IFDEF WITH_WINAPI}Windows, JwaWinType, JwaWinCrypt, dynlibs,{$ENDIF}
+  {$IF NOT (DEFINED(_WITHOUT_OPENSSL) AND DEFINED(_WITHOUT_WINAPI))}
+  dynlibs,
+  {$IFNDEF _WITHOUT_OPENSSL}openssl, cTypes,{$ENDIF}
+  {$IFNDEF _WITHOUT_WINAPI}Windows, JwaWinType, JwaWinCrypt,{$ENDIF}
+  {$IFEND}
   SysUtils;
 
 type
@@ -51,7 +54,7 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); virtual; abstract;
   end;
 
-{$IFDEF WITH_OPENSSL}
+{$IFNDEF _WITHOUT_OPENSSL}
 const
   HMAC_MAX_MD_CBLOCK = 128;
 
@@ -94,9 +97,9 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
   {$PACKRECORDS DEFAULT}
-{$ENDIF WITH_OPENSSL}
+{$ENDIF !_WITHOUT_OPENSSL}
 
-{$IFDEF WITH_WINAPI}
+{$IFNDEF _WITHOUT_WINAPI}
 const
   CALG_SHA_256 = $0000800C; { WinXP SP3+ }
   CALG_SHA_384 = $0000800D; { WinXP SP3+ }
@@ -188,14 +191,14 @@ type
     procedure GetHMAC(Data, Key, Result: PByte; DataSize, KeySize: PtrUInt); override;
   end;
   {$PACKRECORDS DEFAULT}
-{$ENDIF WITH_WINAPI}
+{$ENDIF !_WITHOUT_WINAPI}
 
 function CreateHash(AHash: TAvailableHashes; ForHmac: Boolean = False): IHashEngine;
 
 implementation
 
 uses
-  {$IFDEF WITH_WINAPI}
+  {$IFNDEF _WITHOUT_WINAPI}
   JwaWinBase, JwaNtStatus, {$IFDEF _TEST}JwaWinError,{$ENDIF} Math,
   {$ENDIF}
   System.Hash, System.Helpers.Strings;
@@ -234,7 +237,7 @@ begin
   Result := FBlockSize;
 end;
 
-{$IFDEF WITH_OPENSSL}
+{$IFNDEF _WITHOUT_OPENSSL}
 { TOpensslHash }
 
 class procedure TOpensslHash.Wipe;
@@ -378,9 +381,9 @@ begin
   ResLen := GetHashSize;
   OpensslCheck(HMAC_Final(@ctx, Result, ResLen));
 end;
-{$ENDIF WITH_OPENSSL}
+{$ENDIF !_WITHOUT_OPENSSL}
 
-{$IFDEF WITH_WINAPI}
+{$IFNDEF _WITHOUT_WINAPI}
 { TAbstractWinHash }
 
 class procedure TAbstractWinHash.WinCheck(RetVal: BOOL);
@@ -748,7 +751,7 @@ var
   begin
     if not Assigned(Proc) then
     begin
-      TmpAddr := GetProcedureAddress(FBCryphHandle, ProcName);
+      TmpAddr := dynlibs.GetProcedureAddress(FBCryphHandle, ProcName);
       {$PUSH}
       {$HINTS OFF}
       {$IFDEF CPU64}
@@ -1031,13 +1034,13 @@ end;
 
 function CreateHash(AHash: TAvailableHashes; ForHmac: Boolean): IHashEngine;
 const
-  {$IFDEF WITH_OPENSSL}
+  {$IFNDEF _WITHOUT_OPENSSL}
   OPENSSL_MAP: array [TAvailableHashes] of PAnsiChar = (
     'MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512',
     {SHA2_512_224}nil, {SHA2_512_256}nil
   );
-  {$ENDIF WITH_OPENSSL}
-  {$IFDEF WITH_WINAPI}
+  {$ENDIF}
+  {$IFNDEF _WITHOUT_WINAPI}
   CRYPTO_MAP: array [TAvailableHashes] of ALG_ID = (
     CALG_MD5, CALG_SHA1, {SHA2_224}0, CALG_SHA_256, CALG_SHA_384, CALG_SHA_512,
     {SHA2_512_224}0, {SHA2_512_256}0
@@ -1046,27 +1049,27 @@ const
     'MD5', 'SHA1', {SHA224}nil, 'SHA256', 'SHA384', 'SHA512',
     {SHA2_512_224}nil, {SHA2_512_256}nil
   );
-  {$ENDIF WITH_WINAPI}
+  {$ENDIF}
 var
-  {$IFDEF WITH_OPENSSL}
+  {$IFNDEF _WITHOUT_OPENSSL}
   Md: PEVP_MD;
-  {$ENDIF WITH_OPENSSL}
-  {$IFDEF WITH_WINAPI}
+  {$ENDIF}
+  {$IFNDEF _WITHOUT_WINAPI}
   CngAlgId: LPCWSTR;
   CaAlgId: ALG_ID;
   CngAlgHandle: TWinCNGHash.BCRYPT_ALG_HANDLE;
   CaHashHandle: HCRYPTHASH;
   {$IFDEF _TEST}HashSize: Integer;{$ENDIF}
-  {$ENDIF WITH_WINAPI}
+  {$ENDIF}
 begin
-  {$IFDEF WITH_OPENSSL}
+  {$IFNDEF _WITHOUT_OPENSSL}
   if IsSSLloaded and TOpensslHash.Probe(OPENSSL_MAP[AHash], Md) then
     Exit(TOpensslHash.Create(Md,
       HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
     );
-  {$ENDIF WITH_OPENSSL}
+  {$ENDIF}
 
-  {$IFDEF WITH_WINAPI}
+  {$IFNDEF _WITHOUT_WINAPI}
   { Vista+ CNG }
 (*  if CheckWin32Version(6, 0) then
   begin
@@ -1097,26 +1100,26 @@ begin
       Exit(TWinCryptoAPIHash.Create(CaAlgId, CaHashHandle,
         HASH_PARAMS[AHash].HashSize, HASH_PARAMS[AHash].BlockSize)
       );
-    {$ENDIF WITH_WINAPI}
   end;
+  {$ENDIF !_WITHOUT_WINAPI}
 
   raise Exception.Create('TODO: Not implemented yet');
 end;
 
 initialization
-  {$IFDEF WITH_OPENSSL}
+  {$IFNDEF _WITHOUT_OPENSSL}
   TOpensslHash.Wipe;
   {$ENDIF}
-  {$IFDEF WITH_WINAPI}
+  {$IFNDEF _WITHOUT_WINAPI}
   TWinCNGHash.Init;
   TWinCryptoAPIHash.Init;
   {$ENDIF}
 
 finalization
-  {$IFDEF WITH_OPENSSL}
+  {$IFNDEF _WITHOUT_OPENSSL}
   TOpensslHash.Wipe;
   {$ENDIF}
-  {$IFDEF WITH_WINAPI}
+  {$IFNDEF _WITHOUT_WINAPI}
   TWinCNGHash.Done;
   TWinCryptoAPIHash.Done;
   {$ENDIF}

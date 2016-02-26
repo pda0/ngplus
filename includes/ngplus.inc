@@ -17,7 +17,13 @@
   {$MODESWITCH TYPEHELPERS}
 {$ENDIF FPC}
 
-{$IF DEFINED(WINDOWS) AND (NOT DEFINED(WITHOUT_WINAPI))}
-  {$DEFINE WITH_WINAPI}
+{ Define this if you want to disable all of OpenSSL related code }
+{.$DEFINE _WITHOUT_OPENSSL}
+
+{ Define this if you want to disable all Windows API related code }
+{.$DEFINE _WITHOUT_WINAPI}
+
+{$IF DEFINED(_WITHOUT_WINAPI) AND (NOT DEFINED(WINDOWS))}
+  {$DEFINE _WITHOUT_WINAPI}
 {$IFEND}
 

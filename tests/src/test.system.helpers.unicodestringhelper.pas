@@ -11,9 +11,9 @@
  **********************************************************************}
 unit Test.System.Helpers.UnicodeStringHelper;
 
-{$I ../src/delphi.inc}
+{$I delphi.inc}
 {$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
-{$I ../src/ngplus.inc}
+{$I ngplus.inc}
 
 interface
 
@@ -38,9 +38,9 @@ type
     procedure TSingleEmpty;
     {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
     procedure TInt64Empty;
+    procedure TInt64ToBig;
     {$IFEND}
-  published
-    procedure TestCreate;
+  public
     procedure TestCompare;
     procedure TestCompareOrdinal;
     procedure TestCompareText;
@@ -51,13 +51,13 @@ type
     procedure TestCountChar;
     procedure TestDeQuotedString;
     procedure TestEnds;
-    procedure TestEquals;
-    procedure TestFormat;
+    //procedure TestEquals;
+    //procedure TestFormat;
     procedure TestIndexOf;
     procedure TestIndexOfAny;
     procedure TestInsert;
     procedure TestIsDelimiter;
-    procedure TestEmpty;
+    //procedure TestEmpty;
     procedure TestJoin;
     procedure TestLastDelimiter;
     procedure TestLastIndexOf;
@@ -74,12 +74,12 @@ type
     procedure TestToCharArray;
     procedure TestToDouble;
     procedure TestToExtended;
-    procedure TestToInteger;
+    //procedure TestToInteger;
     procedure TestToLower;
-    procedure TestToLowerInvariant;
+    //procedure TestToLowerInvariant;
     procedure TestToSingle;
     procedure TestToUpper;
-    procedure TestToUpperInvariant;
+    //procedure TestToUpperInvariant;
     procedure TestTrim;
     procedure TestTrimLeft;
     procedure TestTrimRight;
@@ -89,9 +89,25 @@ type
     {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
     procedure TestParse;
     {$IFEND}
+    //procedure TestToInt64;
+    procedure TestIndexOfAnyUnquoted;
+  published
+    procedure TestCreate;
+
+    procedure TestEquals;
+    procedure TestFormat;
+
+    procedure TestEmpty;
+
+    procedure TestToInteger;
+
+    procedure TestToLowerInvariant;
+
+    procedure TestToUpperInvariant;
+
     {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
     procedure TestToInt64;
-    procedure TestIndexOfAnyUnquoted;
+    //procedure TestIndexOfAnyUnquoted;
     {$IFEND}
   end;
 {$IFEND}
@@ -351,11 +367,11 @@ procedure TTestUnicodeStringHelper.TestEmpty;
 var
   Str: UnicodeString;
 begin
-  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  Str := '';
   CheckTrue(Str.IsEmpty);
   CheckTrue(UnicodeString.IsNullOrEmpty(Str));
   CheckTrue(UnicodeString.IsNullOrWhiteSpace(Str));
-  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
+
   Str := #0;
   CheckFalse(Str.IsEmpty);
   CheckFalse(UnicodeString.IsNullOrEmpty(Str));
@@ -778,9 +794,7 @@ var
   Str: UnicodeString;
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
-  {$HINTS OFF}
-  CheckEquals('hello привет allô 您好 123', Str.ToLowerInvariant);
-  {$HINTS ON}
+  CheckEquals(UnicodeString('hello привет allô 您好 123'), Str.ToLowerInvariant);
 end;
 
 procedure TTestUnicodeStringHelper.TSingleEmpty;
@@ -830,9 +844,7 @@ var
   Str: UnicodeString;
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
-  {$HINTS OFF}
-  CheckEquals('HELLO ПРИВЕТ ALLÔ 您好 123', Str.ToUpperInvariant);
-  {$HINTS ON}
+  CheckEquals(UnicodeString('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
 procedure TTestUnicodeStringHelper.TestTrim;
@@ -934,16 +946,22 @@ begin
   UnicodeString.ToInt64('');
 end;
 
+procedure TTestUnicodeStringHelper.TInt64ToBig;
+begin
+  UnicodeString.ToInt64('9223372036854775808');
+end;
+
 procedure TTestUnicodeStringHelper.TestToInt64;
 var
   Str: UnicodeString;
 begin
   Str := '3000000000';
-  CheckEquals(TEST_INT64, Str.ToInt64);
+  CheckTrue(TEST_INT64 = Str.ToInt64);
 
-  CheckEquals(TEST_INT64, UnicodeString.ToInt64('3000000000'));
-  CheckEquals(-TEST_INT64, UnicodeString.ToInt64('-3000000000'));
+  CheckTrue(TEST_INT64 = UnicodeString.ToInt64('3000000000'));
+  CheckTrue(-TEST_INT64 = UnicodeString.ToInt64('-3000000000'));
   CheckException(TInt64Empty, EConvertError);
+  CheckException(TInt64ToBig, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestIndexOfAnyUnquoted;

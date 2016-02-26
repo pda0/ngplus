@@ -11,9 +11,9 @@
  **********************************************************************}
 unit Test.System.Helpers.TGuidHelper;
 
-{$I ../src/delphi.inc}
+{$I delphi.inc}
 {$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
-{$I ../src/ngplus.inc}
+{$I ngplus.inc}
 
 interface
 

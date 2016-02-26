@@ -814,7 +814,10 @@ type
 implementation
 
 uses
-  System.Helpers.Strings;
+  {$IFDEF CPU64}
+  sysconst,
+  {$ENDIF}
+  Math, System.Helpers.Strings;
 
 { TGuidHelper }
 

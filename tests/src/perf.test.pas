@@ -11,9 +11,9 @@
  **********************************************************************}
 unit Perf.Test;
 
-{$I ../src/delphi.inc}
+{$I delphi.inc}
 {$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
-{$I ../src/ngplus.inc}  
+{$I ngplus.inc}
 
 interface
 
@@ -72,12 +72,12 @@ begin
   Result := 'Calibration';
 end;
 
-{$PUSH}
+{$IFDEF FPC}{$PUSH}{$ENDIF}
 {$HINTS OFF}
 procedure TCalibration.Setup(Seq: Integer);
 begin
 end;
-{$POP}
+{$IFDEF FPC}{$POP}{$ELSE}{$HINTS ON}{$ENDIF}
 
 procedure TCalibration.Run;
 begin
@@ -108,7 +108,7 @@ class procedure TPerfTestRunner.PrepareCore;
 const
   BURN_TIME = 10000; { 10 sec to force CPU increase its frequency }
 var
-  EndTick: QWord;
+  EndTick: Cardinal;
   DummyInt, DummyRes: Int64;
   DummyFloat: Double;
 begin
@@ -116,8 +116,8 @@ begin
   DummyFloat := 0;
   DummyRes := 1;
 
-  EndTick := TThread.GetTickCount64 + BURN_TIME;
-  while EndTick > TThread.GetTickCount64 do
+  EndTick := TThread.GetTickCount + BURN_TIME;
+  while EndTick > TThread.GetTickCount do
   begin
     DummyFloat := DummyFloat + DummyRes;
     DummyInt := DummyInt + DummyRes;
@@ -159,7 +159,7 @@ const
 var
   RunTime, k, b: Double;
   j, RepCount: Int64;
-  StartTime, EndTime: QWord;
+  StartTime, EndTime: Cardinal;
   TestName: string;
   i: Cardinal;
 begin
@@ -183,7 +183,7 @@ begin
   begin
     PerfTest.Setup(i);
 
-      StartTime := TThread.GetTickCount64;
+      StartTime := TThread.GetTickCount;
 
     Write(Format(NFO_TPL, [TestName, i + 1, Seq, 'RUNNING']), #13);
     j := 0;
@@ -193,7 +193,7 @@ begin
       PerfTest.Run;
       Inc(j);
     end;
-    EndTime := TThread.GetTickCount64;
+    EndTime := TThread.GetTickCount;
 
     RunTime := EndTime - StartTime - RepCount * FOverhead;
     if RunTime > 0 then

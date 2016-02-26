@@ -11,6 +11,10 @@
  **********************************************************************}
 program NGPlus;
 
+{$I delphi.inc}
+{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
+{$I ngplus.inc}
+
 {$IFDEF CONSOLE_TESTRUNNER}
 {$APPTYPE CONSOLE}
 {$ENDIF}

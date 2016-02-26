@@ -11,6 +11,10 @@
  **********************************************************************}
 program PerfHashes;
 
+{$I delphi.inc}
+{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
+{$I ngplus.inc}
+
 {$APPTYPE CONSOLE}
 
 {$R *.res}

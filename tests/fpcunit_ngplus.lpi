@@ -47,6 +47,7 @@
       <Unit1>
         <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="System.Hash"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\src\system.helpers.pas"/>
@@ -59,95 +60,96 @@
         <UnitName Value="System.Helpers.Strings"/>
       </Unit3>
       <Unit4>
-        <Filename Value="..\src\ngplus.inc"/>
-        <IsPartOfProject Value="True"/>
-      </Unit4>
-      <Unit5>
         <Filename Value="..\src\system.hash.helpers.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="System.Hash.Helpers"/>
-      </Unit5>
-      <Unit6>
+      </Unit4>
+      <Unit5>
         <Filename Value="src\test.system.hash.thash.pas"/>
         <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="src\test.system.hash.thashbobjenkins.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test.System.Hash.THashBobJenkins"/>
       </Unit6>
       <Unit7>
-        <Filename Value="src\test.system.hash.thashbobjenkins.pas"/>
+        <Filename Value="src\test.system.hash.thashmd5.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="src\test.system.hash.thashmd5.pas"/>
+        <Filename Value="src\test.system.hash.thashsha1.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="src\test.system.hash.thashsha1.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_224.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="src\test.system.hash.thashsha2_224.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_256.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit10>
       <Unit11>
-        <Filename Value="src\test.system.hash.thashsha2_256.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_384.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="src\test.system.hash.thashsha2_384.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit12>
       <Unit13>
-        <Filename Value="src\test.system.hash.thashsha2_512.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512_224.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit13>
       <Unit14>
-        <Filename Value="src\test.system.hash.thashsha2_512_224.pas"/>
+        <Filename Value="src\test.system.hash.thashsha2_512_256.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
       <Unit15>
-        <Filename Value="src\test.system.hash.thashsha2_512_256.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit15>
-      <Unit16>
         <Filename Value="src\test.system.helpers.tguidhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.TGuidHelper"/>
-      </Unit16>
-      <Unit17>
+      </Unit15>
+      <Unit16>
         <Filename Value="src\test.system.helpers.shortstringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.ShortStringHelper"/>
-      </Unit17>
-      <Unit18>
+      </Unit16>
+      <Unit17>
         <Filename Value="src\test.system.helpers.ansistringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.AnsiStringHelper"/>
-      </Unit18>
-      <Unit19>
+      </Unit17>
+      <Unit18>
         <Filename Value="src\test.system.helpers.rawbytestringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.RawByteStringHelper"/>
-      </Unit19>
-      <Unit20>
+      </Unit18>
+      <Unit19>
         <Filename Value="src\test.system.helpers.utf8stringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.UTF8StringHelper"/>
-      </Unit20>
-      <Unit21>
+      </Unit19>
+      <Unit20>
         <Filename Value="src\test.system.helpers.widestringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.WideStringHelper"/>
-      </Unit21>
-      <Unit22>
+      </Unit20>
+      <Unit21>
         <Filename Value="src\test.system.helpers.unicodestringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Test.System.Helpers.UnicodeStringHelper"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="..\src\system.helpers.tstringhelper.inc"/>
+        <IsPartOfProject Value="True"/>
       </Unit22>
       <Unit23>
-        <Filename Value="..\src\delphi.inc"/>
+        <Filename Value="..\includes\delphi.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
       <Unit24>
-        <Filename Value="..\src\system.helpers.tstringhelper.inc"/>
+        <Filename Value="..\includes\ngplus.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit24>
     </Units>
@@ -156,8 +158,8 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir);..\src"/>
-      <OtherUnitFiles Value="..\src;src"/>
+      <IncludeFiles Value="$(ProjPath);$(ProjPath)\..\src;$(ProjPath)\..\includes;$(ProjOutDir)"/>
+      <OtherUnitFiles Value="$(ProjPath)\..\src;$(ProjPath)\src"/>
       <UnitOutputDirectory Value="lib\Debug\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -179,15 +181,14 @@
       </Debugging>
     </Linking>
     <Other>
-      <CustomOptions Value="-dCONSOLETEST
--d_TEST"/>
-      <OtherDefines Count="6">
-        <Define0 Value="CONSOLETEST"/>
-        <Define1 Value="WITH_UNICODE"/>
-        <Define2 Value="CLOSER_TO_DELPHI"/>
-        <Define3 Value="WITH_OPENSSL"/>
-        <Define4 Value="WITHOUT_WINAPI"/>
-        <Define5 Value="_TEST"/>
+      <CustomOptions Value="-dCONSOLE_TESTRUNNER
+-d_TEST
+-d_WITHOUT_OPENSSL"/>
+      <OtherDefines Count="4">
+        <Define0 Value="CONSOLE_TESTRUNNER"/>
+        <Define1 Value="_TEST"/>
+        <Define2 Value="_WITHOUT_OPENSSL"/>
+        <Define3 Value="_WITHOUT_WINAPI"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>

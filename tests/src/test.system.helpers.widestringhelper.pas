@@ -11,7 +11,7 @@
  **********************************************************************}
 unit Test.System.Helpers.WideStringHelper;
 
-{$I ../src/ngplus.inc}
+{$I ngplus.inc}
 
 interface
 
@@ -30,8 +30,8 @@ type
     procedure TIntegerToBig;
     procedure TSingleEmpty;
     procedure TInt64Empty;
-  published
-    procedure TestCreate;
+    procedure TInt64ToBig;
+  public
     procedure TestCompare;
     procedure TestCompareOrdinal;
     procedure TestCompareText;
@@ -42,13 +42,13 @@ type
     procedure TestCountChar;
     procedure TestDeQuotedString;
     procedure TestEnds;
-    procedure TestEquals;
-    procedure TestFormat;
+    //procedure TestEquals;
+    //procedure TestFormat;
     procedure TestIndexOf;
     procedure TestIndexOfAny;
     procedure TestInsert;
     procedure TestIsDelimiter;
-    procedure TestEmpty;
+    //procedure TestEmpty;
     procedure TestJoin;
     procedure TestLastDelimiter;
     procedure TestLastIndexOf;
@@ -65,12 +65,12 @@ type
     procedure TestToCharArray;
     procedure TestToDouble;
     procedure TestToExtended;
-    procedure TestToInteger;
+    //procedure TestToInteger;
     procedure TestToLower;
-    procedure TestToLowerInvariant;
+    //procedure TestToLowerInvariant;
     procedure TestToSingle;
     procedure TestToUpper;
-    procedure TestToUpperInvariant;
+    //procedure TestToUpperInvariant;
     procedure TestTrim;
     procedure TestTrimLeft;
     procedure TestTrimRight;
@@ -78,8 +78,23 @@ type
     procedure TestChars;
     procedure TestLength;
     procedure TestParse;
-    procedure TestToInt64;
+    //procedure TestToInt64;
     procedure TestIndexOfAnyUnquoted;
+  published
+    procedure TestCreate;
+
+    procedure TestEquals;
+    procedure TestFormat;
+
+    procedure TestEmpty;
+
+    procedure TestToInteger;
+
+    procedure TestToLowerInvariant;
+
+    procedure TestToUpperInvariant;
+
+    procedure TestToInt64;
   end;
 
 implementation
@@ -334,12 +349,11 @@ procedure TTestWideStringHelper.TestEmpty;
 var
   Str: WideString;
 begin
-  {$PUSH}
-  {$WARNINGS OFF}
+  Str := '';
   CheckTrue(Str.IsEmpty);
   CheckTrue(WideString.IsNullOrEmpty(Str));
   CheckTrue(WideString.IsNullOrWhiteSpace(Str));
-  {$POP}
+
   Str := #0;
   CheckFalse(Str.IsEmpty);
   CheckFalse(WideString.IsNullOrEmpty(Str));
@@ -763,9 +777,7 @@ var
   Str: WideString;
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
-  {$HINTS OFF}
-  CheckEquals('hello привет allô 您好 123', Str.ToLowerInvariant);
-  {$HINTS ON}
+  CheckEquals(WideString('hello привет allô 您好 123'), Str.ToLowerInvariant);
 end;
 
 procedure TTestWideStringHelper.TSingleEmpty;
@@ -815,9 +827,7 @@ var
   Str: WideString;
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
-  {$HINTS OFF}
-  CheckEquals('HELLO ПРИВЕТ ALLÔ 您好 123', Str.ToUpperInvariant);
-  {$HINTS ON}
+  CheckEquals(WideString('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
 procedure TTestWideStringHelper.TestTrim;
@@ -916,16 +926,22 @@ begin
   WideString.ToInt64('');
 end;
 
+procedure TTestWideStringHelper.TInt64ToBig;
+begin
+  WideString.ToInt64('9223372036854775808');
+end;
+
 procedure TTestWideStringHelper.TestToInt64;
 var
   Str: WideString;
 begin
   Str := '3000000000';
-  CheckEquals(TEST_INT64, Str.ToInt64);
+  CheckTrue(TEST_INT64 = Str.ToInt64);
 
-  CheckEquals(TEST_INT64, WideString.ToInt64('3000000000'));
-  CheckEquals(-TEST_INT64, WideString.ToInt64('-3000000000'));
+  CheckTrue(TEST_INT64 = WideString.ToInt64('3000000000'));
+  CheckTrue(-TEST_INT64 = WideString.ToInt64('-3000000000'));
   CheckException(TInt64Empty, EConvertError);
+  CheckException(TInt64ToBig, EConvertError);
 end;
 
 procedure TTestWideStringHelper.TestIndexOfAnyUnquoted;

@@ -11,9 +11,9 @@
  **********************************************************************}
 unit Test.System.Hash.THashSHA2_256;
 
-{$I ../src/delphi.inc}
+{$I delphi.inc}
 {$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
-{$I ../src/ngplus.inc}
+{$I ngplus.inc}
 
 interface
 

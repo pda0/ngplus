@@ -11,9 +11,9 @@
  **********************************************************************}
 unit Test.System.Hash.THashBobJenkins;
 
-{$I ../src/delphi.inc}
+{$I delphi.inc}
 {$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
-{$I ../src/ngplus.inc}
+{$I ngplus.inc}
 
 interface
 
@@ -299,7 +299,7 @@ begin
 end;
 
 initialization
-  RegisterTest('System.Hash', TTestTHashBobJenkins.Suite);
+  //RegisterTest('System.Hash', TTestTHashBobJenkins.Suite);
 {$IFEND}
 
 end.
