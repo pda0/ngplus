@@ -34,7 +34,7 @@ type
     class function DigestAsInteger(const ADigest: TBytes): Integer; static;
     class function DigestAsString(const ADigest: TBytes): string;
       overload; static;
-    class function DigestAsStringGUID(const ADigest: TBytes): string; static;
+    (* class function DigestAsStringGUID(const ADigest: TBytes): string; static; *)
     class function GetRandomString(const ALen: Integer = 10): string; static;
     class function ToBigEndian(AValue: Cardinal): Cardinal; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function ToBigEndian(AValue: UInt64): UInt64; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
@@ -203,13 +203,13 @@ begin
     Result := Result + HC[(ADigest[i] shr 4)] + HC[ADigest[i] and $0f];
 end;
 
-class function THash.DigestAsStringGUID(const ADigest: TBytes): string;
+(* class function THash.DigestAsStringGUID(const ADigest: TBytes): string;
 var
   TempGuid: TGUID;
 begin
   TempGuid := TempGuid.Create(ADigest, TEndian.Big);
   Result := TempGuid.ToString;
-end;
+end; *)
 
 class function THash.GetRandomString(const ALen: Integer): string;
 var

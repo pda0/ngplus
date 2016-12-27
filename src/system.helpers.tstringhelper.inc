@@ -10,6 +10,37 @@
 
  **********************************************************************}
 
+{ TShortStringHelper, TAnsiStringHelper, TRawByteStringHelper,
+  TUTF8StringHelper, TWideStringHelper, TUnicodeStringHelper }
+
+class function TWideStringHelper.HaveChar(AChar: WideChar; const AList:
+  array of WideChar): Boolean;
+var
+  i: TDynArrayIndex;
+begin
+  i := 0;
+  Result := False;
+  while (not Result) and (i <= High(AList)) do
+  begin
+    Result := AList[i] = AChar;
+    Inc(i);
+  end;
+end;
+
+class function TUnicodeStringHelper.HaveChar(AChar: UnicodeChar; const AList:
+  array of UnicodeChar): Boolean;
+var
+  i: TDynArrayIndex;
+begin
+  i := 0;
+  Result := False;
+  while (not Result) and (i <= High(AList)) do
+  begin
+    Result := AList[i] = AChar;
+    Inc(i);
+  end;
+end;
+
 class function TShortStringHelper.Create(C: AnsiChar; Count: Integer):
   ShortString;
 begin
@@ -33,7 +64,7 @@ end;
 class function TShortStringHelper.Create(const Value: array of AnsiChar):
   ShortString;
 begin
-  Result := {Result.}Create(Value, Low(Value), System.Length(Value));
+  Result := ShortString.Create(Value, Low(Value), System.Length(Value));
 end;
 
 class function TAnsiStringHelper.Create(C: AnsiChar; Count: Integer):
@@ -53,7 +84,7 @@ end;
 class function TAnsiStringHelper.Create(const Value: array of AnsiChar):
   AnsiString;
 begin
-  Result := Result.Create(Value, Low(Value), System.Length(Value));
+  Result := AnsiString.Create(Value, Low(Value), System.Length(Value));
 end;
 
 class function TRawByteStringHelper.Create(C: AnsiChar; Count: Integer):
@@ -73,7 +104,7 @@ end;
 class function TRawByteStringHelper.Create(const Value: array of AnsiChar):
   RawByteString;
 begin
-  Result := Result.Create(Value, Low(Value), System.Length(Value));
+  Result := RawByteString.Create(Value, Low(Value), System.Length(Value));
 end;
 
 class function TUTF8StringHelper.Create(C: AnsiChar; Count: Integer):
@@ -93,7 +124,7 @@ end;
 class function TUTF8StringHelper.Create(const Value: array of AnsiChar):
   UTF8String;
 begin
-  Result := Result.Create(Value, Low(Value), System.Length(Value));
+  Result := UTF8String.Create(Value, Low(Value), System.Length(Value));
 end;
 
 class function TWideStringHelper.Create(C: WideChar; Count: Integer):
@@ -117,7 +148,7 @@ end;
 class function TWideStringHelper.Create(const Value: array of WideChar):
   WideString;
 begin
-  Result := Result.Create(Value, Low(Value), System.Length(Value));
+  Result := WideString.Create(Value, Low(Value), System.Length(Value));
 end;
 
 class function TUnicodeStringHelper.Create(C: UnicodeChar; Count: Integer):
@@ -141,67 +172,161 @@ end;
 class function TUnicodeStringHelper.Create(const Value: array of UnicodeChar):
   UnicodeString;
 begin
-  Result := Result.Create(Value, Low(Value), System.Length(Value));
+  Result := UnicodeString.Create(Value, Low(Value), System.Length(Value));
 end;
 
 function TShortStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-
+  Result := Self[Index + 1{Low(Self)}];
 end;
 
 function TAnsiStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-
+  Result := Self[Index + Low(Self)];
 end;
 
 function TRawByteStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-
+  Result := Self[Index + Low(Self)];
 end;
 
 function TUTF8StringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-
+  Result := Self[Index + Low(Self)];
 end;
 
 function TWideStringHelper.GetChars(Index: Integer): WideChar;
 begin
-
+  Result := Self[Index + Low(Self)];
 end;
 
 function TUnicodeStringHelper.GetChars(Index: Integer): UnicodeChar;
 begin
+  Result := Self[Index + Low(Self)];
+end;
 
+//TODO: Optimize for linear scan
+
+function TShortStringHelper.GetCodePoints(Index: Integer): ShortString;
+begin
+  if DefaultSystemCodePage = CP_UTF8 then
+    Result := UTF8Copy(Self, Index + 1{Low(Self)}, 1)
+  else
+    Result := Self[Index + 1{Low(Self)}];
+end;
+
+function TAnsiStringHelper.GetCodePoints(Index: Integer): AnsiString;
+begin
+  SetCodePage(RawByteString(Result), StringCodePage(Self), False);
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Copy(Self, Index + Low(Self), 1)
+  else
+    Result := Self[Index + Low(Self)];
+end;
+
+function TRawByteStringHelper.GetCodePoints(Index: Integer): RawByteString;
+begin
+  SetCodePage(Result, StringCodePage(Self), False);
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Copy(Self, Index + Low(Self), 1)
+  else
+    Result := Self[Index + Low(Self)];
+end;
+
+function TUTF8StringHelper.GetCodePoints(Index: Integer): UTF8String;
+begin
+  SetCodePage(RawByteString(Result), StringCodePage(Self), False);
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Copy(Self, Index + Low(Self), 1)
+  else
+    Result := Self[Index + Low(Self)];
+end;
+
+function TWideStringHelper.GetCodePoints(Index: Integer): WideString;
+begin
+  Result := Self[Index + Low(Self)];
+end;
+
+function TUnicodeStringHelper.GetCodePoints(Index: Integer): UnicodeString;
+begin
+  Result := Self[Index + Low(Self)];
+end;
+
+function TShortStringHelper.GetByteLength: Integer;
+begin
+  Result := System.Length(Self);
+end;
+
+function TAnsiStringHelper.GetByteLength: Integer;
+begin
+  Result := System.Length(Self);
+end;
+
+function TRawByteStringHelper.GetByteLength: Integer;
+begin
+  Result := System.Length(Self);
+end;
+
+function TUTF8StringHelper.GetByteLength: Integer;
+begin
+  Result := System.Length(Self);
+end;
+
+function TWideStringHelper.GetByteLength: Integer;
+begin
+  Result := System.Length(Self) * SizeOf(WideChar);
+end;
+
+function TUnicodeStringHelper.GetByteLength: Integer;
+begin
+  Result := SysUtils.ByteLength(Self);
 end;
 
 function TShortStringHelper.GetLength: Integer;
 begin
-
+  if System.Length(Self) > 0 then
+  begin
+    if DefaultSystemCodePage = CP_UTF8 then
+      Result := UTF8Length(PAnsiChar(@Self[1]), System.Length(Self))
+    else
+      Result := System.Length(Self);
+  end
+  else
+    Result := 0;
 end;
 
 function TAnsiStringHelper.GetLength: Integer;
 begin
-
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
 end;
 
 function TRawByteStringHelper.GetLength: Integer;
 begin
-
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
 end;
 
 function TUTF8StringHelper.GetLength: Integer;
 begin
-
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
 end;
 
 function TWideStringHelper.GetLength: Integer;
 begin
-
+  Result := System.Length(Self);
 end;
 
 function TUnicodeStringHelper.GetLength: Integer;
 begin
-
+  Result := System.Length(Self);
 end;
 
 class function TShortStringHelper.Compare(const StrA: ShortString;
@@ -662,68 +787,68 @@ end;
 
 function TShortStringHelper.Contains(const Value: ShortString): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= 1 {Low(Value)};
 end;
 
 function TAnsiStringHelper.Contains(const Value: AnsiString): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= Low(Value);
 end;
 
 function TRawByteStringHelper.Contains(const Value: RawByteString): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= Low(Value);
 end;
 
 function TUTF8StringHelper.Contains(const Value: UTF8String): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= Low(Value);
 end;
 
 function TWideStringHelper.Contains(const Value: WideString): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= Low(Value);
 end;
 
 function TUnicodeStringHelper.Contains(const Value: UnicodeString): Boolean;
 begin
-
+  Result := System.Pos(Value, Self) >= Low(Value);
 end;
 
 class function TShortStringHelper.Copy(const Str: ShortString):
   ShortString;
 begin
-
+  Result := Str;
 end;
 
 class function TAnsiStringHelper.Copy(const Str: AnsiString):
   AnsiString;
 begin
-
+  Result := Str;
 end;
 
 class function TRawByteStringHelper.Copy(const Str: RawByteString):
   RawByteString;
 begin
-
+  Result := Str;
 end;
 
 class function TUTF8StringHelper.Copy(const Str: UTF8String):
   UTF8String;
 begin
-
+  Result := Str;
 end;
 
 class function TWideStringHelper.Copy(const Str: WideString):
   WideString;
 begin
-
+  Result := Str;
 end;
 
 class function TUnicodeStringHelper.Copy(const Str: UnicodeString):
   UnicodeString;
 begin
-
+  Result := Str;
 end;
 
 procedure TShortStringHelper.CopyTo(SourceIndex: Integer; var Destination:
@@ -1060,7 +1185,7 @@ end;
 class function TUnicodeStringHelper.Format(const Format: UnicodeString;
   const Args: array of const): UnicodeString;
 begin
-  Result := SysUtils.WideFormat(Format, Args);
+  Result := SysUtils.UnicodeFormat(Format, Args);
 end;
 
 function TShortStringHelper.IndexOf(value: AnsiChar): Integer;
@@ -1563,7 +1688,7 @@ end;
 
 function TShortStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = {Self.}Empty;
+  Result := Self = Self.Empty;
 end;
 
 function TAnsiStringHelper.IsEmpty: Boolean;
@@ -1594,7 +1719,7 @@ end;
 class function TShortStringHelper.IsNullOrEmpty(const Value: ShortString):
   Boolean;
 begin
-  Result := Value = TShortStringHelper.Empty;
+  Result := Value = ShortString.Empty;
 end;
 
 class function TAnsiStringHelper.IsNullOrEmpty(const Value: AnsiString):
@@ -2401,125 +2526,127 @@ begin
 
 end;
 
+{$PUSH}{$WARN IMPLICIT_STRING_CAST OFF}
 class function TShortStringHelper.Parse(const Value: Integer): ShortString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TShortStringHelper.Parse(const Value: Int64): ShortString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TShortStringHelper.Parse(const Value: Boolean): ShortString;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TShortStringHelper.Parse(const Value: Extended): ShortString;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
 
 class function TAnsiStringHelper.Parse(const Value: Integer): AnsiString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TAnsiStringHelper.Parse(const Value: Int64): AnsiString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TAnsiStringHelper.Parse(const Value: Boolean): AnsiString;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TAnsiStringHelper.Parse(const Value: Extended): AnsiString;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
 
 class function TRawByteStringHelper.Parse(const Value: Integer): RawByteString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TRawByteStringHelper.Parse(const Value: Int64): RawByteString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TRawByteStringHelper.Parse(const Value: Boolean): RawByteString;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TRawByteStringHelper.Parse(const Value: Extended): RawByteString;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
 
 class function TUTF8StringHelper.Parse(const Value: Integer): UTF8String;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TUTF8StringHelper.Parse(const Value: Int64): UTF8String;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TUTF8StringHelper.Parse(const Value: Boolean): UTF8String;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TUTF8StringHelper.Parse(const Value: Extended): UTF8String;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
 
 class function TWideStringHelper.Parse(const Value: Integer): WideString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TWideStringHelper.Parse(const Value: Int64): WideString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TWideStringHelper.Parse(const Value: Boolean): WideString;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TWideStringHelper.Parse(const Value: Extended): WideString;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
 
 class function TUnicodeStringHelper.Parse(const Value: Integer): UnicodeString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TUnicodeStringHelper.Parse(const Value: Int64): UnicodeString;
 begin
-
+  Result := SysUtils.IntToStr(Value);
 end;
 
 class function TUnicodeStringHelper.Parse(const Value: Boolean): UnicodeString;
 begin
-
+  Result := SysUtils.BoolToStr(Value);
 end;
 
 class function TUnicodeStringHelper.Parse(const Value: Extended): UnicodeString;
 begin
-
+  Result := SysUtils.FloatToStr(Value);
 end;
+{$POP}
 
 function TShortStringHelper.QuotedString: ShortString;
 begin
@@ -3271,130 +3398,131 @@ begin
 
 end;
 
+{$PUSH}{$WARN IMPLICIT_STRING_CAST OFF}{$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 class function TShortStringHelper.ToDouble(const S: ShortString): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TShortStringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TAnsiStringHelper.ToDouble(const S: AnsiString): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TAnsiStringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TRawByteStringHelper.ToDouble(const S: RawByteString): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TRawByteStringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUTF8StringHelper.ToDouble(const S: UTF8String): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUTF8StringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TWideStringHelper.ToDouble(const S: WideString): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TWideStringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUnicodeStringHelper.ToDouble(const S: UnicodeString): Double;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUnicodeStringHelper.ToDouble: Double;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TShortStringHelper.ToExtended(const S: ShortString):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TShortStringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TAnsiStringHelper.ToExtended(const S: AnsiString):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TAnsiStringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TRawByteStringHelper.ToExtended(const S: RawByteString):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TRawByteStringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUTF8StringHelper.ToExtended(const S: UTF8String):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUTF8StringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TWideStringHelper.ToExtended(const S: WideString):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TWideStringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUnicodeStringHelper.ToExtended(const S: UnicodeString):
   Extended;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUnicodeStringHelper.ToExtended: Extended;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TShortStringHelper.ToInt64(const S: ShortString): Int64;
@@ -3439,7 +3567,7 @@ end;
 
 class function TWideStringHelper.ToInt64(const S: WideString): Int64;
 begin
-  Result := SysUtils.StrToInt64(AnsiString(S));
+  Result := SysUtils.StrToInt64(S);
 end;
 
 function TWideStringHelper.ToInt64: Int64;
@@ -3449,7 +3577,7 @@ end;
 
 class function TUnicodeStringHelper.ToInt64(const S: UnicodeString): Int64;
 begin
-  Result := SysUtils.StrToInt64(AnsiString(S));
+  Result := SysUtils.StrToInt64(S);
 end;
 
 function TUnicodeStringHelper.ToInt64: Int64;
@@ -3476,7 +3604,7 @@ end;
 
 function TShortStringHelper.ToInteger: Integer;
 begin
-  Result := {Self.}ToInteger(Self);
+  Result := Self.ToInteger(Self);
 end;
 
 class function TAnsiStringHelper.ToInteger(const S: AnsiString): Integer;
@@ -3551,7 +3679,7 @@ var
   Res64: Int64;
   Error: Word;
 begin
-  Val(AnsiString(S), Res64, Error);
+  Val(S, Res64, Error);
   if (Error <> 0) or (Res64 < Low(Result)) or (Res64 > High(Result)) then
     raise EConvertError.CreateFmt(SInvalidInteger, [S]);
 
@@ -3573,7 +3701,7 @@ var
   Res64: Int64;
   Error: Word;
 begin
-  Val(AnsiString(S), Res64, Error);
+  Val(S, Res64, Error);
   if (Error <> 0) or (Res64 < Low(Result)) or (Res64 > High(Result)) then
     raise EConvertError.CreateFmt(SInvalidInteger, [S]);
 
@@ -3588,6 +3716,7 @@ function TUnicodeStringHelper.ToInteger: Integer;
 begin
   Result := Self.ToInteger(Self);
 end;
+{$POP}
 
 function TShortStringHelper.ToLower: ShortString;
 begin
@@ -3651,42 +3780,58 @@ end;
 
 function TShortStringHelper.ToLowerInvariant: ShortString;
 begin
-  {$IFDEF WINDOWS}
-  { According documentation ShortString's codepage is always CP_ACP,
-    so instead of we'll check program's default codepage.
-    http://wiki.freepascal.org/FPC_Unicode_support#Shortstring }
   if DefaultSystemCodePage = CP_UTF8 then
     Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)))
   else
-    Result := AnsiLowerCase(Self);
-  {$ELSE}
-  Result := AnsiLowerCase(Self);
-  {$ENDIF}
+    Result := RawByteString(WideLowerCase(WideString(Self)));
 end;
 
 function TAnsiStringHelper.ToLowerInvariant: AnsiString;
 begin
-  {$IFDEF WINDOWS}
-  if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)))
-  else
-    Result := AnsiLowerCase(Self);
-  {$ELSE}
-  Result := AnsiLowerCase(Self);
-  {$ENDIF}
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.LowerCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TRawByteStringHelper.ToLowerInvariant: RawByteString;
 begin
-  { According documentation RawByteString's codepage is always CP_NONE,
-    we can't know actual data codepage so unicode is our best hope.
-    http://wiki.freepascal.org/FPC_Unicode_support#RawByteString }
-  Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)));
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.LowerCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TUTF8StringHelper.ToLowerInvariant: UTF8String;
 begin
-  Result := UTF8String(WideLowerCase(UTF8Decode(Self)));
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.LowerCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideLowerCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TWideStringHelper.ToLowerInvariant: WideString;
@@ -3699,65 +3844,67 @@ begin
   Result := WideLowerCase(Self);
 end;
 
+{$PUSH}{$WARN IMPLICIT_STRING_CAST OFF}{$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 class function TShortStringHelper.ToSingle(const S: ShortString): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TShortStringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TAnsiStringHelper.ToSingle(const S: AnsiString): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TAnsiStringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TRawByteStringHelper.ToSingle(const S: RawByteString): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TRawByteStringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUTF8StringHelper.ToSingle(const S: UTF8String): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUTF8StringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TWideStringHelper.ToSingle(const S: WideString): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TWideStringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
 
 class function TUnicodeStringHelper.ToSingle(const S: UnicodeString): Single;
 begin
-
+  Result := SysUtils.StrToFloat(S);
 end;
 
 function TUnicodeStringHelper.ToSingle: Single;
 begin
-
+  Result := SysUtils.StrToFloat(Self);
 end;
+{$POP}
 
 function TShortStringHelper.ToUpper: ShortString;
 begin
@@ -3821,42 +3968,58 @@ end;
 
 function TShortStringHelper.ToUpperInvariant: ShortString;
 begin
-  {$IFDEF WINDOWS}
-  { According documentation ShortString's codepage is always CP_ACP,
-    so instead of we'll check program's default codepage.
-    http://wiki.freepascal.org/FPC_Unicode_support#Shortstring }
   if DefaultSystemCodePage = CP_UTF8 then
     Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)))
   else
-    Result := AnsiUpperCase(Self);
-  {$ELSE}
-  Result := AnsiUpperCase(Self);
-  {$ENDIF}
+    Result := RawByteString(WideUpperCase(WideString(Self)));
 end;
 
 function TAnsiStringHelper.ToUpperInvariant: AnsiString;
 begin
-  {$IFDEF WINDOWS}
-  if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)))
-  else
-    Result := AnsiUpperCase(Self);
-  {$ELSE}
-  Result := AnsiUpperCase(Self);
-  {$ENDIF}
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.UpCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TRawByteStringHelper.ToUpperInvariant: RawByteString;
 begin
-  { According documentation RawByteString's codepage is always CP_NONE,
-    we can't know actual data codepage so unicode is our best hope.
-    http://wiki.freepascal.org/FPC_Unicode_support#RawByteString }
-  Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)));
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.UpCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TUTF8StringHelper.ToUpperInvariant: UTF8String;
 begin
-  Result := UTF8String(WideUpperCase(UTF8Decode(Self)));
+  case StringCodePage(Self) of
+    CP_UTF8:
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Self)));
+    CP_NONE:
+      Result := System.UpCase(Self);
+    else begin
+      Result := Self;
+      SetCodePage(RawByteString(Result), CP_UTF8);
+      Result := UTF8Encode(WideUpperCase(UTF8Decode(Result)));
+      SetCodePage(RawByteString(Result), StringCodePage(Self));
+    end;
+  end;
 end;
 
 function TWideStringHelper.ToUpperInvariant: WideString;
@@ -3871,74 +4034,74 @@ end;
 
 function TShortStringHelper.Trim: ShortString;
 begin
-
+  Result := SysUtils.Trim(Self);
 end;
 
 function TShortStringHelper.Trim(const TrimChars: array of AnsiChar):
   ShortString;
 begin
-
+  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
 end;
 
-function TAnsiStringHelper.Trim: AnsiString;
+//function TAnsiStringHelper.Trim: AnsiString;
+//begin
+//  Result := SysUtils.Trim(Self);
+//end;
+
+//function TAnsiStringHelper.Trim(const TrimChars: array of AnsiChar):
+//  AnsiString;
+//begin
+//  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
+//end;
+
+//function TRawByteStringHelper.Trim: RawByteString;
+//begin
+//  Result := SysUtils.Trim(Self);
+//end;
+
+//function TRawByteStringHelper.Trim(const TrimChars: array of AnsiChar):
+//  RawByteString;
+//begin
+//  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
+//end;
+
+(*function TUTF8StringHelper.Trim: UTF8String;
 begin
-
-end;
-
-function TAnsiStringHelper.Trim(const TrimChars: array of AnsiChar):
-  AnsiString;
-begin
-
-end;
-
-function TRawByteStringHelper.Trim: RawByteString;
-begin
-
-end;
-
-function TRawByteStringHelper.Trim(const TrimChars: array of AnsiChar):
-  RawByteString;
-begin
-
-end;
-
-function TUTF8StringHelper.Trim: UTF8String;
-begin
-
+  Result := SysUtils.Trim(Self);
 end;
 
 function TUTF8StringHelper.Trim(const TrimChars: array of AnsiChar):
   UTF8String;
 begin
-
+  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
 end;
 
 function TWideStringHelper.Trim: WideString;
 begin
-
+  Result := SysUtils.Trim(Self);
 end;
 
 function TWideStringHelper.Trim(const TrimChars: array of WideChar):
   WideString;
 begin
-
+  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
 end;
 
 function TUnicodeStringHelper.Trim: UnicodeString;
 begin
-
+  Result := SysUtils.Trim(Self);
 end;
 
 function TUnicodeStringHelper.Trim(const TrimChars: array of UnicodeChar):
   UnicodeString;
 begin
-
-end;
+  Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
+end; *)
 
 function TShortStringHelper.TrimEnd(const TrimChars: array of AnsiChar):
   ShortString;
 begin
-  Result := {Self.}TrimRight(TrimChars);
+  Result := Self.TrimRight(TrimChars);
 end;
 
 function TAnsiStringHelper.TrimEnd(const TrimChars: array of AnsiChar):
@@ -3973,143 +4136,327 @@ end;
 
 function TShortStringHelper.TrimLeft: ShortString;
 begin
-
+  Result := SysUtils.TrimLeft(Self);
 end;
 
 function TShortStringHelper.TrimLeft(const TrimChars: array of AnsiChar):
   ShortString;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  i := 1{Low(Self)};
+  LastChar := Self.Length;
+  while (i <= LastChar) and (Self[i] in TrimSet) do
+    Inc(i);
+
+  if i = 1 then
+    Result := Self
+  else if i > LastChar then
+    Result := ''
+  else
+    Result := System.Copy(Self, i, LastChar - i + 1{Low(Self)});
 end;
 
-function TAnsiStringHelper.TrimLeft: AnsiString;
-begin
+//function TAnsiStringHelper.TrimLeft: AnsiString;
+//begin
+//  Result := SysUtils.TrimLeft(Self);
+//end;
 
-end;
+//function TAnsiStringHelper.TrimLeft(const TrimChars: array of AnsiChar):
+//  AnsiString;
+//var
+//  TrimSet: set of AnsiChar;
+//  i, LastChar: Integer;
+//begin
+//  TrimSet := [];
+//  for i := Low(TrimChars) to High(TrimChars) do
+//    TrimSet := TrimSet + [TrimChars[i]];
+//
+//  i := Low(Self);
+//  LastChar := High(Self);
+//  while (i <= LastChar) and (Self[i] in TrimSet) do
+//    Inc(i);
 
-function TAnsiStringHelper.TrimLeft(const TrimChars: array of AnsiChar):
-  AnsiString;
-begin
+//  if i = 1 then
+//    Result := Self
+//  else if i > LastChar then
+//    Result := ''
+//  else
+//    Result := System.Copy(Self, i, LastChar - i + Low(Self));
+//end;
 
-end;
+//function TRawByteStringHelper.TrimLeft: RawByteString;
+//begin
+//  Result := SysUtils.TrimLeft(Self);
+//end;
 
-function TRawByteStringHelper.TrimLeft: RawByteString;
-begin
-
-end;
-
-function TRawByteStringHelper.TrimLeft(const TrimChars: array of AnsiChar):
+(*function TRawByteStringHelper.TrimLeft(const TrimChars: array of AnsiChar):
   RawByteString;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  i := Low(Self);
+  LastChar := High(Self);
+  while (i <= LastChar) and (Self[i] in TrimSet) do
+    Inc(i);
+
+  if i = 1 then
+    Result := Self
+  else if i > LastChar then
+    Result := ''
+  else
+    Result := System.Copy(Self, i, LastChar - i + Low(Self));
 end;
 
 function TUTF8StringHelper.TrimLeft: UTF8String;
 begin
-
+  Result := SysUtils.TrimLeft(Self);
 end;
 
 function TUTF8StringHelper.TrimLeft(const TrimChars: array of AnsiChar):
   UTF8String;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  i := Low(Self);
+  LastChar := High(Self);
+  while (i <= LastChar) and (Self[i] in TrimSet) do
+    Inc(i);
+
+  if i = 1 then
+    Result := Self
+  else if i > LastChar then
+    Result := ''
+  else
+    Result := System.Copy(Self, i, LastChar - i + Low(Self));
 end;
 
 function TWideStringHelper.TrimLeft: WideString;
 begin
-
+  Result := SysUtils.TrimLeft(Self);
 end;
 
 function TWideStringHelper.TrimLeft(const TrimChars: array of WideChar):
   WideString;
+var
+  i, LastChar: Integer;
 begin
+  i := Low(Self);
+  LastChar := High(Self);
+  while (i <= LastChar) and HaveChar(Self[i], TrimChars) do
+    Inc(i);
 
+  if i = 1 then
+    Result := Self
+  else if i > LastChar then
+    Result := ''
+  else
+    Result := System.Copy(Self, i, LastChar - i + Low(Self));
 end;
 
 function TUnicodeStringHelper.TrimLeft: UnicodeString;
 begin
-
+  Result := SysUtils.TrimLeft(Self);
 end;
 
 function TUnicodeStringHelper.TrimLeft(const TrimChars: array of UnicodeChar):
   UnicodeString;
+var
+  i, LastChar: Integer;
 begin
+  i := Low(Self);
+  LastChar := High(Self);
+  while (i <= LastChar) and HaveChar(Self[i], TrimChars) do
+    Inc(i);
 
-end;
+  if i = 1 then
+    Result := Self
+  else if i > LastChar then
+    Result := ''
+  else
+    Result := System.Copy(Self, i, LastChar - i + Low(Self));
+end; *)
 
 function TShortStringHelper.TrimRight: ShortString;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TShortStringHelper.TrimRight(const TrimChars: array of AnsiChar):
   ShortString;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  LastChar := Self.Length;
+  i := LastChar;
+  while (i >= 1{Low(Self)}) and (Self[i] in TrimSet) do
+    Dec(i);
+
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, 1{Low(Self)}, i);
 end;
 
 function TAnsiStringHelper.TrimRight: AnsiString;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TAnsiStringHelper.TrimRight(const TrimChars: array of AnsiChar):
   AnsiString;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  LastChar := High(Self);
+  i := LastChar;
+  while (i >= Low(Self)) and (Self[i] in TrimSet) do
+    Dec(i);
+
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, Low(Self), i);
 end;
 
 function TRawByteStringHelper.TrimRight: RawByteString;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TRawByteStringHelper.TrimRight(const TrimChars: array of AnsiChar):
   RawByteString;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  LastChar := High(Self);
+  i := LastChar;
+  while (i >= Low(Self)) and (Self[i] in TrimSet) do
+    Dec(i);
+
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, Low(Self), i);
 end;
 
 function TUTF8StringHelper.TrimRight: UTF8String;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TUTF8StringHelper.TrimRight(const TrimChars: array of AnsiChar):
   UTF8String;
+var
+  TrimSet: set of AnsiChar;
+  i, LastChar: Integer;
 begin
+  TrimSet := [];
+  for i := Low(TrimChars) to High(TrimChars) do
+    TrimSet := TrimSet + [TrimChars[i]];
 
+  LastChar := High(Self);
+  i := LastChar;
+  while (i >= Low(Self)) and (Self[i] in TrimSet) do
+    Dec(i);
+
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, Low(Self), i);
 end;
 
 function TWideStringHelper.TrimRight: WideString;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TWideStringHelper.TrimRight(const TrimChars: array of WideChar):
   WideString;
+var
+  i, LastChar: Integer;
 begin
+  LastChar := High(Self);
+  i := LastChar;
+  while (i >= Low(Self)) and HaveChar(Self[i], TrimChars) do
+    Dec(i);
 
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, Low(Self), i);
 end;
 
 function TUnicodeStringHelper.TrimRight: UnicodeString;
 begin
-
+  Result := SysUtils.TrimRight(Self);
 end;
 
 function TUnicodeStringHelper.TrimRight(const TrimChars: array of UnicodeChar):
   UnicodeString;
+var
+  i, LastChar: Integer;
 begin
+  LastChar := High(Self);
+  i := LastChar;
+  while (i >= Low(Self)) and HaveChar(Self[i], TrimChars) do
+    Dec(i);
 
+  if i < 1 then
+    Result := ''
+  else if i = LastChar then
+    Result := Self
+  else
+    Result := System.Copy(Self, Low(Self), i);
 end;
 
 function TShortStringHelper.TrimStart(const TrimChars: array of AnsiChar):
   ShortString;
 begin
-  Result := {Self.}TrimLeft(TrimChars);
+  Result := Self.TrimLeft(TrimChars);
 end;
 
-function TAnsiStringHelper.TrimStart(const TrimChars: array of AnsiChar):
+(* function TAnsiStringHelper.TrimStart(const TrimChars: array of AnsiChar):
   AnsiString;
 begin
   Result := Self.TrimLeft(TrimChars);
@@ -4137,7 +4484,7 @@ function TUnicodeStringHelper.TrimStart(const TrimChars: array of UnicodeChar):
   UnicodeString;
 begin
   Result := Self.TrimLeft(TrimChars);
-end;
+end; *)
 
 class function TShortStringHelper.UpperCase(const S: ShortString):
   ShortString;

@@ -19,39 +19,19 @@ uses
   {$IFDEF WINDOWS}
   Windows,
   {$ENDIF}
-  Types, SysUtils;
+  {Types,} SysUtils;
 
 type
-  TArray<T> = array of T;
-
-  {$IF (FPC_VERSION = 3) AND (FPC_RELEASE = 0)}
-  TEndian = (Big, Little);
-  {$IFEND}
-
-  TGuidHelper = record helper for System.TGUID
-  public
-    class function Create(const S: AnsiString): TGUID; overload; static;
-    class function Create(const S: UnicodeString): TGUID; overload; static;
-    class function Create(const Data; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
-    class function Create(const B: TBytes; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
-    class function Create(const B: TBytes; AStartIndex: Cardinal; DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TGUID; overload; static;
-    class function Create(A: Integer; B: SmallInt; C: SmallInt; const D: TBytes): TGUID; overload; static;
-    class function Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F, G, H, I, J, K: Byte): TGUID; overload; static;
-    class function Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H, I, J, K: Byte): TGUID; overload; static;
-    class function Empty: TGUID; static;
-    class function NewGuid: TGUID; static;
-    function ToByteArray(DataEndian: TEndian = {$IFDEF ENDIAN_BIG}TEndian.Big{$ELSE}TEndian.Little{$ENDIF}): TBytes;
-    function ToString: string;
-  end;
+// del?  TArray<T> = array of T;
 
   TLocaleID = {$IFDEF WINDOWS}LCID{$ELSE}DWord{$ENDIF};
-  TLocaleOptions = (loInvariantLocale, loUserLocale);
-  TStringSplitOptions = (None, ExcludeEmpty);
 
   TShortStringHelper = record helper for ShortString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
-    function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetLength: Integer;
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): ShortString;
   public
     const Empty: ShortString = '';
     class function Create(C: AnsiChar; Count: Integer): ShortString; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -173,12 +153,17 @@ type
     class function UpperCase(const S: ShortString; LocaleOptions: TLocaleOptions): ShortString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: AnsiChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: ShortString read GetCodePoints;
   end;
 
   TAnsiStringHelper = record helper for AnsiString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
-    function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetLength: Integer;
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): AnsiString;
   public
     const Empty: AnsiString = '';
     class function Create(C: AnsiChar; Count: Integer): AnsiString; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -288,24 +273,29 @@ type
     function ToUpper: AnsiString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function ToUpper(LocaleID: TLocaleID): AnsiString; overload;
     function ToUpperInvariant: AnsiString;
-    function Trim: AnsiString; overload;
-    function Trim(const TrimChars: array of AnsiChar): AnsiString; overload;
+//    function Trim: AnsiString; overload;
+//    function Trim(const TrimChars: array of AnsiChar): AnsiString; overload;
     function TrimEnd(const TrimChars: array of AnsiChar): AnsiString; {not yet supported inline;} deprecated 'Use TrimRight';
-    function TrimLeft: AnsiString; overload;
-    function TrimLeft(const TrimChars: array of AnsiChar): AnsiString; overload;
+//    function TrimLeft: AnsiString; overload;
+//    function TrimLeft(const TrimChars: array of AnsiChar): AnsiString; overload;
     function TrimRight: AnsiString; overload;
     function TrimRight(const TrimChars: array of AnsiChar): AnsiString; overload;
-    function TrimStart(const TrimChars: array of AnsiChar): AnsiString; {not yet supported inline;} deprecated 'Use TrimLeft';
+//    function TrimStart(const TrimChars: array of AnsiChar): AnsiString; {not yet supported inline;} deprecated 'Use TrimLeft';
     class function UpperCase(const S: AnsiString): AnsiString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function UpperCase(const S: AnsiString; LocaleOptions: TLocaleOptions): AnsiString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: AnsiChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: AnsiString read GetCodePoints;
   end;
 
   TRawByteStringHelper = record helper for RawByteString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
-    function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetLength: Integer;
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): RawByteString;
   public
     const Empty: RawByteString = '';
     class function Create(C: AnsiChar; Count: Integer): RawByteString; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -415,24 +405,29 @@ type
     function ToUpper: RawByteString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function ToUpper(LocaleID: TLocaleID): RawByteString; overload;
     function ToUpperInvariant: RawByteString;
-    function Trim: RawByteString; overload;
-    function Trim(const TrimChars: array of AnsiChar): RawByteString; overload;
+//    function Trim: RawByteString; overload;
+//    function Trim(const TrimChars: array of AnsiChar): RawByteString; overload;
     function TrimEnd(const TrimChars: array of AnsiChar): RawByteString; {not yet supported inline;} deprecated 'Use TrimRight';
-    function TrimLeft: RawByteString; overload;
-    function TrimLeft(const TrimChars: array of AnsiChar): RawByteString; overload;
+//    function TrimLeft: RawByteString; overload;
+//    function TrimLeft(const TrimChars: array of AnsiChar): RawByteString; overload;
     function TrimRight: RawByteString; overload;
     function TrimRight(const TrimChars: array of AnsiChar): RawByteString; overload;
-    function TrimStart(const TrimChars: array of AnsiChar): RawByteString; {not yet supported inline;} deprecated 'Use TrimLeft';
+//    function TrimStart(const TrimChars: array of AnsiChar): RawByteString; {not yet supported inline;} deprecated 'Use TrimLeft';
     class function UpperCase(const S: RawByteString): RawByteString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function UpperCase(const S: RawByteString; LocaleOptions: TLocaleOptions): RawByteString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: AnsiChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: RawByteString read GetCodePoints;
   end;
 
   TUTF8StringHelper = record helper for UTF8String
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
-    function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetLength: Integer;
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): UTF8String;
   public
     const Empty: UTF8String = '';
     class function Create(C: AnsiChar; Count: Integer): UTF8String; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -542,24 +537,30 @@ type
     function ToUpper: UTF8String; overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function ToUpper(LocaleID: TLocaleID): UTF8String; overload;
     function ToUpperInvariant: UTF8String;
-    function Trim: UTF8String; overload;
-    function Trim(const TrimChars: array of AnsiChar): UTF8String; overload;
+//    function Trim: UTF8String; overload;
+//    function Trim(const TrimChars: array of AnsiChar): UTF8String; overload;
     function TrimEnd(const TrimChars: array of AnsiChar): UTF8String; {not yet supported inline;} deprecated 'Use TrimRight';
-    function TrimLeft: UTF8String; overload;
-    function TrimLeft(const TrimChars: array of AnsiChar): UTF8String; overload;
+//    function TrimLeft: UTF8String; overload;
+//    function TrimLeft(const TrimChars: array of AnsiChar): UTF8String; overload;
     function TrimRight: UTF8String; overload;
     function TrimRight(const TrimChars: array of AnsiChar): UTF8String; overload;
-    function TrimStart(const TrimChars: array of AnsiChar): UTF8String; {not yet supported inline;} deprecated 'Use TrimLeft';
+//    function TrimStart(const TrimChars: array of AnsiChar): UTF8String; {not yet supported inline;} deprecated 'Use TrimLeft';
     class function UpperCase(const S: UTF8String): UTF8String; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function UpperCase(const S: UTF8String; LocaleOptions: TLocaleOptions): UTF8String; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: AnsiChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: UTF8String read GetCodePoints;
   end;
 
   TWideStringHelper = record helper for WideString
   private
+    class function HaveChar(AChar: WideChar; const AList: array of WideChar): Boolean; static;
     function GetChars(Index: Integer): WideChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
     function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): WideString; {$IFDEF HAS_INLINE}inline;{$ENDIF}
   public
     const Empty: WideString = '';
     class function Create(C: WideChar; Count: Integer): WideString; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -669,24 +670,30 @@ type
     function ToUpper: WideString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function ToUpper(LocaleID: TLocaleID): WideString; overload;
     function ToUpperInvariant: WideString;
-    function Trim: WideString; overload;
-    function Trim(const TrimChars: array of WideChar): WideString; overload;
+//    function Trim: WideString; overload;
+//    function Trim(const TrimChars: array of WideChar): WideString; overload;
     function TrimEnd(const TrimChars: array of WideChar): WideString; {not yet supported inline;} deprecated 'Use TrimRight';
-    function TrimLeft: WideString; overload;
-    function TrimLeft(const TrimChars: array of WideChar): WideString; overload;
+//    function TrimLeft: WideString; overload;
+//    function TrimLeft(const TrimChars: array of WideChar): WideString; overload;
     function TrimRight: WideString; overload;
     function TrimRight(const TrimChars: array of WideChar): WideString; overload;
-    function TrimStart(const TrimChars: array of WideChar): WideString; {not yet supported inline;} deprecated 'Use TrimLeft';
+//    function TrimStart(const TrimChars: array of WideChar): WideString; {not yet supported inline;} deprecated 'Use TrimLeft';
     class function UpperCase(const S: WideString): WideString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function UpperCase(const S: WideString; LocaleOptions: TLocaleOptions): WideString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: WideChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: WideString read GetCodePoints;
   end;
 
   TUnicodeStringHelper = record helper for UnicodeString
   private
+    class function HaveChar(AChar: UnicodeChar; const AList: array of UnicodeChar): Boolean; static;
     function GetChars(Index: Integer): UnicodeChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
     function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCodePoints(Index: Integer): UnicodeString; {$IFDEF HAS_INLINE}inline;{$ENDIF}
   public
     const Empty: UnicodeString = '';
     class function Create(C: UnicodeChar; Count: Integer): UnicodeString; overload; {$IFNDEF _TEST}inline;{$ENDIF} static;
@@ -796,18 +803,21 @@ type
     function ToUpper: UnicodeString; overload; {$IFNDEF _TEST}inline;{$ENDIF}
     function ToUpper(LocaleID: TLocaleID): UnicodeString; overload;
     function ToUpperInvariant: UnicodeString;
-    function Trim: UnicodeString; overload;
-    function Trim(const TrimChars: array of UnicodeChar): UnicodeString; overload;
+//    function Trim: UnicodeString; overload;
+//    function Trim(const TrimChars: array of UnicodeChar): UnicodeString; overload;
     function TrimEnd(const TrimChars: array of UnicodeChar): UnicodeString; {not yet supported inline;} deprecated 'Use TrimRight';
-    function TrimLeft: UnicodeString; overload;
-    function TrimLeft(const TrimChars: array of UnicodeChar): UnicodeString; overload;
+//    function TrimLeft: UnicodeString; overload;
+//    function TrimLeft(const TrimChars: array of UnicodeChar): UnicodeString; overload;
     function TrimRight: UnicodeString; overload;
     function TrimRight(const TrimChars: array of UnicodeChar): UnicodeString; overload;
-    function TrimStart(const TrimChars: array of UnicodeChar): UnicodeString; {not yet supported inline;} deprecated 'Use TrimLeft';
+//    function TrimStart(const TrimChars: array of UnicodeChar): UnicodeString; {not yet supported inline;} deprecated 'Use TrimLeft';
     class function UpperCase(const S: UnicodeString): UnicodeString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     class function UpperCase(const S: UnicodeString; LocaleOptions: TLocaleOptions): UnicodeString; overload; static; {$IFNDEF _TEST}inline;{$ENDIF}
     property Chars[Index: Integer]: UnicodeChar read GetChars;
     property Length: Integer read GetLength;
+    { Non Delphi }
+    property ByteLength: Integer read GetByteLength;
+    property CodePoints[Index: Integer]: UnicodeString read GetCodePoints;
   end;
 
 
@@ -817,144 +827,73 @@ uses
   {$IFDEF CPU64}
   sysconst,
   {$ENDIF}
+  {$IFDEF _WITH_LAZARUS}
+  LazUTF8,
+  {$ENDIF}
   Math, System.Helpers.Strings;
 
-{ TGuidHelper }
+{$IFDEF _WITH_LAZARUS}
 
-class function TGuidHelper.Create(const S: AnsiString): TGUID;
+function UTF8CharacterLength(p: PAnsiChar): Integer;
 begin
-  Result := StringToGUID(S);
-end;
-
-class function TGuidHelper.Create(const S: UnicodeString): TGUID;
-begin
-  Result := StringToGUID(AnsiString(S));
-end;
-
-class function TGuidHelper.Create(const Data; DataEndian: TEndian): TGUID;
-begin
-  Result := TGUID(Data);
-  if DataEndian = {$IFDEF ENDIAN_BIG}TEndian.Little{$ELSE}TEndian.Big{$ENDIF} then
+  if p <> nil then
   begin
-    Result.D1 := SwapEndian(Result.D1);
-    Result.D2 := SwapEndian(Result.D2);
-    Result.D3 := SwapEndian(Result.D3);
-  end;
-end;
-
-class function TGuidHelper.Create(const B: TBytes; DataEndian: TEndian): TGUID;
-begin
-  Result := Create(B, 0, DataEndian);
-end;
-
-class function TGuidHelper.Create(const B: TBytes; AStartIndex: Cardinal; DataEndian: TEndian): TGUID;
-var
-  MaxIndex: TDynArrayIndex;
-begin
-  MaxIndex := TDynArrayIndex(AStartIndex + SizeOf(TGUID));
-  if MaxIndex < 0 then
-    OutOfMemoryError;
-
-  if Length(B) >= MaxIndex then
-    Result := Create(B[AStartIndex], DataEndian)
-  else
-    raise EArgumentException.CreateResFmt(@SInvalidGuidArray, [SizeOf(TGUID)]);
-end;
-
-class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt; const D: TBytes): TGUID;
-begin
-  if Length(D) = Length(Result.D4) then
-  begin
-    Result.D1 := DWord(A);
-    Result.D2 := Word(B);
-    Result.D3 := Word(C);
-    Move(D[0], Result.D4[0], SizeOf(Result.D4));
+    if Ord(p^) < $c0 then
+    begin
+      { regular single byte character (#0 is a character, this is pascal ;) }
+      Result := 1;
+    end
+    else begin
+      { multi byte }
+      if (Ord(p^) and $e0) = $c0 then
+      begin
+        { could be 2 byte character }
+        if (Ord(p[1]) and $c0) = $80 then
+          Result := 2
+        else
+          Result := 1;
+      end
+      else if (Ord(p^) and $f0) = $e0 then
+      begin
+        { could be 3 byte character }
+        if ((Ord(p[1]) and $c0) = $80)
+        and ((ord(p[2]) and $c0) = $80) then
+          Result := 3
+        else
+          Result := 1;
+      end
+      else if ((ord(p^) and $f8) = $f0) then
+      begin
+        { could be 4 byte character }
+        if ((Ord(p[1]) and $c0) = $80) and ((Ord(p[2]) and $c0) = $80) and
+          ((Ord(p[3]) and $c0) = $80) then
+          Result := 4
+        else
+          Result := 1;
+      end
+      else
+        Result := 1;
+    end;
   end
   else
-    raise EArgumentException.CreateFmt(SInvalidGuidArray, [8]);
+    Result := 0;
 end;
 
-class function TGuidHelper.Create(A: Integer; B: SmallInt; C: SmallInt; D, E, F, G, H, I, J, K: Byte): TGUID;
-begin
-  Result.D1 := DWord(A);
-  Result.D2 := Word(B);
-  Result.D3 := Word(C);
-  Result.D4[0] := D;
-  Result.D4[1] := E;
-  Result.D4[2] := F;
-  Result.D4[3] := G;
-  Result.D4[4] := H;
-  Result.D4[5] := I;
-  Result.D4[6] := J;
-  Result.D4[7] := K;
-end;
-
-class function TGuidHelper.Create(A: Cardinal; B: Word; C: Word; D, E, F, G, H, I, J, K: Byte): TGUID;
-begin
-  Result.D1 := A;
-  Result.D2 := B;
-  Result.D3 := C;
-  Result.D4[0] := D;
-  Result.D4[1] := E;
-  Result.D4[2] := F;
-  Result.D4[3] := G;
-  Result.D4[4] := H;
-  Result.D4[5] := I;
-  Result.D4[6] := J;
-  Result.D4[7] := K;
-end;
-
-class function TGuidHelper.Empty: TGUID;
-begin
-  Result := GUID_NULL;
-end;
-
-class function TGuidHelper.NewGuid: TGUID;
-begin
-  if CreateGUID(Result) <> S_OK then
-    RaiseLastOSError;
-end;
-
-function TGuidHelper.ToByteArray(DataEndian: TEndian): TBytes;
+function UTF8Length(p: PAnsiChar; ByteCount: Integer): Integer;
 var
-  PResult: PGUID;
+  CharLen: LongInt;
 begin
-  SetLength(Result, SizeOf(TGuid));
-  PResult := @Result[0];
-  case DataEndian of
-    TEndian.Big:
-      begin
-        {$IFDEF ENDIAN_BIG}
-        PResult^ := Self;
-        {$ELSE}
-        PResult^.D1 := SwapEndian(Self.D1);
-        PResult^.D2 := SwapEndian(Self.D2);
-        PResult^.D3 := SwapEndian(Self.D3);
-        Move(Self.D4[0], PResult^.D4[0], SizeOf(Self.D4[0]));
-        {$ENDIF}
-      end;
-    TEndian.Little:
-      begin
-        {$IFDEF ENDIAN_BIG}
-        PResult^.D1 := SwapEndian(Self.D1);
-        PResult^.D2 := SwapEndian(Self.D2);
-        PResult^.D3 := SwapEndian(Self.D3);
-        Move(Self.D4[0], PResult^.D4[0], SizeOf(Self.D4[0]));
-        {$ELSE}
-        PResult^ := Self;
-        {$ENDIF}
-      end;
+  Result := 0;
+  while ByteCount > 0 do
+  begin
+    Inc(Result);
+    CharLen := UTF8CharacterLength(p);
+    Inc(p, CharLen);
+    Dec(ByteCount, CharLen);
   end;
 end;
 
-function TGuidHelper.ToString: string;
-begin
-  {$IF SIZEOF(Char) = 2}
-  Result := UnicodeString(GuidToString(Self));
-  {$ELSE}
-  Result := GuidToString(Self);
-  {$IFEND}
-end;
+{$ENDIF !_WITH_LAZARUS}
 
 { TShortStringHelper, TAnsiStringHelper, TRawByteStringHelper,
   TUTF8StringHelper, TWideStringHelper, TUnicodeStringHelper }

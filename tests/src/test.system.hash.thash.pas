@@ -31,13 +31,13 @@ type
   strict private
     FBadDigest: TBytes;
     procedure FailDigestInteger;
-    procedure FailDigestGuid;
+    (* procedure FailDigestGuid; *)
   public
     procedure SetUp; override;
   published
     procedure TestDigestAsInteger;
     procedure TestDigestAsString;
-    procedure TestDigestAsStringGUID;
+    (* procedure TestDigestAsStringGUID; *)
     procedure TestGetRandomString;
     procedure TestToBigEndianCardinal;
     procedure TestToBigEndianUInt64;
@@ -92,7 +92,7 @@ begin
   CheckEquals('', THash.DigestAsString(FBadDigest));
 end;
 
-procedure TTestTHash.FailDigestGuid;
+(* procedure TTestTHash.FailDigestGuid;
 begin
   THash.DigestAsStringGUID(FBadDigest);
 end;
@@ -111,7 +111,7 @@ begin
   CheckEquals('{01020304-0506-0708-090A-0B0C0D0E0F10}', THash.DigestAsStringGUID(Digest));
 
   CheckException(FailDigestGuid, EArgumentException);
-end;
+end; *)
 
 procedure TTestTHash.TestGetRandomString;
 const

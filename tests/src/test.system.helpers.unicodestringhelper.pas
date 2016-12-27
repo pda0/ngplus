@@ -45,8 +45,8 @@ type
     procedure TestCompareOrdinal;
     procedure TestCompareText;
     procedure TestCompareTo;
-    procedure TestContains;
-    procedure TestCopy;
+    //procedure TestContains;
+    //procedure TestCopy;
     procedure TestCopyTo;
     procedure TestCountChar;
     procedure TestDeQuotedString;
@@ -72,55 +72,82 @@ type
     procedure TestSubstring;
     procedure TestToBoolean;
     procedure TestToCharArray;
-    procedure TestToDouble;
-    procedure TestToExtended;
+    //procedure TestToDouble;
+    //procedure TestToExtended;
     //procedure TestToInteger;
     procedure TestToLower;
     //procedure TestToLowerInvariant;
-    procedure TestToSingle;
+    //procedure TestToSingle;
     procedure TestToUpper;
     //procedure TestToUpperInvariant;
-    procedure TestTrim;
-    procedure TestTrimLeft;
-    procedure TestTrimRight;
+    //procedure TestTrim;
+    //procedure TestTrimLeft;
+    //procedure TestTrimRight;
     procedure TestUpperCase;
-    procedure TestChars;
-    procedure TestLength;
-    {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
-    procedure TestParse;
-    {$IFEND}
+    //procedure TestChars;
+    //procedure TestLength;
+    //procedure TestParse;
     //procedure TestToInt64;
     procedure TestIndexOfAnyUnquoted;
   published
     procedure TestCreate;
+
+    procedure TestContains;
+    procedure TestCopy;
 
     procedure TestEquals;
     procedure TestFormat;
 
     procedure TestEmpty;
 
+    procedure TestToDouble;
+    procedure TestToExtended;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
+    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
+    (* procedure TestTrim;
+    procedure TestTrimLeft; *)
+    procedure TestTrimRight;
 
+    procedure TestChars;
+    procedure TestLength;
+
+    {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
+    procedure TestParse;
+    {$IFEND}
     {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
     procedure TestToInt64;
     //procedure TestIndexOfAnyUnquoted;
     {$IFEND}
+    { Non Delphi }
+    {$IFDEF FPC}
+    procedure TestByteLength;
+    procedure TestCodePoints;
+    {$ENDIF FPC}
   end;
 {$IFEND}
 
 implementation
 
 {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE3_PLUS)}
+type
+  TUChar = {$IFDEF FPC}UnicodeChar{$ELSE}WideChar{$ENDIF};
+
 const
   TEST_STR: UnicodeString = 'This is a string.';
   TEST_INT64: Int64 = 3000000000;
 
-type
-  TUChar = {$IFDEF FPC}UnicodeChar{$ELSE}WideChar{$ENDIF};
+  TEST_CP_LATIN_SMALL_LETTER_S = TUChar($0073);
+  TEST_CP_COMBINING_DOT_BELOW = TUChar($0323);
+  TEST_CP_COMBINING_DOT_ABOVE = TUChar($0307);
+  TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE = TUChar($1e69);
+
+  TEST_CPS: UnicodeString = TEST_CP_LATIN_SMALL_LETTER_S +
+    TEST_CP_COMBINING_DOT_BELOW + TEST_CP_COMBINING_DOT_ABOVE +
+    TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE;
 
 { TTestUnicodeStringHelper }
 
@@ -169,8 +196,8 @@ begin
 
   CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 0, Str2, 0, 7));
   CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 0, Str2, 0, 8));
-  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 1));  //!!!
-  CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 0));
+  CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str1), 1));
+  CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str1), 0));
 
   CheckEquals(-1, UnicodeString.CompareOrdinal(Str1, 6 + Low(Str1), Str2, 6 + Low(Str2), 2));
   CheckEquals(0, UnicodeString.CompareOrdinal(Str1, 7 + Low(Str1), Str2, 7 + Low(Str2), 1));
@@ -313,6 +340,10 @@ begin
   Str := '';
   CheckEquals(-1, Str.IndexOf('s'));
   CheckEquals(-1, Str.IndexOf('s', 0, 0));
+
+  { Unicode combining test }
+  Str := TEST_CPS + TEST_STR;
+  CheckEquals(14, Str.IndexOf('s', 12, 3));
 end;
 
 procedure TTestUnicodeStringHelper.TestIndexOfAny;
@@ -330,6 +361,10 @@ begin
   Str := '';
   CheckEquals(-1, Str.IndexOfAny(['w', 's', 'a']));
   CheckEquals(-1, Str.IndexOfAny(['T'], 0, 0));
+
+  { Unicode combining test }
+  Str := TEST_CPS + TEST_STR;
+  CheckEquals(10, Str.IndexOfAny(['w', 's', 'a'], 8, 3));
 end;
 
 procedure TTestUnicodeStringHelper.TestInsert;
@@ -345,22 +380,28 @@ begin
   CheckEquals(UnicodeString('Yes. This is a string.!!'), Str1.Insert(100, '!'));
 
   CheckEquals(UnicodeString('@'), Str2.Insert(0, '@'));
+
+  { Unicode combining test }
+  Str1 := TEST_CPS + 'This a string.';
+  CheckEquals(TEST_CPS + TEST_STR, Str1.Insert(9, 'is '));
 end;
 
 procedure TTestUnicodeStringHelper.TestIsDelimiter;
 var
   Str: UnicodeString;
 begin
-  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  Str := '';
   CheckFalse(Str.IsDelimiter('is', 0));
-  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
 
   Str := TEST_STR;
-
   CheckTrue(Str.IsDelimiter('is', 5));
   CheckTrue(Str.IsDelimiter('is', 6));
   CheckFalse(Str.IsDelimiter('is', 7));
   CheckFalse(Str.IsDelimiter('is', 20));
+
+  { Unicode combining test }
+  Str := TEST_CPS + TEST_STR;
+  CheckTrue(Str.IsDelimiter('is', 10));
 end;
 
 procedure TTestUnicodeStringHelper.TestEmpty;
@@ -423,13 +464,15 @@ procedure TTestUnicodeStringHelper.TestLastDelimiter;
 var
   Str: UnicodeString;
 begin
-  {$IFDEF FPC}{$PUSH}{$ENDIF}{$WARNINGS OFF}
+  Str := '';
   CheckEquals(-1, Str.LastDelimiter('is'));
-  {$IFDEF FPC}{$POP}{$ELSE}{$IFDEF _WARNINGS_ENABLED}{$WARNINGS ON}{$ENDIF}{$ENDIF}
 
   Str := TEST_STR;
-
   CheckEquals(13, Str.LastDelimiter('is'));
+
+  { Unicode combining test }
+  Str := TEST_CPS + TEST_STR;
+  CheckEquals(17, Str.LastDelimiter('is'));
 end;
 
 procedure TTestUnicodeStringHelper.TestLastIndexOf;
@@ -460,6 +503,11 @@ begin
 
   CheckEquals(-1, Str.LastIndexOf(UnicodeString('s')));
   CheckEquals(-1, Str.LastIndexOf(UnicodeString('s'), 0, 0));
+
+  { Unicode combining test }
+  Str := TEST_CPS + TEST_STR;
+  CheckEquals(3, Str.LastIndexOf(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE));
+  CheckEquals(10, Str.LastIndexOf(TUChar('s'), 12, 3));
 end;
 
 procedure TTestUnicodeStringHelper.TestLastIndexOfAny;
@@ -483,6 +531,10 @@ begin
   Str := '';
   CheckEquals(-1, Str.LastIndexOfAny(['w', 's', 'a']));
   CheckEquals(-1, Str.LastIndexOfAny(['T'], 0, 0));
+
+  { Unicode combining test }
+  Str := TEST_STR + TEST_CPS;
+  CheckEquals(10, Str.LastIndexOfAny([TEST_CP_LATIN_SMALL_LETTER_S], 11));
 end;
 
 procedure TTestUnicodeStringHelper.TestLowerCase;
@@ -531,6 +583,10 @@ begin
 
   CheckEquals(UnicodeString('This'), Str.Remove(4));
   CheckEquals(UnicodeString('This string.'), Str.Remove(5, 5));
+
+  { Unicode combining test }
+  Str := 'This is ' + TEST_CPS + ' string.';
+  CheckEquals(UnicodeString('This is string.'), Str.Remove(8, 5));
 end;
 
 procedure TTestUnicodeStringHelper.TestReplace;
@@ -585,7 +641,7 @@ begin
   CheckEquals(UnicodeString(''), ResList[3]);
   CheckEquals(UnicodeString(' four'), ResList[4]);
 
-  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], None);
+  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], TStringSplitOptions.None);
   CheckEquals(5, Length(ResList));
   CheckEquals(UnicodeString('one'), ResList[0]);
   CheckEquals(UnicodeString(' two'), ResList[1]);
@@ -593,14 +649,14 @@ begin
   CheckEquals(UnicodeString(''), ResList[3]);
   CheckEquals(UnicodeString(' four'), ResList[4]);
 
-  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], ExcludeEmpty);
+  ResList := Str1.Split([TUChar(#$2c){','}, TUChar(#$2e){'.'}], TStringSplitOptions.ExcludeEmpty);
   CheckEquals(4, Length(ResList));
   CheckEquals(UnicodeString('one'), ResList[0]);
   CheckEquals(UnicodeString(' two'), ResList[1]);
   CheckEquals(UnicodeString(' and three'), ResList[2]);
   CheckEquals(UnicodeString(' four'), ResList[3]);
 
-  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], ExcludeEmpty);
+  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], TStringSplitOptions.ExcludeEmpty);
   CheckEquals(5, Length(ResList));
   CheckEquals(UnicodeString('one'), ResList[0]);
   CheckEquals(UnicodeString(' two'), ResList[1]);
@@ -608,7 +664,7 @@ begin
   CheckEquals(UnicodeString(' three'), ResList[3]);
   CheckEquals(UnicodeString(' four'), ResList[4]);
 
-  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], 5, None);
+  ResList := Str1.Split([UnicodeString(','), UnicodeString('.'), 'and'], 5, TStringSplitOptions.None);
   CheckEquals(5, Length(ResList));
   CheckEquals(UnicodeString('one'), ResList[0]);
   CheckEquals(UnicodeString(' two'), ResList[1]);
@@ -658,6 +714,10 @@ begin
   CheckEquals(UnicodeString(''), Str.Substring(17));
   CheckEquals(UnicodeString(''), Str.Substring(17, 10));
   CheckEquals(UnicodeString('This is a string.'), Str.Substring(0));
+
+  { Unicode combining test }
+  Str := 'This ' + TEST_CPS + 'is a string.';
+  CheckEquals(UnicodeString('is a string.'), Str.Substring(9));
 end;
 
 procedure TTestUnicodeStringHelper.ToBooleanEmpty;
@@ -703,6 +763,13 @@ begin
 
   CharList := Str.ToCharArray(0, 0);
   CheckEquals(0, Length(CharList));
+
+  { Unicode combining test }
+  CharList := TEST_CPS.ToCharArray;
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S, CharList[0]);
+  CheckEquals(TEST_CP_COMBINING_DOT_BELOW, CharList[1]);
+  CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, CharList[2]);
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, CharList[3]);
 end;
 
 procedure TTestUnicodeStringHelper.TDoubleEmpty;
@@ -731,8 +798,7 @@ end;
 
 procedure TTestUnicodeStringHelper.TestToExtended;
 var
-  Str: UnicodeString;
-  StrVal: UnicodeString;
+  Str, StrVal: UnicodeString;
 begin
   Str := '1';
   CheckEquals(StrToFloat('1'), Str.ToExtended);
@@ -776,16 +842,14 @@ begin
 
   {$IFDEF WINDOWS}
   Str := 'ONEОДИН不怕当小白鼠';
-  {$HINTS OFF}
-  CheckEquals('oneодин不怕当小白鼠', Str.ToLower($0409)); { English - United States }
-  CheckEquals('oneодин不怕当小白鼠', Str.ToLower($0419)); { Russian }
+  CheckEquals(UnicodeString('oneодин不怕当小白鼠'), Str.ToLower($0409)); { English - United States }
+  CheckEquals(UnicodeString('oneодин不怕当小白鼠'), Str.ToLower($0419)); { Russian }
 
   { See http://lotusnotus.com/lotusnotus_en.nsf/dx/dotless-i-tolowercase-and-touppercase-functions-use-responsibly.htm }
   Str := 'TITLE';
-  CheckEquals('tıtle', Str.ToLower($041f)); { Turkish }
+  CheckEquals(UnicodeString('tıtle'), Str.ToLower($041f)); { Turkish }
   Str := 'TİTLE';
   CheckEquals(UnicodeString('title'), Str.ToLower($041f)); { Turkish }
-  {$HINTS ON}
   {$ENDIF}
 end;
 
@@ -804,8 +868,7 @@ end;
 
 procedure TTestUnicodeStringHelper.TestToSingle;
 var
-  Str: UnicodeString;
-  StrVal: UnicodeString;
+  Str, StrVal: UnicodeString;
 begin
   Str := '1';
   CheckEquals(StrToFloat('1'), Str.ToSingle);
@@ -826,16 +889,14 @@ begin
 
   {$IFDEF WINDOWS}
   Str := 'oneодин不怕当小白鼠';
-  {$HINTS OFF}
-  CheckEquals('ONEОДИН不怕当小白鼠', Str.ToUpper($0409)); { English - United States }
-  CheckEquals('ONEОДИН不怕当小白鼠', Str.ToUpper($0419)); { Russian }
+  CheckEquals(UnicodeString('ONEОДИН不怕当小白鼠'), Str.ToUpper($0409)); { English - United States }
+  CheckEquals(UnicodeString('ONEОДИН不怕当小白鼠'), Str.ToUpper($0419)); { Russian }
 
   { See http://lotusnotus.com/lotusnotus_en.nsf/dx/dotless-i-tolowercase-and-touppercase-functions-use-responsibly.htm }
   Str := 'tıtle';
   CheckEquals(UnicodeString('TITLE'), Str.ToUpper($041f)); { Turkish }
   Str := 'title';
   CheckEquals(UnicodeString('TİTLE'), Str.ToUpper($041f)); { Turkish }
-  {$HINTS ON}
   {$ENDIF}
 end;
 
@@ -847,7 +908,7 @@ begin
   CheckEquals(UnicodeString('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
-procedure TTestUnicodeStringHelper.TestTrim;
+(* procedure TTestUnicodeStringHelper.TestTrim;
 var
   Str1, Str2, Str3: UnicodeString;
 begin
@@ -879,7 +940,7 @@ begin
   CheckEquals(UnicodeString('st'), Str2.TrimLeft(['t', 'e']));
   CheckEquals(UnicodeString(''), Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals(UnicodeString('  test  '), Str3.TrimLeft(['t', 'e', 's', '@']));
-end;
+end; *)
 
 procedure TTestUnicodeStringHelper.TestTrimRight;
 var
@@ -910,14 +971,18 @@ var
 begin
   Str := '不怕当小白鼠';
 
-  {$HINTS OFF}
-  CheckEquals('不', Str.Chars[0]);
-  CheckEquals('怕', Str.Chars[1]);
-  CheckEquals('当', Str.Chars[2]);
-  CheckEquals('小', Str.Chars[3]);
-  CheckEquals('白', Str.Chars[4]);
-  CheckEquals('鼠', Str.Chars[5]);
-  {$HINTS ON}
+  CheckEquals(TUChar('不'), Str.Chars[0]);
+  CheckEquals(TUChar('怕'), Str.Chars[1]);
+  CheckEquals(TUChar('当'), Str.Chars[2]);
+  CheckEquals(TUChar('小'), Str.Chars[3]);
+  CheckEquals(TUChar('白'), Str.Chars[4]);
+  CheckEquals(TUChar('鼠'), Str.Chars[5]);
+
+  { Unicode combining test }
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S, TEST_CPS.Chars[0]);
+  CheckEquals(TEST_CP_COMBINING_DOT_BELOW, TEST_CPS.Chars[1]);
+  CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, TEST_CPS.Chars[2]);
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, TEST_CPS.Chars[3]);
 end;
 
 procedure TTestUnicodeStringHelper.TestLength;
@@ -927,6 +992,9 @@ begin
   Str := '不怕当小白鼠';
 
   CheckEquals(6, Str.Length);
+
+  { Unicode combining test }
+  CheckEquals(4, TEST_CPS.Length);
 end;
 
 {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE4_PLUS)}
@@ -934,8 +1002,8 @@ procedure TTestUnicodeStringHelper.TestParse;
 begin
   CheckEquals(UnicodeString('-1'), UnicodeString.Parse(Integer(-1)));
   CheckEquals(UnicodeString('3000000000'), UnicodeString.Parse(TEST_INT64));
-  CheckEquals(UnicodeString('-1'), UnicodeString.Parse(True));   //!!!
-  CheckEquals(UnicodeString('0'), UnicodeString.Parse(False));   //!!!
+  CheckEquals(UnicodeString('-1'), UnicodeString.Parse(True));
+  CheckEquals(UnicodeString('0'), UnicodeString.Parse(False));
   CheckEquals(UnicodeString(FloatToStr(1.5)), UnicodeString.Parse(1.5));
 end;
 {$IFEND}
@@ -992,8 +1060,45 @@ begin
   CheckEquals(-1, Str.IndexOfAnyUnquoted([], '"', '"'));
   CheckEquals(-1, Str.IndexOfAnyUnquoted(['w', 's', 'a'], '"', '"'));
   CheckEquals(-1, Str.IndexOfAnyUnquoted(['T'], '"', '"', 0, 0));
+
+  { Unicode combining test }
+  Str := '"This" ' + TEST_CPS + ' is it';
+  CheckEquals(12, Str.IndexOfAnyUnquoted(['i'], '"', '"'));
 end;
 {$IFEND}
+
+{$IFDEF FPC}
+{ Non Delphi }
+
+procedure TTestUnicodeStringHelper.TestByteLength;
+var
+  Str: UnicodeString;
+begin
+  Str := '不怕当小白鼠';
+
+  CheckEquals(12, Str.ByteLength);
+end;
+
+procedure TTestUnicodeStringHelper.TestCodePoints;
+var
+  Str: UnicodeString;
+begin
+  Str := '不怕当小白鼠';
+
+  CheckEquals(TUChar('不'), Str.CodePoints[0]);
+  CheckEquals(TUChar('怕'), Str.CodePoints[1]);
+  CheckEquals(TUChar('当'), Str.CodePoints[2]);
+  CheckEquals(TUChar('小'), Str.CodePoints[3]);
+  CheckEquals(TUChar('白'), Str.CodePoints[4]);
+  CheckEquals(TUChar('鼠'), Str.CodePoints[5]);
+
+  { Unicode combining test }
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S, TEST_CPS.CodePoints[0]);
+  CheckEquals(TEST_CP_COMBINING_DOT_BELOW, TEST_CPS.CodePoints[1]);
+  CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, TEST_CPS.CodePoints[2]);
+  CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, TEST_CPS.CodePoints[3]);
+end;
+{$ENDIF FPC}
 
 initialization
   { Initialization of TrueBoolStrs/FalseBoolStrs arrays }
