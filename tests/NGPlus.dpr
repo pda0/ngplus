@@ -11,9 +11,8 @@
  **********************************************************************}
 program NGPlus;
 
-{$I delphi.inc}
-{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
 {$I ngplus.inc}
+{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
 
 {$IFDEF CONSOLE_TESTRUNNER}
 {$APPTYPE CONSOLE}
@@ -21,7 +20,6 @@ program NGPlus;
 
 uses
   DUnitTestRunner,
-  test.system.helpers.tguidhelper in 'src\test.system.helpers.tguidhelper.pas',
   test.system.helpers.unicodestringhelper in 'src\test.system.helpers.unicodestringhelper.pas',
   test.system.hash.thash in 'src\test.system.hash.thash.pas',
   test.system.hash.thashmd5 in 'src\test.system.hash.thashmd5.pas',

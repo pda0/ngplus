@@ -21,13 +21,22 @@ uses
 
 type
   TTestAnsiStringHelper = class(TTestCase)
+  {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     procedure TInt64Empty;
     procedure TInt64ToBig;
 
@@ -45,14 +54,14 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
-    (* procedure TestTrim;
-    procedure TestTrimLeft; *)
+    procedure TestTrim;
+    procedure TestTrimLeft;
     procedure TestTrimRight;
 
     procedure TestChars;
@@ -63,10 +72,15 @@ type
     { Non Delphi }
     (* procedure TestByteLength;
     procedure TestCodePoints; *)
+  {$ELSE}
+  public
+    procedure NotSupported;
+  {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
   end;
 
 implementation
 
+{$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 const
   TEST_STR: AnsiString = 'This is a string.';
   TEST_INT64: Int64 = 3000000000;
@@ -172,6 +186,8 @@ begin
   CheckTrue(AnsiString.IsNullOrWhiteSpace(Str));
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestAnsiStringHelper.TDoubleEmpty;
 begin
   AnsiString.ToDouble('');
@@ -188,9 +204,15 @@ begin
   CheckEquals(StrToFloat(StrVal), AnsiString.ToDouble(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), AnsiString.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException(@TDoubleEmpty, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestAnsiStringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestAnsiStringHelper.TExtendedEmpty;
 begin
   AnsiString.ToExtended('');
@@ -207,8 +229,40 @@ begin
   CheckEquals(StrToFloat(StrVal), AnsiString.ToExtended(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), AnsiString.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException(@TExtendedEmpty, EConvertError);
 end;
+{$ELSE}
+procedure TTestAnsiStringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestAnsiStringHelper.TSingleEmpty;
+begin
+  AnsiString.ToSingle('');
+end;
+
+procedure TTestAnsiStringHelper.TestToSingle;
+var
+  Str, StrVal: AnsiString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), AnsiString.ToSingle(StrVal));
+  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), AnsiString.ToSingle(StrVal));
+  CheckException(@TSingleEmpty, EConvertError);
+end;
+{$ELSE}
+procedure TTestAnsiStringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestAnsiStringHelper.TIntegerEmpty;
 begin
@@ -230,8 +284,8 @@ begin
 
   CheckEquals(StrToInt('2'), AnsiString.ToInteger('2'));
   CheckEquals(StrToInt('-1'), AnsiString.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException(@TIntegerEmpty, EConvertError);
+  CheckException(@TIntegerToBig, EConvertError);
 end;
 
 procedure TTestAnsiStringHelper.TestToLower;
@@ -250,25 +304,6 @@ begin
   CheckEquals(StrRes, Str.ToLowerInvariant);
 end;
 
-procedure TTestAnsiStringHelper.TSingleEmpty;
-begin
-  AnsiString.ToSingle('');
-end;
-
-procedure TTestAnsiStringHelper.TestToSingle;
-var
-  Str, StrVal: AnsiString;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), AnsiString.ToSingle(StrVal));
-  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), AnsiString.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
-end;
-
 procedure TTestAnsiStringHelper.TestToUpperInvariant;
 var
   Str, StrRes: AnsiString;
@@ -280,7 +315,7 @@ begin
   CheckEquals(StrRes, Str.ToUpperInvariant);
 end;
 
-(* procedure TTestAnsiStringHelper.TestTrim;
+procedure TTestAnsiStringHelper.TestTrim;
 var
   Str1, Str2, Str3: AnsiString;
 begin
@@ -312,7 +347,7 @@ begin
   CheckEquals('st', Str2.TrimLeft(['t', 'e']));
   CheckEquals('', Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals('  test  ', Str3.TrimLeft(['t', 'e', 's', '@']));
-end; *)
+end;
 
 procedure TTestAnsiStringHelper.TestTrimRight;
 var
@@ -384,8 +419,8 @@ begin
 
   CheckTrue(TEST_INT64 = AnsiString.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = AnsiString.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException(@TInt64Empty, EConvertError);
+  CheckException(@TInt64ToBig, EConvertError);
 end;
 
 { Non Delphi }
@@ -426,6 +461,13 @@ begin
   CheckEquals(AnsiString(AnsiChar(#$d0) + AnsiChar(#$b5)), StrUtf8.CodePoints[4]); { е }
   CheckEquals(AnsiString(AnsiChar(#$d1) + AnsiChar(#$82)), StrUtf8.CodePoints[5]); { т }
 end;  *)
+
+{$ELSE}
+procedure TTestAnsiStringHelper.NotSupported;
+begin
+  Ignore('AnsiString is not supported.');
+end;
+{$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 initialization
   RegisterTest('System.Helpers', TTestAnsiStringHelper.Suite);

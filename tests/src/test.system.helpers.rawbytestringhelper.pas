@@ -21,13 +21,22 @@ uses
 
 type
   TTestRawByteStringHelper = class(TTestCase)
+  {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     procedure TInt64Empty;
     procedure TInt64ToBig;
 
@@ -45,14 +54,14 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
-    (* procedure TestTrim;
-    procedure TestTrimLeft; *)
+    procedure TestTrim;
+    procedure TestTrimLeft;
     procedure TestTrimRight;
 
     procedure TestChars;
@@ -63,10 +72,15 @@ type
     { Non Delphi }
     procedure TestByteLength;
     procedure TestCodePoints;
+  {$ELSE}
+  public
+    procedure NotSupported;
+  {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
   end;
 
 implementation
 
+{$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 const
   TEST_STR: RawByteString = 'This is a string.';
   TEST_INT64: Int64 = 3000000000;
@@ -173,6 +187,8 @@ begin
   CheckTrue(RawByteString.IsNullOrWhiteSpace(Str));
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestRawByteStringHelper.TDoubleEmpty;
 begin
   RawByteString.ToDouble('');
@@ -189,9 +205,15 @@ begin
   CheckEquals(StrToFloat(StrVal), RawByteString.ToDouble(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), RawByteString.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException(@TDoubleEmpty, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestRawByteStringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestRawByteStringHelper.TExtendedEmpty;
 begin
   RawByteString.ToExtended('');
@@ -208,8 +230,40 @@ begin
   CheckEquals(StrToFloat(StrVal), RawByteString.ToExtended(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), RawByteString.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException(@TExtendedEmpty, EConvertError);
 end;
+{$ELSE}
+procedure TTestRawByteStringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestRawByteStringHelper.TSingleEmpty;
+begin
+  RawByteString.ToSingle('');
+end;
+
+procedure TTestRawByteStringHelper.TestToSingle;
+var
+  Str, StrVal: RawByteString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), RawByteString.ToSingle(StrVal));
+  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), RawByteString.ToSingle(StrVal));
+  CheckException(@TSingleEmpty, EConvertError);
+end;
+{$ELSE}
+procedure TTestRawByteStringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestRawByteStringHelper.TIntegerEmpty;
 begin
@@ -231,8 +285,8 @@ begin
 
   CheckEquals(StrToInt('2'), RawByteString.ToInteger('2'));
   CheckEquals(StrToInt('-1'), RawByteString.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException(@TIntegerEmpty, EConvertError);
+  CheckException(@TIntegerToBig, EConvertError);
 end;
 
 procedure TTestRawByteStringHelper.TestToLower;
@@ -252,25 +306,6 @@ begin
   CheckEquals(StrRes, Str.ToLowerInvariant);
 end;
 
-procedure TTestRawByteStringHelper.TSingleEmpty;
-begin
-  RawByteString.ToSingle('');
-end;
-
-procedure TTestRawByteStringHelper.TestToSingle;
-var
-  Str, StrVal: RawByteString;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), RawByteString.ToSingle(StrVal));
-  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), RawByteString.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
-end;
-
 procedure TTestRawByteStringHelper.TestToUpperInvariant;
 var
   Str, StrRes: RawByteString;
@@ -283,7 +318,7 @@ begin
   CheckEquals(StrRes, Str.ToUpperInvariant);
 end;
 
-(* procedure TTestRawByteStringHelper.TestTrim;
+procedure TTestRawByteStringHelper.TestTrim;
 var
   Str1, Str2, Str3: RawByteString;
 begin
@@ -315,7 +350,7 @@ begin
   CheckEquals('st', Str2.TrimLeft(['t', 'e']));
   CheckEquals('', Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals('  test  ', Str3.TrimLeft(['t', 'e', 's', '@']));
-end; *)
+end;
 
 procedure TTestRawByteStringHelper.TestTrimRight;
 var
@@ -387,8 +422,8 @@ begin
 
   CheckTrue(TEST_INT64 = RawByteString.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = RawByteString.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException(@TInt64Empty, EConvertError);
+  CheckException(@TInt64ToBig, EConvertError);
 end;
 
 { Non Delphi }
@@ -416,6 +451,13 @@ begin
   CheckEquals(RawByteString('l'), Str.CodePoints[3]);
   CheckEquals(RawByteString('o'), Str.CodePoints[4]);
 end;
+
+{$ELSE}
+procedure TTestRawByteStringHelper.NotSupported;
+begin
+  Ignore('AnsiString is not supported.');
+end;
+{$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 initialization
   RegisterTest('System.Helpers', TTestRawByteStringHelper.Suite);

@@ -23,11 +23,19 @@ type
   TTestShortStringHelper = class(TTestCase)
   private
 
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     procedure TInt64Empty;
     procedure TInt64ToBig;
 
@@ -45,10 +53,10 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
     procedure TestTrim;
@@ -162,6 +170,8 @@ begin
   CheckTrue(ShortString.IsNullOrWhiteSpace(Str));
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestShortStringHelper.TDoubleEmpty;
 begin
   ShortString.ToDouble('');
@@ -178,9 +188,15 @@ begin
   CheckEquals(StrToFloat(StrVal), ShortString.ToDouble(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), ShortString.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException(@TDoubleEmpty, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestShortStringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestShortStringHelper.TExtendedEmpty;
 begin
   ShortString.ToExtended('');
@@ -197,8 +213,40 @@ begin
   CheckEquals(StrToFloat(StrVal), ShortString.ToExtended(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), ShortString.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException(@TExtendedEmpty, EConvertError);
 end;
+{$ELSE}
+procedure TTestShortStringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestShortStringHelper.TSingleEmpty;
+begin
+  ShortString.ToSingle('');
+end;
+
+procedure TTestShortStringHelper.TestToSingle;
+var
+  Str, StrVal: ShortString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), ShortString.ToSingle(StrVal));
+  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), ShortString.ToSingle(StrVal));
+  CheckException(@TSingleEmpty, EConvertError);
+end;
+{$ELSE}
+procedure TTestShortStringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestShortStringHelper.TIntegerEmpty;
 begin
@@ -219,8 +267,8 @@ begin
 
   CheckEquals(StrToInt('2'), ShortString.ToInteger('2'));
   CheckEquals(StrToInt('-1'), ShortString.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException(@TIntegerEmpty, EConvertError);
+  CheckException(@TIntegerToBig, EConvertError);
 end;
 
 procedure TTestShortStringHelper.TestToLower;
@@ -241,25 +289,6 @@ begin
     Str := 'HeLlo 123';
     CheckEquals(ShortString('hello 123'), Str.ToLowerInvariant);
   end;
-end;
-
-procedure TTestShortStringHelper.TSingleEmpty;
-begin
-  ShortString.ToSingle('');
-end;
-
-procedure TTestShortStringHelper.TestToSingle;
-var
-  Str, StrVal: ShortString;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), ShortString.ToSingle(StrVal));
-  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), ShortString.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
 end;
 
 procedure TTestShortStringHelper.TestToUpperInvariant;
@@ -378,8 +407,8 @@ begin
 
   CheckTrue(TEST_INT64 = ShortString.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = ShortString.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException(@TInt64Empty, EConvertError);
+  CheckException(@TInt64ToBig, EConvertError);
 end;
 
 { Non Delphi }

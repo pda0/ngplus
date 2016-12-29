@@ -21,14 +21,23 @@ uses
 
 type
   TTestWideStringHelper = class(TTestCase)
+  {$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
   private
     procedure JoinOffRange;
     procedure ToBooleanEmpty;
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     procedure TInt64Empty;
     procedure TInt64ToBig;
   public
@@ -65,10 +74,10 @@ type
     procedure TestToCharArray;
     //procedure TestToDouble;
     //procedure TestToExtended;
+    //procedure TestToSingle;
     //procedure TestToInteger;
     procedure TestToLower;
     //procedure TestToLowerInvariant;
-    //procedure TestToSingle;
     procedure TestToUpper;
     //procedure TestToUpperInvariant;
     //procedure TestTrim;
@@ -93,14 +102,14 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
-    (* procedure TestTrim;
-    procedure TestTrimLeft; *)
+    procedure TestTrim;
+    procedure TestTrimLeft;
     procedure TestTrimRight;
 
     procedure TestChars;
@@ -111,10 +120,15 @@ type
     { Non Delphi }
     procedure TestByteLength;
     procedure TestCodePoints;
+  {$ELSE}
+  public
+    procedure NotSupported;
+  {$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
   end;
 
 implementation
 
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 const
   TEST_STR: WideString = 'This is a string.';
   TEST_INT64: Int64 = 3000000000;
@@ -427,7 +441,7 @@ begin
     WideString.Join('->', ['String1', 'String2', 'String3']));
   CheckEquals(WideString('String2,String3'),
     WideString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
-  CheckException(JoinOffRange, ERangeError);
+  CheckException(@JoinOffRange, ERangeError);
   CheckEquals(WideString('String1'),
     WideString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
   CheckEquals(WideString(''),
@@ -585,7 +599,7 @@ end;
 procedure TTestWideStringHelper.TestSplit;
 var
   Str1: WideString;
-  ResList: TArray<WideString>;
+  ResList: specialize TArray<WideString>;
 begin
   Str1 := 'one, two, and three., four';
 
@@ -720,13 +734,13 @@ begin
   CheckTrue(WideString.ToBoolean(WideString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(WideString.ToBoolean(WideString(SysUtils.FalseBoolStrs[0])));
   CheckTrue(WideString.ToBoolean('TRUE'));
-  CheckException(ToBooleanEmpty, EConvertError);
+  CheckException(@ToBooleanEmpty, EConvertError);
 end;
 
 procedure TTestWideStringHelper.TestToCharArray;
 var
   Str: WideString;
-  CharList: TArray<WideChar>;
+  CharList: specialize TArray<WideChar>;
 begin
   Str := '123';
 
@@ -752,6 +766,8 @@ begin
   CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, CharList[3]);
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestWideStringHelper.TDoubleEmpty;
 begin
   WideString.ToDouble('');
@@ -768,9 +784,15 @@ begin
   CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToDouble(StrVal));
   StrVal := '-0' + WideChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException(@TDoubleEmpty, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestWideStringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestWideStringHelper.TExtendedEmpty;
 begin
   WideString.ToExtended('');
@@ -787,8 +809,40 @@ begin
   CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToExtended(StrVal));
   StrVal := '-0' + WideChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException(@TExtendedEmpty, EConvertError);
 end;
+{$ELSE}
+procedure TTestWideStringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestWideStringHelper.TSingleEmpty;
+begin
+  WideString.ToSingle('');
+end;
+
+procedure TTestWideStringHelper.TestToSingle;
+var
+  Str, StrVal: WideString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + WideChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToSingle(StrVal));
+  StrVal := '-0' + WideChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToSingle(StrVal));
+  CheckException(@TSingleEmpty, EConvertError);
+end;
+{$ELSE}
+procedure TTestWideStringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestWideStringHelper.TIntegerEmpty;
 begin
@@ -809,8 +863,8 @@ begin
 
   CheckEquals(2, WideString.ToInteger('2'));
   CheckEquals(-1, WideString.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException(@TIntegerEmpty, EConvertError);
+  CheckException(@TIntegerToBig, EConvertError);
 end;
 
 procedure TTestWideStringHelper.TestToLower;
@@ -839,25 +893,6 @@ var
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
   CheckEquals(WideString('hello привет allô 您好 123'), Str.ToLowerInvariant);
-end;
-
-procedure TTestWideStringHelper.TSingleEmpty;
-begin
-  WideString.ToSingle('');
-end;
-
-procedure TTestWideStringHelper.TestToSingle;
-var
-  Str, StrVal: WideString;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + WideChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToSingle(StrVal));
-  StrVal := '-0' + WideChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(AnsiString(StrVal)), WideString.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
 end;
 
 procedure TTestWideStringHelper.TestToUpper;
@@ -890,7 +925,7 @@ begin
   CheckEquals(WideString('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
-(* procedure TTestWideStringHelper.TestTrim;
+procedure TTestWideStringHelper.TestTrim;
 var
   Str1, Str2, Str3: WideString;
 begin
@@ -922,7 +957,7 @@ begin
   CheckEquals(WideString('st'), Str2.TrimLeft(['t', 'e']));
   CheckEquals(WideString(''), Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals(WideString('  test  '), Str3.TrimLeft(['t', 'e', 's', '@']));
-end; *)
+end;
 
 procedure TTestWideStringHelper.TestTrimRight;
 var
@@ -1007,8 +1042,8 @@ begin
 
   CheckTrue(TEST_INT64 = WideString.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = WideString.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException(@TInt64Empty, EConvertError);
+  CheckException(@TInt64ToBig, EConvertError);
 end;
 
 procedure TTestWideStringHelper.TestIndexOfAnyUnquoted;
@@ -1075,6 +1110,12 @@ begin
   CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, TEST_CPS.CodePoints[2]);
   CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, TEST_CPS.CodePoints[3]);
 end;
+{$ELSE}
+procedure TTestWideStringHelper.NotSupported;
+begin
+  Ignore('WideString is not supported.');
+end;
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 initialization
   { Initialization of TrueBoolStrs/FalseBoolStrs arrays }

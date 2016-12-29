@@ -21,13 +21,22 @@ uses
 
 type
   TTestUTF8StringHelper = class(TTestCase)
+  {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     procedure TInt64Empty;
     procedure TInt64ToBig;
 
@@ -45,14 +54,14 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
-    (* procedure TestTrim;
-    procedure TestTrimLeft; *)
+    procedure TestTrim;
+    procedure TestTrimLeft;
     procedure TestTrimRight;
 
     procedure TestChars;
@@ -63,10 +72,15 @@ type
     { Non Delphi }
     procedure TestByteLength;
     procedure TestCodePoints;
+  {$ELSE}
+  public
+    procedure NotSupported;
+  {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
   end;
 
 implementation
 
+{$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 const
   TEST_STR: UTF8String = 'This is a string.';
   TEST_INT64: Int64 = 3000000000;
@@ -171,6 +185,8 @@ begin
   CheckTrue(UTF8String.IsNullOrWhiteSpace(Str));
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestUTF8StringHelper.TDoubleEmpty;
 begin
   UTF8String.ToDouble('');
@@ -187,9 +203,15 @@ begin
   CheckEquals(StrToFloat(StrVal), UTF8String.ToDouble(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), UTF8String.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException(@TDoubleEmpty, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestUTF8StringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestUTF8StringHelper.TExtendedEmpty;
 begin
   UTF8String.ToExtended('');
@@ -206,8 +228,40 @@ begin
   CheckEquals(StrToFloat(StrVal), UTF8String.ToExtended(StrVal));
   StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat(StrVal), UTF8String.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException(@TExtendedEmpty, EConvertError);
 end;
+{$ELSE}
+procedure TTestUTF8StringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestUTF8StringHelper.TSingleEmpty;
+begin
+  UTF8String.ToSingle('');
+end;
+
+procedure TTestUTF8StringHelper.TestToSingle;
+var
+  Str, StrVal: UTF8String;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), UTF8String.ToSingle(StrVal));
+  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat(StrVal), UTF8String.ToSingle(StrVal));
+  CheckException(@TSingleEmpty, EConvertError);
+end;
+{$ELSE}
+procedure TTestUTF8StringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestUTF8StringHelper.TIntegerEmpty;
 begin
@@ -228,8 +282,8 @@ begin
 
   CheckEquals(StrToInt('2'), UTF8String.ToInteger('2'));
   CheckEquals(StrToInt('-1'), UTF8String.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException(@TIntegerEmpty, EConvertError);
+  CheckException(@TIntegerToBig, EConvertError);
 end;
 
 procedure TTestUTF8StringHelper.TestToLower;
@@ -245,25 +299,6 @@ begin
   CheckEquals(UTF8String('hello привет allô 您好 123'), Str.ToLowerInvariant);
 end;
 
-procedure TTestUTF8StringHelper.TSingleEmpty;
-begin
-  UTF8String.ToSingle('');
-end;
-
-procedure TTestUTF8StringHelper.TestToSingle;
-var
-  Str, StrVal: UTF8String;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), UTF8String.ToSingle(StrVal));
-  StrVal := '-0' + AnsiChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat(StrVal), UTF8String.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
-end;
-
 procedure TTestUTF8StringHelper.TestToUpperInvariant;
 var
   Str: UTF8String;
@@ -272,7 +307,7 @@ begin
   CheckEquals(UTF8String('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
-(* procedure TTestUTF8StringHelper.TestTrim;
+procedure TTestUTF8StringHelper.TestTrim;
 var
   Str1, Str2, Str3: UTF8String;
 begin
@@ -304,7 +339,7 @@ begin
   CheckEquals('st', Str2.TrimLeft(['t', 'e']));
   CheckEquals('', Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals('  test  ', Str3.TrimLeft(['t', 'e', 's', '@']));
-end; *)
+end;
 
 procedure TTestUTF8StringHelper.TestTrimRight;
 var
@@ -383,8 +418,8 @@ begin
 
   CheckTrue(TEST_INT64 = UTF8String.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = UTF8String.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException(@TInt64Empty, EConvertError);
+  CheckException(@TInt64ToBig, EConvertError);
 end;
 
 { Non Delphi }
@@ -417,6 +452,13 @@ begin
   CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, TEST_CPS.CodePoints[2]);
   CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, TEST_CPS.CodePoints[3]);
 end;
+
+{$ELSE}
+procedure TTestUTF8StringHelper.NotSupported;
+begin
+  Ignore('AnsiString is not supported.');
+end;
+{$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 initialization
   RegisterTest('System.Helpers', TTestUTF8StringHelper.Suite);

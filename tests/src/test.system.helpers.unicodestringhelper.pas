@@ -11,9 +11,8 @@
  **********************************************************************}
 unit Test.System.Helpers.UnicodeStringHelper;
 
-{$I delphi.inc}
-{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
 {$I ngplus.inc}
+{$IFDEF DELPHI_XE4_PLUS}{$LEGACYIFEND ON}{$ENDIF}
 
 interface
 
@@ -28,14 +27,23 @@ uses
 {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE3_PLUS)}
 type
   TTestUnicodeStringHelper = class(TTestCase)
+  {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
   private
     procedure JoinOffRange;
     procedure ToBooleanEmpty;
+    {$IFNDEF FPUNONE}
+    {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_DOUBLE}
+    {$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
     procedure TExtendedEmpty;
+    {$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+    {$IFDEF FPC_HAS_TYPE_SINGLE}
+    procedure TSingleEmpty;
+    {$ENDIF !FPC_HAS_TYPE_SINGLE}
+    {$ENDIF !~FPUNONE}
     procedure TIntegerEmpty;
     procedure TIntegerToBig;
-    procedure TSingleEmpty;
     {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
     procedure TInt64Empty;
     procedure TInt64ToBig;
@@ -77,7 +85,6 @@ type
     //procedure TestToInteger;
     procedure TestToLower;
     //procedure TestToLowerInvariant;
-    //procedure TestToSingle;
     procedure TestToUpper;
     //procedure TestToUpperInvariant;
     //procedure TestTrim;
@@ -102,14 +109,14 @@ type
 
     procedure TestToDouble;
     procedure TestToExtended;
+    procedure TestToSingle;
     procedure TestToInteger;
 
     procedure TestToLowerInvariant;
-    procedure TestToSingle;
 
     procedure TestToUpperInvariant;
-    (* procedure TestTrim;
-    procedure TestTrimLeft; *)
+    procedure TestTrim;
+    procedure TestTrimLeft;
     procedure TestTrimRight;
 
     procedure TestChars;
@@ -127,12 +134,17 @@ type
     procedure TestByteLength;
     procedure TestCodePoints;
     {$ENDIF FPC}
+  {$ELSE}
+  public
+    procedure NotSupported;
+  {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
   end;
 {$IFEND}
 
 implementation
 
 {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE3_PLUS)}
+{$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 type
   TUChar = {$IFDEF FPC}UnicodeChar{$ELSE}WideChar{$ENDIF};
 
@@ -447,7 +459,7 @@ begin
     UnicodeString.Join('->', ['String1', 'String2', 'String3']));
   CheckEquals(UnicodeString('String2,String3'),
     UnicodeString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
-  CheckException(JoinOffRange, ERangeError);
+  CheckException({$IFDEF FPC}@JoinOffRange{$ELSE}JoinOffRange{$ENDIF}, ERangeError);
   CheckEquals(UnicodeString('String1'),
     UnicodeString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
   CheckEquals(UnicodeString(''),
@@ -605,7 +617,7 @@ end;
 procedure TTestUnicodeStringHelper.TestSplit;
 var
   Str1: UnicodeString;
-  ResList: TArray<UnicodeString>;
+  ResList: {$IFDEF FPC}specialize{$ENDIF} TArray<UnicodeString>;
 begin
   Str1 := 'one, two, and three., four';
 
@@ -740,13 +752,13 @@ begin
   CheckTrue(UnicodeString.ToBoolean(UnicodeString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(UnicodeString.ToBoolean(UnicodeString(SysUtils.FalseBoolStrs[0])));
   CheckTrue(UnicodeString.ToBoolean('TRUE'));
-  CheckException(ToBooleanEmpty, EConvertError);
+  CheckException({$IFDEF FPC}@ToBooleanEmpty{$ELSE}ToBooleanEmpty{$ENDIF}, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestToCharArray;
 var
   Str: UnicodeString;
-  CharList: TArray<TUChar>;
+  CharList: {$IFDEF FPC}specialize{$ENDIF} TArray<TUChar>;
 begin
   Str := '123';
 
@@ -772,6 +784,8 @@ begin
   CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, CharList[3]);
 end;
 
+{$IFNDEF FPUNONE}
+{$IFDEF FPC_HAS_TYPE_DOUBLE}
 procedure TTestUnicodeStringHelper.TDoubleEmpty;
 begin
   UnicodeString.ToDouble('');
@@ -788,9 +802,15 @@ begin
   CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToDouble(StrVal));
   StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToDouble(StrVal));
-  CheckException(TDoubleEmpty, EConvertError);
+  CheckException({$IFDEF FPC}@TDoubleEmpty{$ELSE}TDoubleEmpty{$ENDIF}, EConvertError);
 end;
-
+{$ELSE}
+procedure TTestUnicodeStringHelper.TestToDouble;
+begin
+  Ignore('Double type is not supported.')
+end;
+{$ENDIF !FPC_HAS_TYPE_DOUBLE}
+{$IF DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE)}
 procedure TTestUnicodeStringHelper.TExtendedEmpty;
 begin
   UnicodeString.ToExtended('');
@@ -807,8 +827,40 @@ begin
   CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToExtended(StrVal));
   StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
   CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToExtended(StrVal));
-  CheckException(TExtendedEmpty, EConvertError);
+  CheckException({$IFDEF FPC}@TExtendedEmpty{$ELSE}TExtendedEmpty{$ENDIF}, EConvertError);
 end;
+{$ELSE}
+procedure TTestUnicodeStringHelper.TestToExtended;
+begin
+  Ignore('Extended type is not supported.');
+end;
+{$IFEND !FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
+{$IFDEF FPC_HAS_TYPE_SINGLE}
+procedure TTestUnicodeStringHelper.TSingleEmpty;
+begin
+  UnicodeString.ToSingle('');
+end;
+
+procedure TTestUnicodeStringHelper.TestToSingle;
+var
+  Str, StrVal: UnicodeString;
+begin
+  Str := '1';
+  CheckEquals(StrToFloat('1'), Str.ToSingle);
+
+  StrVal := '1' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
+  StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
+  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
+  CheckException({$IFDEF FPC}@TSingleEmpty{$ELSE}TSingleEmpty{$ENDIF}, EConvertError);
+end;
+{$ELSE}
+procedure TTestUnicodeStringHelper.TestToSingle;
+begin
+  Ignore('Single type is not supported.');
+end;
+{$ENDIF !FPC_HAS_TYPE_SINGLE}
+{$ENDIF !~FPUNONE}
 
 procedure TTestUnicodeStringHelper.TIntegerEmpty;
 begin
@@ -829,8 +881,8 @@ begin
 
   CheckEquals(2, UnicodeString.ToInteger('2'));
   CheckEquals(-1, UnicodeString.ToInteger('-1'));
-  CheckException(TIntegerEmpty, EConvertError);
-  CheckException(TIntegerToBig, EConvertError);
+  CheckException({$IFDEF FPC}@TIntegerEmpty{$ELSE}TIntegerEmpty{$ENDIF}, EConvertError);
+  CheckException({$IFDEF FPC}@TIntegerToBig{$ELSE}TIntegerToBig{$ENDIF}, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestToLower;
@@ -850,7 +902,7 @@ begin
   CheckEquals(UnicodeString('tıtle'), Str.ToLower($041f)); { Turkish }
   Str := 'TİTLE';
   CheckEquals(UnicodeString('title'), Str.ToLower($041f)); { Turkish }
-  {$ENDIF}
+  {$ENDIF !WINDOWS}
 end;
 
 procedure TTestUnicodeStringHelper.TestToLowerInvariant;
@@ -859,25 +911,6 @@ var
 begin
   Str := 'HeLlo ПрИвЕт aLlÔ 您好 123';
   CheckEquals(UnicodeString('hello привет allô 您好 123'), Str.ToLowerInvariant);
-end;
-
-procedure TTestUnicodeStringHelper.TSingleEmpty;
-begin
-  UnicodeString.ToSingle('');
-end;
-
-procedure TTestUnicodeStringHelper.TestToSingle;
-var
-  Str, StrVal: UnicodeString;
-begin
-  Str := '1';
-  CheckEquals(StrToFloat('1'), Str.ToSingle);
-
-  StrVal := '1' + TUChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
-  StrVal := '-0' + TUChar(FormatSettings.DecimalSeparator) + '5';
-  CheckEquals(StrToFloat({$IFDEF FPC}AnsiString({$ENDIF}StrVal{$IFDEF FPC}){$ENDIF}), UnicodeString.ToSingle(StrVal));
-  CheckException(TSingleEmpty, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestToUpper;
@@ -897,7 +930,7 @@ begin
   CheckEquals(UnicodeString('TITLE'), Str.ToUpper($041f)); { Turkish }
   Str := 'title';
   CheckEquals(UnicodeString('TİTLE'), Str.ToUpper($041f)); { Turkish }
-  {$ENDIF}
+  {$ENDIF !WINDOWS}
 end;
 
 procedure TTestUnicodeStringHelper.TestToUpperInvariant;
@@ -908,7 +941,7 @@ begin
   CheckEquals(UnicodeString('HELLO ПРИВЕТ ALLÔ 您好 123'), Str.ToUpperInvariant);
 end;
 
-(* procedure TTestUnicodeStringHelper.TestTrim;
+procedure TTestUnicodeStringHelper.TestTrim;
 var
   Str1, Str2, Str3: UnicodeString;
 begin
@@ -940,7 +973,7 @@ begin
   CheckEquals(UnicodeString('st'), Str2.TrimLeft(['t', 'e']));
   CheckEquals(UnicodeString(''), Str2.TrimLeft(['t', 'e', 's', '@']));
   CheckEquals(UnicodeString('  test  '), Str3.TrimLeft(['t', 'e', 's', '@']));
-end; *)
+end;
 
 procedure TTestUnicodeStringHelper.TestTrimRight;
 var
@@ -1006,7 +1039,7 @@ begin
   CheckEquals(UnicodeString('0'), UnicodeString.Parse(False));
   CheckEquals(UnicodeString(FloatToStr(1.5)), UnicodeString.Parse(1.5));
 end;
-{$IFEND}
+{$IFEND !FPC DELPHI_XE4_PLUS}
 
 {$IF DEFINED(FPC) OR DEFINED(DELPHI_XE8_PLUS)}
 procedure TTestUnicodeStringHelper.TInt64Empty;
@@ -1028,8 +1061,8 @@ begin
 
   CheckTrue(TEST_INT64 = UnicodeString.ToInt64('3000000000'));
   CheckTrue(-TEST_INT64 = UnicodeString.ToInt64('-3000000000'));
-  CheckException(TInt64Empty, EConvertError);
-  CheckException(TInt64ToBig, EConvertError);
+  CheckException({$IFDEF FPC}@TInt64Empty{$ELSE}TInt64Empty{$ENDIF}, EConvertError);
+  CheckException({$IFDEF FPC}@TInt64ToBig{$ELSE}TInt64ToBig{$ENDIF}, EConvertError);
 end;
 
 procedure TTestUnicodeStringHelper.TestIndexOfAnyUnquoted;
@@ -1065,7 +1098,7 @@ begin
   Str := '"This" ' + TEST_CPS + ' is it';
   CheckEquals(12, Str.IndexOfAnyUnquoted(['i'], '"', '"'));
 end;
-{$IFEND}
+{$IFEND !FPC DELPHI_XE8_PLUS}
 
 {$IFDEF FPC}
 { Non Delphi }
@@ -1098,13 +1131,19 @@ begin
   CheckEquals(TEST_CP_COMBINING_DOT_ABOVE, TEST_CPS.CodePoints[2]);
   CheckEquals(TEST_CP_LATIN_SMALL_LETTER_S_WITH_DOT_BELOW_AND_DOT_ABOVE, TEST_CPS.CodePoints[3]);
 end;
-{$ENDIF FPC}
+{$ENDIF !FPC}
+{$ELSE}
+procedure TTestUnicodeStringHelper.NotSupported;
+begin
+  Ignore('UnicodeString is not supported.');
+end;
+{$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 initialization
   { Initialization of TrueBoolStrs/FalseBoolStrs arrays }
   SysUtils.BoolToStr(True, True);
   RegisterTest('System.Helpers', TTestUnicodeStringHelper.Suite);
-{$IFEND}
+{$IFEND !FPC DELPHI_XE3_PLUS}
 
 end.
 

@@ -10,15 +10,20 @@
 
  **********************************************************************}
 
-{$IFDEF FPC}{$I fpc.inc}{$ELSE}{$I delphi.inc}{$ENDIF}
+{$MODE OBJFPC}{$H+}
+{$CODEPAGE UTF8}
 
-{ Define this if you want to disable all of OpenSSL related code }
-{.$DEFINE _WITHOUT_OPENSSL}
-
-{ Define this if you want to disable all Windows API related code }
-{.$DEFINE _WITHOUT_WINAPI}
-
-{$IF DEFINED(_WITHOUT_WINAPI) AND (NOT DEFINED(WINDOWS))}
-  {$DEFINE _WITHOUT_WINAPI}
+{$IF (FPC_VERSION>3) OR ((FPC_VERSION=3) AND (FPC_RELEASE>=1))}
+{$ELSE}
+  {$FATAL 'Too old compiller version. Free Pascal 3.1+ is required.'}
 {$IFEND}
+
+{$MODESWITCH ADVANCEDRECORDS}
+{$MODESWITCH TYPEHELPERS}
+
+{$IFDEF SYSTEMINLINE}{$UNDEF SYSTEMINLINE}{$ENDIF}
+{$IFDEF SYSUTILSINLINE}{$UNDEF SYSUTILSINLINE}{$ENDIF}
+{.$UNDEF FPC_HAS_FEATURE_ANSISTRINGS}
+{.$UNDEF FPC_HAS_FEATURE_WIDESTRINGS}
+{.$UNDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 

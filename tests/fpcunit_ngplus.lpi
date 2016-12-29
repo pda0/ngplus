@@ -39,7 +39,7 @@
         <PackageName Value="FCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="24">
+    <Units Count="25">
       <Unit0>
         <Filename Value="fpcunit_ngplus.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -148,6 +148,10 @@
         <Filename Value="..\includes\ngplus.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit23>
+      <Unit24>
+        <Filename Value="..\includes\fpc.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit24>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -178,15 +182,13 @@
     </Linking>
     <Other>
       <CustomOptions Value="-dCONSOLE_TESTRUNNER
--d_TEST
 -d_WITHOUT_OPENSSL
 -d_WITH_LAZARUS"/>
-      <OtherDefines Count="5">
+      <OtherDefines Count="4">
         <Define0 Value="CONSOLE_TESTRUNNER"/>
-        <Define1 Value="_TEST"/>
-        <Define2 Value="_WITHOUT_OPENSSL"/>
-        <Define3 Value="_WITHOUT_WINAPI"/>
-        <Define4 Value="_WITH_LAZARUS"/>
+        <Define1 Value="_WITHOUT_OPENSSL"/>
+        <Define2 Value="_WITHOUT_WINAPI"/>
+        <Define3 Value="_WITH_LAZARUS"/>
       </OtherDefines>
     </Other>
   </CompilerOptions>
