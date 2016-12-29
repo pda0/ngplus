@@ -24,6 +24,7 @@ type
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
@@ -52,6 +53,8 @@ type
 
     procedure TestEmpty;
 
+    procedure TestToBoolean;
+
     procedure TestToDouble;
     procedure TestToExtended;
     procedure TestToSingle;
@@ -70,8 +73,9 @@ type
     procedure TestToInt64;
 
     { Non Delphi }
-    (* procedure TestByteLength;
-    procedure TestCodePoints; *)
+    procedure TestByteLength;
+    procedure TestCPLength;
+    procedure TestCodePoints;
   {$ELSE}
   public
     procedure NotSupported;
@@ -184,6 +188,29 @@ begin
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   SetCodePage(RawByteString(Str), 1251);
   CheckTrue(AnsiString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestAnsiStringHelper.ToBooleanEmpty;
+begin
+  AnsiString.ToBoolean('');
+end;
+
+procedure TTestAnsiStringHelper.TestToBoolean;
+var
+  Str: AnsiString;
+begin
+  Str := '0';
+  CheckFalse(Str.ToBoolean);
+
+  CheckFalse(AnsiString.ToBoolean('0'));
+  CheckFalse(AnsiString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckTrue(AnsiString.ToBoolean('-1'));
+  CheckTrue(AnsiString.ToBoolean('1'));
+  CheckTrue(AnsiString.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
+  CheckTrue(AnsiString.ToBoolean(AnsiString(SysUtils.TrueBoolStrs[0])));
+  CheckFalse(AnsiString.ToBoolean(AnsiString(SysUtils.FalseBoolStrs[0])));
+  CheckTrue(AnsiString.ToBoolean('TRUE'));
+  CheckException(@ToBooleanEmpty, EConvertError);
 end;
 
 {$IFNDEF FPUNONE}
@@ -396,7 +423,11 @@ begin
   CheckEquals('3000000000', AnsiString.Parse(TEST_INT64));
   CheckEquals('-1', AnsiString.Parse(True));
   CheckEquals('0', AnsiString.Parse(False));
+  {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
   CheckEquals(FloatToStr(1.5), AnsiString.Parse(1.5));
+  {$ELSE}
+  Ignore('Extended/Double type is not supported.');
+  {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 end;
 
 procedure TTestAnsiStringHelper.TInt64Empty;
@@ -425,7 +456,7 @@ end;
 
 { Non Delphi }
 
-(* procedure TTestAnsiStringHelper.TestByteLength;
+procedure TTestAnsiStringHelper.TestByteLength;
 var
   StrAnsi, StrUtf8: AnsiString;
 begin
@@ -436,6 +467,15 @@ begin
 
   CheckEquals(6, StrAnsi.ByteLength);
   CheckEquals(12, StrUtf8.ByteLength);
+end;
+
+procedure TTestAnsiStringHelper.TestCPLength;
+var
+  AnsiStr: AnsiString;
+begin
+  AnsiStr := 'hello';
+
+  CheckEquals(5, AnsiStr.Length);
 end;
 
 procedure TTestAnsiStringHelper.TestCodePoints;
@@ -460,7 +500,7 @@ begin
   CheckEquals(AnsiString(AnsiChar(#$d0) + AnsiChar(#$b2)), StrUtf8.CodePoints[3]); { в }
   CheckEquals(AnsiString(AnsiChar(#$d0) + AnsiChar(#$b5)), StrUtf8.CodePoints[4]); { е }
   CheckEquals(AnsiString(AnsiChar(#$d1) + AnsiChar(#$82)), StrUtf8.CodePoints[5]); { т }
-end;  *)
+end;
 
 {$ELSE}
 procedure TTestAnsiStringHelper.NotSupported;

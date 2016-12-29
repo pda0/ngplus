@@ -70,7 +70,7 @@ type
     procedure TestSplit;
     procedure TestStartsWith;
     procedure TestSubstring;
-    procedure TestToBoolean;
+    //procedure TestToBoolean;
     procedure TestToCharArray;
     //procedure TestToDouble;
     //procedure TestToExtended;
@@ -100,6 +100,8 @@ type
 
     procedure TestEmpty;
 
+    procedure TestToBoolean;
+
     procedure TestToDouble;
     procedure TestToExtended;
     procedure TestToSingle;
@@ -119,6 +121,7 @@ type
 
     { Non Delphi }
     procedure TestByteLength;
+    procedure TestCPLength;
     procedure TestCodePoints;
   {$ELSE}
   public
@@ -1004,10 +1007,13 @@ end;
 
 procedure TTestWideStringHelper.TestLength;
 var
+  AnsiStr: AnsiString;
   Str: WideString;
 begin
-  Str := '不怕当小白鼠';
+  AnsiStr := 'hello';
+  CheckEquals(5, AnsiStr.Length);
 
+  Str := '不怕当小白鼠';
   CheckEquals(6, Str.Length);
 
   { Unicode combining test }
@@ -1020,7 +1026,11 @@ begin
   CheckEquals(WideString('3000000000'), WideString.Parse(TEST_INT64));
   CheckEquals(WideString('-1'), WideString.Parse(True));
   CheckEquals(WideString('0'), WideString.Parse(False));
+  {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
   CheckEquals(WideString(FloatToStr(1.5)), WideString.Parse(1.5));
+  {$ELSE}
+  Ignore('Extended/Double type is not supported.');
+  {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 end;
 
 procedure TTestWideStringHelper.TInt64Empty;
@@ -1089,6 +1099,18 @@ begin
   Str := '不怕当小白鼠';
 
   CheckEquals(12, Str.ByteLength);
+end;
+
+procedure TTestWideStringHelper.TestCPLength;
+var
+  Str: WideString;
+begin
+  Str := '不怕当小白鼠';
+
+  CheckEquals(6, Str.CPLength);
+
+  { Unicode combining test }
+  CheckEquals(4, TEST_CPS.CPLength);
 end;
 
 procedure TTestWideStringHelper.TestCodePoints;

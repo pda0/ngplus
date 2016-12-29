@@ -24,6 +24,7 @@ type
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
@@ -52,6 +53,8 @@ type
 
     procedure TestEmpty;
 
+    procedure TestToBoolean;
+
     procedure TestToDouble;
     procedure TestToExtended;
     procedure TestToSingle;
@@ -71,6 +74,7 @@ type
 
     { Non Delphi }
     procedure TestByteLength;
+    procedure TestCPLength;
     procedure TestCodePoints;
   {$ELSE}
   public
@@ -183,6 +187,29 @@ begin
   Str := #$00#$01#$02#$03#$04#$05#$06#$07#$08#$09#$0a#$0b#$0c#$0d#$0e#$0f#$10+
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   CheckTrue(UTF8String.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestUTF8StringHelper.ToBooleanEmpty;
+begin
+  UTF8String.ToBoolean('');
+end;
+
+procedure TTestUTF8StringHelper.TestToBoolean;
+var
+  Str: UTF8String;
+begin
+  Str := '0';
+  CheckFalse(Str.ToBoolean);
+
+  CheckFalse(UTF8String.ToBoolean('0'));
+  CheckFalse(UTF8String.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckTrue(UTF8String.ToBoolean('-1'));
+  CheckTrue(UTF8String.ToBoolean('1'));
+  CheckTrue(UTF8String.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
+  CheckTrue(UTF8String.ToBoolean(UTF8String(SysUtils.TrueBoolStrs[0])));
+  CheckFalse(UTF8String.ToBoolean(UTF8String(SysUtils.FalseBoolStrs[0])));
+  CheckTrue(UTF8String.ToBoolean('TRUE'));
+  CheckException(@ToBooleanEmpty, EConvertError);
 end;
 
 {$IFNDEF FPUNONE}
@@ -380,14 +407,11 @@ end;
 
 procedure TTestUTF8StringHelper.TestLength;
 var
-  Str: UTF8String;
+  AnsiStr: UTF8String;
 begin
-  Str := 'привет';
+  AnsiStr := 'hello';
 
-  CheckEquals(6, Str.Length);
-
-  { Unicode combining test }
-  CheckEquals(4, TEST_CPS.Length);
+  CheckEquals(5, AnsiStr.Length);
 end;
 
 procedure TTestUTF8StringHelper.TestParse;
@@ -396,7 +420,11 @@ begin
   CheckEquals('3000000000', UTF8String.Parse(TEST_INT64));
   CheckEquals('-1', UTF8String.Parse(True));
   CheckEquals('0', UTF8String.Parse(False));
+  {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
   CheckEquals(FloatToStr(1.5), UTF8String.Parse(1.5));
+  {$ELSE}
+  Ignore('Extended/Double type is not supported.');
+  {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 end;
 
 procedure TTestUTF8StringHelper.TInt64Empty;
@@ -431,6 +459,18 @@ begin
   Str := 'привет';
 
   CheckEquals(12, Str.ByteLength);
+end;
+
+procedure TTestUTF8StringHelper.TestCPLength;
+var
+  Str: UTF8String;
+begin
+  Str := 'привет';
+
+  CheckEquals(6, Str.CPLength);
+
+  { Unicode combining test }
+  CheckEquals(4, TEST_CPS.CPLength);
 end;
 
 procedure TTestUTF8StringHelper.TestCodePoints;

@@ -187,37 +187,90 @@ end;
 
 function TShortStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-  Result := Self[Index + 1{Low(Self)}];
+  Result := Self[1{Low(Self)} + Index];
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 
 function TRawByteStringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 
 function TUTF8StringHelper.GetChars(Index: Integer): AnsiChar;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
 function TWideStringHelper.GetChars(Index: Integer): WideChar;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetChars(Index: Integer): UnicodeChar;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
+end;
+{$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
+
+function TShortStringHelper.GetCPLength: Integer;
+begin
+  if System.Length(Self) > 0 then
+  begin
+    if DefaultSystemCodePage = CP_UTF8 then
+      Result := UTF8Length(PAnsiChar(@Self[1]), System.Length(Self))
+    else
+      Result := System.Length(Self);
+  end
+  else
+    Result := 0;
+end;
+
+{$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
+function TAnsiStringHelper.GetCPLength: Integer;
+begin
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
+end;
+
+function TRawByteStringHelper.GetCPLength: Integer;
+begin
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
+end;
+
+function TUTF8StringHelper.GetCPLength: Integer;
+begin
+  if StringCodePage(Self) = CP_UTF8 then
+    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
+  else
+    Result := System.Length(Self);
+end;
+{$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
+
+{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+function TWideStringHelper.GetCPLength: Integer;
+begin
+  Result := System.Length(Self);
+end;
+{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+
+{$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
+function TUnicodeStringHelper.GetCPLength: Integer;
+begin
+  Result := System.Length(Self);
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
@@ -226,9 +279,9 @@ end;
 function TShortStringHelper.GetCodePoints(Index: Integer): ShortString;
 begin
   if DefaultSystemCodePage = CP_UTF8 then
-    Result := UTF8Copy(Self, Index + 1{Low(Self)}, 1)
+    Result := UTF8Copy(Self, 1{Low(Self)} + Index, 1)
   else
-    Result := Self[Index + 1{Low(Self)}];
+    Result := Self[1{Low(Self)} + Index];
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
@@ -236,63 +289,63 @@ function TAnsiStringHelper.GetCodePoints(Index: Integer): AnsiString;
 begin
   SetCodePage(RawByteString(Result), StringCodePage(Self), False);
   if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Copy(Self, Index + Low(Self), 1)
+    Result := UTF8Copy(Self, Low(Self) + Index, 1)
   else
-    Result := Self[Index + Low(Self)];
+    Result := Self[Low(Self) + Index];
 end;
 
 function TRawByteStringHelper.GetCodePoints(Index: Integer): RawByteString;
 begin
   SetCodePage(Result, StringCodePage(Self), False);
   if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Copy(Self, Index + Low(Self), 1)
+    Result := UTF8Copy(Self, Low(Self) + Index, 1)
   else
-    Result := Self[Index + Low(Self)];
+    Result := Self[Low(Self) + Index ];
 end;
 
 function TUTF8StringHelper.GetCodePoints(Index: Integer): UTF8String;
 begin
   SetCodePage(RawByteString(Result), StringCodePage(Self), False);
   if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Copy(Self, Index + Low(Self), 1)
+    Result := UTF8Copy(Self, Low(Self) + Index, 1)
   else
-    Result := Self[Index + Low(Self)];
+    Result := Self[Low(Self) + Index];
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
 function TWideStringHelper.GetCodePoints(Index: Integer): WideString;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetCodePoints(Index: Integer): UnicodeString;
 begin
-  Result := Self[Index + Low(Self)];
+  Result := Self[Low(Self) + Index];
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 function TShortStringHelper.GetByteLength: Integer;
 begin
-  Result := System.Length(Self);
+  Result := System.Length(Self) * SizeOf(AnsiChar);
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.GetByteLength: Integer;
 begin
-  Result := System.Length(Self);
+  Result := System.Length(Self) * SizeOf(AnsiChar);
 end;
 
 function TRawByteStringHelper.GetByteLength: Integer;
 begin
-  Result := System.Length(Self);
+  Result := System.Length(Self) * SizeOf(AnsiChar);
 end;
 
 function TUTF8StringHelper.GetByteLength: Integer;
 begin
-  Result := System.Length(Self);
+  Result := System.Length(Self) * SizeOf(AnsiChar);
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
@@ -312,40 +365,23 @@ end;
 
 function TShortStringHelper.GetLength: Integer;
 begin
-  if System.Length(Self) > 0 then
-  begin
-    if DefaultSystemCodePage = CP_UTF8 then
-      Result := UTF8Length(PAnsiChar(@Self[1]), System.Length(Self))
-    else
-      Result := System.Length(Self);
-  end
-  else
-    Result := 0;
+  Result := System.Length(Self);
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.GetLength: Integer;
 begin
-  if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
-  else
-    Result := System.Length(Self);
+  Result := System.Length(Self);
 end;
 
 function TRawByteStringHelper.GetLength: Integer;
 begin
-  if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
-  else
-    Result := System.Length(Self);
+  Result := System.Length(Self);
 end;
 
 function TUTF8StringHelper.GetLength: Integer;
 begin
-  if StringCodePage(Self) = CP_UTF8 then
-    Result := UTF8Length(PAnsiChar(Self), System.Length(Self))
-  else
-    Result := System.Length(Self);
+  Result := System.Length(Self);
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
@@ -1829,63 +1865,63 @@ end;
 
 function TShortStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 
 function TRawByteStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 
 function TUTF8StringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
 function TWideStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IsEmpty: Boolean;
 begin
-  Result := Self = Self.Empty;
+  Result := Self.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 class function TShortStringHelper.IsNullOrEmpty(const Value: ShortString):
   Boolean;
 begin
-  Result := Value = ShortString.Empty;
+  Result := Value.Length = 0;
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 class function TAnsiStringHelper.IsNullOrEmpty(const Value: AnsiString):
   Boolean;
 begin
-  Result := Value = AnsiString.Empty;
+  Result := Value.Length = 0;
 end;
 
 class function TRawByteStringHelper.IsNullOrEmpty(const Value: RawByteString):
   Boolean;
 begin
-  Result := Value = RawByteString.Empty;
+  Result := Value.Length = 0;
 end;
 
 class function TUTF8StringHelper.IsNullOrEmpty(const Value: UTF8String):
   Boolean;
 begin
-  Result := Value = UTF8String.Empty;
+  Result := Value.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
@@ -1893,7 +1929,7 @@ end;
 class function TWideStringHelper.IsNullOrEmpty(const Value: WideString):
   Boolean;
 begin
-  Result := Value = WideString.Empty;
+  Result := Value.Length = 0;
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
@@ -1901,33 +1937,33 @@ end;
 class function TUnicodeStringHelper.IsNullOrEmpty(const Value: UnicodeString):
   Boolean;
 begin
-  Result := Value = UnicodeString.Empty;
+  Result := Value.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 class function TShortStringHelper.IsNullOrWhiteSpace(const Value:
   ShortString): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result :=  Value.Trim.Length = 0;
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 class function TAnsiStringHelper.IsNullOrWhiteSpace(const Value:
   AnsiString): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result := Value.Trim.Length = 0;
 end;
 
 class function TRawByteStringHelper.IsNullOrWhiteSpace(const Value:
   RawByteString): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result := Value.Trim.Length = 0;
 end;
 
 class function TUTF8StringHelper.IsNullOrWhiteSpace(const Value:
   UTF8String): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result := Value.Trim.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
@@ -1935,7 +1971,7 @@ end;
 class function TWideStringHelper.IsNullOrWhiteSpace(const Value:
   WideString): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result := Value.Trim.Length = 0;
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
@@ -1943,7 +1979,7 @@ end;
 class function TUnicodeStringHelper.IsNullOrWhiteSpace(const Value:
   UnicodeString): Boolean;
 begin
-  Result := System.Length(SysUtils.Trim(Value)) = 0;
+  Result := Value.Trim.Length = 0;
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
@@ -2743,10 +2779,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TShortStringHelper.Parse(const Value: Extended): ShortString;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 class function TAnsiStringHelper.Parse(const Value: Integer): AnsiString;
@@ -2764,10 +2802,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TAnsiStringHelper.Parse(const Value: Extended): AnsiString;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 
 class function TRawByteStringHelper.Parse(const Value: Integer): RawByteString;
 begin
@@ -2784,10 +2824,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TRawByteStringHelper.Parse(const Value: Extended): RawByteString;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 
 class function TUTF8StringHelper.Parse(const Value: Integer): UTF8String;
 begin
@@ -2804,10 +2846,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TUTF8StringHelper.Parse(const Value: Extended): UTF8String;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
@@ -2826,10 +2870,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TWideStringHelper.Parse(const Value: Extended): WideString;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
@@ -2848,10 +2894,12 @@ begin
   Result := SysUtils.BoolToStr(Value);
 end;
 
+{$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
 class function TUnicodeStringHelper.Parse(const Value: Extended): UnicodeString;
 begin
   Result := SysUtils.FloatToStr(Value);
 end;
+{$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 {$POP}
 
@@ -3515,71 +3563,73 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
+{$PUSH}{$WARN IMPLICIT_STRING_CAST_LOSS OFF}
 class function TShortStringHelper.ToBoolean(const S: ShortString): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TShortStringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 class function TAnsiStringHelper.ToBoolean(const S: AnsiString): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TAnsiStringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 
 class function TRawByteStringHelper.ToBoolean(const S: RawByteString): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TRawByteStringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 
 class function TUTF8StringHelper.ToBoolean(const S: UTF8String): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TUTF8StringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
 class function TWideStringHelper.ToBoolean(const S: WideString): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TWideStringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToBoolean(const S: UnicodeString): Boolean;
 begin
-
+  Result := SysUtils.StrToBool(S);
 end;
 
 function TUnicodeStringHelper.ToBoolean: Boolean;
 begin
-
+  Result := SysUtils.StrToBool(Self);
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
+{$POP}
 
 function TShortStringHelper.ToCharArray: specialize TArray<AnsiChar>;
 begin

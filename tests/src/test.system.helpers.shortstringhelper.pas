@@ -23,6 +23,7 @@ type
   TTestShortStringHelper = class(TTestCase)
   private
 
+    procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
@@ -51,6 +52,8 @@ type
     procedure TestEmpty;
     procedure TestFormat;
 
+    procedure TestToBoolean;
+
     procedure TestToDouble;
     procedure TestToExtended;
     procedure TestToSingle;
@@ -70,6 +73,7 @@ type
 
     { Non Delphi }
     procedure TestByteLength;
+    procedure TestCPLength;
     procedure TestCodePoints;
   end;
 
@@ -168,6 +172,29 @@ begin
   Str := #$00#$01#$02#$03#$04#$05#$06#$07#$08#$09#$0a#$0b#$0c#$0d#$0e#$0f#$10+
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   CheckTrue(ShortString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestShortStringHelper.ToBooleanEmpty;
+begin
+  ShortString.ToBoolean('');
+end;
+
+procedure TTestShortStringHelper.TestToBoolean;
+var
+  Str: ShortString;
+begin
+  Str := '0';
+  CheckFalse(Str.ToBoolean);
+
+  CheckFalse(ShortString.ToBoolean('0'));
+  CheckFalse(ShortString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckTrue(ShortString.ToBoolean('-1'));
+  CheckTrue(ShortString.ToBoolean('1'));
+  CheckTrue(ShortString.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
+  CheckTrue(ShortString.ToBoolean(ShortString(SysUtils.TrueBoolStrs[0])));
+  CheckFalse(ShortString.ToBoolean(ShortString(SysUtils.FalseBoolStrs[0])));
+  CheckTrue(ShortString.ToBoolean('TRUE'));
+  CheckException(@ToBooleanEmpty, EConvertError);
 end;
 
 {$IFNDEF FPUNONE}
@@ -385,7 +412,11 @@ begin
   CheckEquals('3000000000', ShortString.Parse(TEST_INT64));
   CheckEquals('-1', ShortString.Parse(True));
   CheckEquals('0', ShortString.Parse(False));
+  {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
   CheckEquals(FloatToStr(1.5), ShortString.Parse(1.5));
+  {$ELSE}
+  Ignore('Extended/Double type is not supported.');
+  {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 end;
 
 procedure TTestShortStringHelper.TInt64Empty;
@@ -423,6 +454,15 @@ begin
     CheckEquals(12, Str.ByteLength)
   else
     CheckEquals(6, Str.ByteLength);
+end;
+
+procedure TTestShortStringHelper.TestCPLength;
+var
+  AnsiStr: ShortString;
+begin
+  AnsiStr := 'hello';
+
+  CheckEquals(5, AnsiStr.Length);
 end;
 
 procedure TTestShortStringHelper.TestCodePoints;

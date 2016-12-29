@@ -29,8 +29,9 @@ type
   TShortStringHelper = record helper for ShortString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
-    function GetLength: Integer;
+    function GetLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    function GetCPLength: Integer;
     function GetCodePoints(Index: Integer): ShortString;
   public
     const Empty: ShortString = '';
@@ -102,7 +103,9 @@ type
     class function Parse(const Value: Integer): ShortString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): ShortString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): ShortString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): ShortString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: ShortString; overload;
     function QuotedString(const QuoteChar: AnsiChar): ShortString; overload;
     function Remove(StartIndex: Integer): ShortString; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -163,6 +166,7 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: ShortString read GetCodePoints;
   end;
 
@@ -170,8 +174,9 @@ type
   TAnsiStringHelper = record helper for AnsiString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
-    function GetLength: Integer;
+    function GetLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    function GetCPLength: Integer;
     function GetCodePoints(Index: Integer): AnsiString;
   public
     const Empty: AnsiString = '';
@@ -243,7 +248,9 @@ type
     class function Parse(const Value: Integer): AnsiString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): AnsiString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): AnsiString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): AnsiString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: AnsiString; overload;
     function QuotedString(const QuoteChar: AnsiChar): AnsiString; overload;
     function Remove(StartIndex: Integer): AnsiString; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -304,14 +311,16 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: AnsiString read GetCodePoints;
   end;
 
   TRawByteStringHelper = record helper for RawByteString
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
-    function GetLength: Integer;
+    function GetLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    function GetCPLength: Integer;
     function GetCodePoints(Index: Integer): RawByteString;
   public
     const Empty: RawByteString = '';
@@ -383,7 +392,9 @@ type
     class function Parse(const Value: Integer): RawByteString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): RawByteString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): RawByteString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): RawByteString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: RawByteString; overload;
     function QuotedString(const QuoteChar: AnsiChar): RawByteString; overload;
     function Remove(StartIndex: Integer): RawByteString; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -444,14 +455,16 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: RawByteString read GetCodePoints;
   end;
 
   TUTF8StringHelper = record helper for UTF8String
   private
     function GetChars(Index: Integer): AnsiChar; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
-    function GetLength: Integer;
+    function GetLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    function GetCPLength: Integer;
     function GetCodePoints(Index: Integer): UTF8String;
   public
     const Empty: UTF8String = '';
@@ -523,7 +536,9 @@ type
     class function Parse(const Value: Integer): UTF8String; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): UTF8String; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): UTF8String; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): UTF8String; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: UTF8String; overload;
     function QuotedString(const QuoteChar: AnsiChar): UTF8String; overload;
     function Remove(StartIndex: Integer): UTF8String; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -584,6 +599,7 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: UTF8String read GetCodePoints;
   end;
   {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
@@ -595,6 +611,7 @@ type
     function GetChars(Index: Integer): WideChar; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    function GetCPLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetCodePoints(Index: Integer): WideString; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
   public
     const Empty: WideString = '';
@@ -666,7 +683,9 @@ type
     class function Parse(const Value: Integer): WideString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): WideString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): WideString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): WideString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: WideString; overload;
     function QuotedString(const QuoteChar: WideChar): WideString; overload;
     function Remove(StartIndex: Integer): WideString; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -727,6 +746,7 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: WideString read GetCodePoints;
   end;
   {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
@@ -738,6 +758,7 @@ type
     function GetChars(Index: Integer): UnicodeChar; {$IFDEF HAS_INLINE}inline;{$ENDIF}
     function GetLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
     function GetByteLength: Integer; {$IFDEF HAS_INLINE}inline;{$ENDIF}
+    function GetCPLength: Integer; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     function GetCodePoints(Index: Integer): UnicodeString; {$IFDEF HAS_INLINE}inline;{$ENDIF}
   public
     const Empty: UnicodeString = '';
@@ -809,7 +830,9 @@ type
     class function Parse(const Value: Integer): UnicodeString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Int64): UnicodeString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
     class function Parse(const Value: Boolean): UnicodeString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
     class function Parse(const Value: Extended): UnicodeString; overload; static; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
+    {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
     function QuotedString: UnicodeString; overload;
     function QuotedString(const QuoteChar: UnicodeChar): UnicodeString; overload;
     function Remove(StartIndex: Integer): UnicodeString; overload; {$IFDEF SYSUTILSINLINE}inline;{$ENDIF}
@@ -870,6 +893,7 @@ type
     property Length: Integer read GetLength;
     { Non Delphi }
     property ByteLength: Integer read GetByteLength;
+    property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: UnicodeString read GetCodePoints;
   end;
   {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}

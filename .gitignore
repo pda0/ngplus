@@ -10,6 +10,8 @@
 *.identcache
 *.stat
 *.local
+*.dsk
+*.~dsk
 *.res
 */backup
 */*/backup
@@ -17,4 +19,4 @@
 */*/__history
 */__recovery
 */*/__recovery
-tests/lib/*
+lib/*

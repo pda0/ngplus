@@ -24,6 +24,7 @@ type
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
 
+    procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
     procedure TDoubleEmpty;
@@ -52,6 +53,8 @@ type
 
     procedure TestEmpty;
 
+    procedure TestToBoolean;
+
     procedure TestToDouble;
     procedure TestToExtended;
     procedure TestToSingle;
@@ -71,6 +74,7 @@ type
 
     { Non Delphi }
     procedure TestByteLength;
+    procedure TestCPLength;
     procedure TestCodePoints;
   {$ELSE}
   public
@@ -185,6 +189,29 @@ begin
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   SetCodePage(Str, CP_NONE, False);
   CheckTrue(RawByteString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestRawByteStringHelper.ToBooleanEmpty;
+begin
+  RawByteString.ToBoolean('');
+end;
+
+procedure TTestRawByteStringHelper.TestToBoolean;
+var
+  Str: RawByteString;
+begin
+  Str := '0';
+  CheckFalse(Str.ToBoolean);
+
+  CheckFalse(RawByteString.ToBoolean('0'));
+  CheckFalse(RawByteString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckTrue(RawByteString.ToBoolean('-1'));
+  CheckTrue(RawByteString.ToBoolean('1'));
+  CheckTrue(RawByteString.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
+  CheckTrue(RawByteString.ToBoolean(RawByteString(SysUtils.TrueBoolStrs[0])));
+  CheckFalse(RawByteString.ToBoolean(RawByteString(SysUtils.FalseBoolStrs[0])));
+  CheckTrue(RawByteString.ToBoolean('TRUE'));
+  CheckException(@ToBooleanEmpty, EConvertError);
 end;
 
 {$IFNDEF FPUNONE}
@@ -385,12 +412,12 @@ end;
 
 procedure TTestRawByteStringHelper.TestLength;
 var
-  Str: RawByteString;
+  AnsiStr: RawByteString;
 begin
-  Str := 'hello';
-  SetCodePage(Str, CP_NONE, False);
+  AnsiStr := 'hello';
+  SetCodePage(AnsiStr, CP_NONE, False);
 
-  CheckEquals(5, Str.Length);
+  CheckEquals(5, AnsiStr.Length);
 end;
 
 procedure TTestRawByteStringHelper.TestParse;
@@ -399,7 +426,11 @@ begin
   CheckEquals('3000000000', RawByteString.Parse(TEST_INT64));
   CheckEquals('-1', RawByteString.Parse(True));
   CheckEquals('0', RawByteString.Parse(False));
+  {$IF NOT DEFINED(FPUNONE) AND (DEFINED(FPC_HAS_TYPE_EXTENDED) OR DEFINED(FPC_HAS_TYPE_DOUBLE))}
   CheckEquals(FloatToStr(1.5), RawByteString.Parse(1.5));
+  {$ELSE}
+  Ignore('Extended/Double type is not supported.');
+  {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 end;
 
 procedure TTestRawByteStringHelper.TInt64Empty;
@@ -436,6 +467,16 @@ begin
   SetCodePage(Str, CP_NONE, False);
 
   CheckEquals(5, Str.ByteLength);
+end;
+
+procedure TTestRawByteStringHelper.TestCPLength;
+var
+  Str: RawByteString;
+begin
+  Str := 'hello';
+  SetCodePage(Str, CP_NONE, False);
+
+  CheckEquals(5, Str.CPLength);
 end;
 
 procedure TTestRawByteStringHelper.TestCodePoints;
