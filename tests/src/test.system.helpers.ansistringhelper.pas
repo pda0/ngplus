@@ -203,9 +203,14 @@ begin
   CheckFalse(Str.ToBoolean);
 
   CheckFalse(AnsiString.ToBoolean('0'));
-  CheckFalse(AnsiString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(AnsiString.ToBoolean('000'));
+  CheckFalse(AnsiString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '0'));
+  CheckFalse(AnsiString.ToBoolean('-00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(AnsiString.ToBoolean('+00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(AnsiString.ToBoolean('00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
   CheckTrue(AnsiString.ToBoolean('-1'));
   CheckTrue(AnsiString.ToBoolean('1'));
+  CheckTrue(AnsiString.ToBoolean('123'));
   CheckTrue(AnsiString.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
   CheckTrue(AnsiString.ToBoolean(AnsiString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(AnsiString.ToBoolean(AnsiString(SysUtils.FalseBoolStrs[0])));

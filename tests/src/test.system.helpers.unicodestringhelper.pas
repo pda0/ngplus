@@ -748,9 +748,14 @@ begin
   CheckFalse(Str.ToBoolean);
 
   CheckFalse(UnicodeString.ToBoolean('0'));
-  CheckFalse(UnicodeString.ToBoolean('0' + TUChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UnicodeString.ToBoolean('000'));
+  CheckFalse(UnicodeString.ToBoolean('0' + TUChar(FormatSettings.DecimalSeparator) + '0'));
+  CheckFalse(UnicodeString.ToBoolean('-00' + TUChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UnicodeString.ToBoolean('+00' + TUChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UnicodeString.ToBoolean('00' + TUChar(FormatSettings.DecimalSeparator) + '00'));
   CheckTrue(UnicodeString.ToBoolean('-1'));
   CheckTrue(UnicodeString.ToBoolean('1'));
+  CheckTrue(UnicodeString.ToBoolean('123'));
   CheckTrue(UnicodeString.ToBoolean('11' + TUChar(FormatSettings.DecimalSeparator) + '12'));
   CheckTrue(UnicodeString.ToBoolean(UnicodeString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(UnicodeString.ToBoolean(UnicodeString(SysUtils.FalseBoolStrs[0])));

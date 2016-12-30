@@ -730,9 +730,14 @@ begin
   CheckFalse(Str.ToBoolean);
 
   CheckFalse(WideString.ToBoolean('0'));
-  CheckFalse(WideString.ToBoolean('0' + WideChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(WideString.ToBoolean('000'));
+  CheckFalse(WideString.ToBoolean('0' + WideChar(FormatSettings.DecimalSeparator) + '0'));
+  CheckFalse(WideString.ToBoolean('-00' + WideChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(WideString.ToBoolean('+00' + WideChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(WideString.ToBoolean('00' + WideChar(FormatSettings.DecimalSeparator) + '00'));
   CheckTrue(WideString.ToBoolean('-1'));
   CheckTrue(WideString.ToBoolean('1'));
+  CheckTrue(WideString.ToBoolean('123'));
   CheckTrue(WideString.ToBoolean('11' + WideChar(FormatSettings.DecimalSeparator) + '12'));
   CheckTrue(WideString.ToBoolean(WideString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(WideString.ToBoolean(WideString(SysUtils.FalseBoolStrs[0])));

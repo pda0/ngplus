@@ -202,9 +202,14 @@ begin
   CheckFalse(Str.ToBoolean);
 
   CheckFalse(UTF8String.ToBoolean('0'));
-  CheckFalse(UTF8String.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UTF8String.ToBoolean('000'));
+  CheckFalse(UTF8String.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '0'));
+  CheckFalse(UTF8String.ToBoolean('-00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UTF8String.ToBoolean('+00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(UTF8String.ToBoolean('00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
   CheckTrue(UTF8String.ToBoolean('-1'));
   CheckTrue(UTF8String.ToBoolean('1'));
+  CheckTrue(UTF8String.ToBoolean('123'));
   CheckTrue(UTF8String.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
   CheckTrue(UTF8String.ToBoolean(UTF8String(SysUtils.TrueBoolStrs[0])));
   CheckFalse(UTF8String.ToBoolean(UTF8String(SysUtils.FalseBoolStrs[0])));

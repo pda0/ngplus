@@ -187,9 +187,14 @@ begin
   CheckFalse(Str.ToBoolean);
 
   CheckFalse(ShortString.ToBoolean('0'));
-  CheckFalse(ShortString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(ShortString.ToBoolean('000'));
+  CheckFalse(ShortString.ToBoolean('0' + AnsiChar(FormatSettings.DecimalSeparator) + '0'));
+  CheckFalse(ShortString.ToBoolean('-00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(ShortString.ToBoolean('+00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
+  CheckFalse(ShortString.ToBoolean('00' + AnsiChar(FormatSettings.DecimalSeparator) + '00'));
   CheckTrue(ShortString.ToBoolean('-1'));
   CheckTrue(ShortString.ToBoolean('1'));
+  CheckTrue(ShortString.ToBoolean('123'));
   CheckTrue(ShortString.ToBoolean('11' + AnsiChar(FormatSettings.DecimalSeparator) + '12'));
   CheckTrue(ShortString.ToBoolean(ShortString(SysUtils.TrueBoolStrs[0])));
   CheckFalse(ShortString.ToBoolean(ShortString(SysUtils.FalseBoolStrs[0])));
