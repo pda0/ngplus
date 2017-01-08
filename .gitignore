@@ -19,4 +19,4 @@
 */*/__history
 */__recovery
 */*/__recovery
-lib/*
+tests/lib/*

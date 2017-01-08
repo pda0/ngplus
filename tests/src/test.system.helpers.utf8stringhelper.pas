@@ -23,7 +23,7 @@ type
   TTestUTF8StringHelper = class(TTestCase)
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
-
+    procedure JoinOffRange;
     procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
@@ -40,7 +40,8 @@ type
     procedure TIntegerToBig;
     procedure TInt64Empty;
     procedure TInt64ToBig;
-
+  public
+    procedure TestJoin;
     procedure TestToLower;
   published
     procedure TestCreate;
@@ -52,6 +53,7 @@ type
     procedure TestFormat;
 
     procedure TestEmpty;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -187,6 +189,38 @@ begin
   Str := #$00#$01#$02#$03#$04#$05#$06#$07#$08#$09#$0a#$0b#$0c#$0d#$0e#$0f#$10+
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   CheckTrue(UTF8String.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestUTF8StringHelper.JoinOffRange;
+begin
+  WideString.Join(',', ['String1', 'String2', 'String3'], 3, 2);
+end;
+
+procedure TTestUTF8StringHelper.TestJoin;
+var
+  UStr: UTF8String;
+begin
+  CheckEquals(UTF8String(''),
+    UTF8String.Join(',', [], 0, 0));
+  CheckEquals(UTF8String('String1,String2,String3'),
+    UTF8String.Join(',', ['String1', 'String2', 'String3']));
+  CheckEquals(UTF8String('String1String2String3'),
+    UTF8String.Join('', ['String1', 'String2', 'String3']));
+  CheckEquals(UTF8String('String1->String2->String3'),
+    UTF8String.Join('->', ['String1', 'String2', 'String3']));
+  CheckEquals(UTF8String('String2,String3'),
+    UTF8String.Join(',', ['String1', 'String2', 'String3'], 1, 2));
+  CheckException(@JoinOffRange, ERangeError);
+  CheckEquals(UTF8String('String1'),
+    UTF8String.Join(',', ['String1', 'String2', 'String3'], 0, 1));
+  CheckEquals(UTF8String(''),
+    UTF8String.Join(',', ['String1', 'String2', 'String3'], 0, 0));
+
+  UStr := UTF8String('Строка');
+  CheckEquals(
+    UTF8String('String,Строка,True,10,') + UTF8String(SysUtils.FloatToStr(3.14)) + UTF8String(',TTestUTF8StringHelper'),
+    UTF8String.Join(',', ['String', UStr, True, 10, 3.14, Self])
+  );
 end;
 
 procedure TTestUTF8StringHelper.ToBooleanEmpty;

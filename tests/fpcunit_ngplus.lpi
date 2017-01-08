@@ -47,7 +47,6 @@
       <Unit1>
         <Filename Value="..\src\system.hash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\src\system.helpers.pas"/>
@@ -57,22 +56,18 @@
       <Unit3>
         <Filename Value="..\src\system.helpers.strings.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Helpers.Strings"/>
       </Unit3>
       <Unit4>
         <Filename Value="..\src\system.hash.helpers.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="System.Hash.Helpers"/>
       </Unit4>
       <Unit5>
         <Filename Value="src\test.system.hash.thash.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THash"/>
       </Unit5>
       <Unit6>
         <Filename Value="src\test.system.hash.thashbobjenkins.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Test.System.Hash.THashBobJenkins"/>
       </Unit6>
       <Unit7>
         <Filename Value="src\test.system.hash.thashmd5.pas"/>

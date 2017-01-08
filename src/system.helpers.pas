@@ -604,7 +604,7 @@ type
   end;
   {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-  {$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+  {$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
   TWideStringHelper = record helper for WideString
   private
     class function HaveChar(AChar: WideChar; const AList: array of WideChar): Boolean; static;
@@ -749,7 +749,7 @@ type
     property CPLength: Integer read GetCPLength;
     property CodePoints[Index: Integer]: WideString read GetCodePoints;
   end;
-  {$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+  {$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
   {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
   TUnicodeStringHelper = record helper for UnicodeString

@@ -99,6 +99,7 @@ type
     procedure TestFormat;
 
     procedure TestEmpty;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -450,7 +451,7 @@ begin
   CheckEquals(WideString(''),
     WideString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
 
-  UStr := 'Строка';
+  UStr := WideString('Строка');
   CheckEquals(
     WideString('String,Строка,True,10,') + WideString(SysUtils.FloatToStr(3.14)) + WideString(',TTestWideStringHelper'),
     WideString.Join(',', ['String', UStr, True, 10, 3.14, Self])

@@ -23,7 +23,7 @@ type
   TTestAnsiStringHelper = class(TTestCase)
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
-
+    procedure JoinOffRange;
     procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
@@ -40,7 +40,8 @@ type
     procedure TIntegerToBig;
     procedure TInt64Empty;
     procedure TInt64ToBig;
-
+  public
+    procedure TestJoin;
     procedure TestToLower;
   published
     procedure TestCreate;
@@ -52,6 +53,7 @@ type
     procedure TestFormat;
 
     procedure TestEmpty;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -188,6 +190,38 @@ begin
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   SetCodePage(RawByteString(Str), 1251);
   CheckTrue(AnsiString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestAnsiStringHelper.JoinOffRange;
+begin
+  AnsiString.Join(',', ['String1', 'String2', 'String3'], 3, 2);
+end;
+
+procedure TTestAnsiStringHelper.TestJoin;
+var
+  AStr: AnsiString;
+begin
+  CheckEquals(AnsiString(''),
+    AnsiString.Join(',', [], 0, 0));
+  CheckEquals(AnsiString('String1,String2,String3'),
+    AnsiString.Join(',', ['String1', 'String2', 'String3']));
+  CheckEquals(AnsiString('String1String2String3'),
+    AnsiString.Join('', ['String1', 'String2', 'String3']));
+  CheckEquals(AnsiString('String1->String2->String3'),
+    AnsiString.Join('->', ['String1', 'String2', 'String3']));
+  CheckEquals(AnsiString('String2,String3'),
+    AnsiString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
+  CheckException(@JoinOffRange, ERangeError);
+  CheckEquals(AnsiString('String1'),
+    AnsiString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
+  CheckEquals(AnsiString(''),
+    AnsiString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
+
+  AStr := AnsiString('Строка');
+  CheckEquals(
+    AnsiString('String,Строка,True,10,') + AnsiString(SysUtils.FloatToStr(3.14)) + AnsiString(',TTestAnsiStringHelper'),
+    AnsiString.Join(',', ['String', AStr, True, 10, 3.14, Self])
+  );
 end;
 
 procedure TTestAnsiStringHelper.ToBooleanEmpty;

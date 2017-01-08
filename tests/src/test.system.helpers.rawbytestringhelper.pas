@@ -23,7 +23,7 @@ type
   TTestRawByteStringHelper = class(TTestCase)
   {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
   private
-
+    procedure JoinOffRange;
     procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
@@ -40,7 +40,8 @@ type
     procedure TIntegerToBig;
     procedure TInt64Empty;
     procedure TInt64ToBig;
-
+  public
+    procedure TestJoin;
     procedure TestToLower;
   published
     procedure TestCreate;
@@ -52,6 +53,7 @@ type
     procedure TestFormat;
 
     procedure TestEmpty;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -189,6 +191,38 @@ begin
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   SetCodePage(Str, CP_NONE, False);
   CheckTrue(RawByteString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestRawByteStringHelper.JoinOffRange;
+begin
+  RawByteString.Join(',', ['String1', 'String2', 'String3'], 3, 2);
+end;
+
+procedure TTestRawByteStringHelper.TestJoin;
+var
+  AStr: RawByteString;
+begin
+  CheckEquals(RawByteString(''),
+    RawByteString.Join(',', [], 0, 0));
+  CheckEquals(RawByteString('String1,String2,String3'),
+    RawByteString.Join(',', ['String1', 'String2', 'String3']));
+  CheckEquals(RawByteString('String1String2String3'),
+    RawByteString.Join('', ['String1', 'String2', 'String3']));
+  CheckEquals(RawByteString('String1->String2->String3'),
+    RawByteString.Join('->', ['String1', 'String2', 'String3']));
+  CheckEquals(RawByteString('String2,String3'),
+    RawByteString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
+  CheckException(@JoinOffRange, ERangeError);
+  CheckEquals(RawByteString('String1'),
+    RawByteString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
+  CheckEquals(RawByteString(''),
+    RawByteString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
+
+  AStr := RawByteString('Строка');
+  CheckEquals(
+    RawByteString('String,Строка,True,10,') + RawByteString(SysUtils.FloatToStr(3.14)) + RawByteString(',TTestRawByteStringHelper'),
+    RawByteString.Join(',', ['String', AStr, True, 10, 3.14, Self])
+  );
 end;
 
 procedure TTestRawByteStringHelper.ToBooleanEmpty;

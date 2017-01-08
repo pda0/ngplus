@@ -13,7 +13,7 @@
 { TShortStringHelper, TAnsiStringHelper, TRawByteStringHelper,
   TUTF8StringHelper, TWideStringHelper, TUnicodeStringHelper }
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.HaveChar(AChar: WideChar; const AList:
   array of WideChar): Boolean;
 var
@@ -27,7 +27,7 @@ begin
     Inc(i);
   end;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.HaveChar(AChar: UnicodeChar; const AList:
@@ -133,7 +133,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Create(C: WideChar; Count: Integer):
   WideString;
 var
@@ -157,7 +157,7 @@ class function TWideStringHelper.Create(const Value: array of WideChar):
 begin
   Result := WideString.Create(Value, Low(Value), System.Length(Value));
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Create(C: UnicodeChar; Count: Integer):
@@ -207,12 +207,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.GetChars(Index: Integer): WideChar;
 begin
   Result := Self[Low(Self) + Index];
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetChars(Index: Integer): UnicodeChar;
@@ -260,12 +260,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.GetCPLength: Integer;
 begin
   Result := System.Length(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetCPLength: Integer;
@@ -313,12 +313,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.GetCodePoints(Index: Integer): WideString;
 begin
   Result := Self[Low(Self) + Index];
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetCodePoints(Index: Integer): UnicodeString;
@@ -349,12 +349,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.GetByteLength: Integer;
 begin
   Result := System.Length(Self) * SizeOf(WideChar);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetByteLength: Integer;
@@ -385,12 +385,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.GetLength: Integer;
 begin
   Result := System.Length(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.GetLength: Integer;
@@ -609,7 +609,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Compare(const StrA: WideString;
   const StrB: WideString): Integer;
 begin
@@ -661,7 +661,7 @@ class function TWideStringHelper.Compare(const StrA: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Compare(const StrA: UnicodeString;
@@ -771,7 +771,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.CompareOrdinal(const StrA: WideString;
   const StrB: WideString): Integer;
 begin
@@ -784,7 +784,7 @@ class function TWideStringHelper.CompareOrdinal(const StrA: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.CompareOrdinal(const StrA: UnicodeString;
@@ -827,13 +827,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.CompareText(const StrA: WideString;
   const StrB: WideString): Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.CompareText(const StrA: UnicodeString;
@@ -865,12 +865,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.CompareTo(const strB: WideString): Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.CompareTo(const strB: UnicodeString): Integer;
@@ -901,12 +901,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Contains(const Value: WideString): Boolean;
 begin
   Result := System.Pos(Value, Self) >= Low(Value);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Contains(const Value: UnicodeString): Boolean;
@@ -941,13 +941,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Copy(const Str: WideString):
   WideString;
 begin
   Result := Str;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Copy(const Str: UnicodeString):
@@ -983,13 +983,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 procedure TWideStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of WideChar; DestinationIndex: Integer; Count: Integer);
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 procedure TUnicodeStringHelper.CopyTo(SourceIndex: Integer; var Destination:
@@ -1021,12 +1021,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.CountChar(const C: WideChar): Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.CountChar(const C: UnicodeChar): Integer;
@@ -1081,7 +1081,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.DeQuotedString: WideString;
 begin
 
@@ -1092,7 +1092,7 @@ function TWideStringHelper.DeQuotedString(const QuoteChar: WideChar):
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.DeQuotedString: UnicodeString;
@@ -1133,13 +1133,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.EndsText(const ASubText, AText:
   WideString): Boolean;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.EndsText(const ASubText, AText:
@@ -1195,7 +1195,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.EndsWith(const Value: WideString): Boolean;
 begin
 
@@ -1206,7 +1206,7 @@ function TWideStringHelper.EndsWith(const Value: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.EndsWith(const Value: UnicodeString): Boolean;
@@ -1267,7 +1267,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Equals(const Value: WideString): Boolean;
 begin
   Result := Self = Value;
@@ -1278,7 +1278,7 @@ class function TWideStringHelper.Equals(const Left: WideString;
 begin
   Result := Left = Right;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Equals(const Value: UnicodeString): Boolean;
@@ -1319,13 +1319,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Format(const FormatStr: WideString;
   const Args: array of const): WideString;
 begin
   Result := SysUtils.WideFormat(FormatStr, Args);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Format(const FormatStr: UnicodeString;
@@ -1473,7 +1473,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.IndexOf(value: WideChar): Integer;
 begin
 
@@ -1507,7 +1507,7 @@ function TWideStringHelper.IndexOf(const Value: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IndexOf(value: UnicodeChar): Integer;
@@ -1619,7 +1619,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.IndexOfAny(const AnyOf: array of WideChar):
   Integer;
 begin
@@ -1637,7 +1637,7 @@ function TWideStringHelper.IndexOfAny(const AnyOf: array of WideChar;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IndexOfAny(const AnyOf: array of UnicodeChar):
@@ -1737,7 +1737,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.IndexOfAnyUnquoted(const AnyOf: array of
   WideChar; StartQuote, EndQuote: WideChar): Integer;
 begin
@@ -1756,7 +1756,7 @@ function TWideStringHelper.IndexOfAnyUnquoted(const AnyOf: array of
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IndexOfAnyUnquoted(const AnyOf: array of
@@ -1805,13 +1805,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Insert(StartIndex: Integer; const Value:
   WideString): WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Insert(StartIndex: Integer; const Value:
@@ -1847,13 +1847,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.IsDelimiter(const Delimiters: WideString;
   Index: Integer): Boolean;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IsDelimiter(const Delimiters: UnicodeString;
@@ -1885,12 +1885,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.IsEmpty: Boolean;
 begin
   Result := Self.Length = 0;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.IsEmpty: Boolean;
@@ -1925,13 +1925,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.IsNullOrEmpty(const Value: WideString):
   Boolean;
 begin
   Result := Value.Length = 0;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.IsNullOrEmpty(const Value: UnicodeString):
@@ -1967,13 +1967,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.IsNullOrWhiteSpace(const Value:
   WideString): Boolean;
 begin
   Result := Value.Trim.Length = 0;
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.IsNullOrWhiteSpace(const Value:
@@ -2109,7 +2109,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Join(const Separator: WideString;
   const Values: array of const): WideString;
 begin
@@ -2140,7 +2140,7 @@ class function TWideStringHelper.Join(const Separator: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Join(const Separator: UnicodeString;
@@ -2201,13 +2201,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.LastDelimiter(const Delims: WideString):
   Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.LastDelimiter(const Delims: UnicodeString):
@@ -2355,7 +2355,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.LastIndexOf(Value: WideChar): Integer;
 begin
 
@@ -2389,7 +2389,7 @@ function TWideStringHelper.LastIndexOf(const Value: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.LastIndexOf(Value: UnicodeChar): Integer;
@@ -2501,7 +2501,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.LastIndexOfAny(const AnyOf: array of WideChar):
   Integer;
 begin
@@ -2519,7 +2519,7 @@ function TWideStringHelper.LastIndexOfAny(const AnyOf: array of WideChar;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.LastIndexOfAny(const AnyOf: array of UnicodeChar):
@@ -2591,7 +2591,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.LowerCase(const S: WideString):
   WideString;
 begin
@@ -2603,7 +2603,7 @@ class function TWideStringHelper.LowerCase(const S: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.LowerCase(const S: UnicodeString):
@@ -2665,7 +2665,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.PadLeft(TotalWidth: Integer): WideString;
 begin
 
@@ -2676,7 +2676,7 @@ function TWideStringHelper.PadLeft(TotalWidth: Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.PadLeft(TotalWidth: Integer): UnicodeString;
@@ -2737,7 +2737,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.PadRight(TotalWidth: Integer): WideString;
 begin
 
@@ -2748,7 +2748,7 @@ function TWideStringHelper.PadRight(TotalWidth: Integer;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.PadRight(TotalWidth: Integer): UnicodeString;
@@ -2854,7 +2854,7 @@ end;
 {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.Parse(const Value: Integer): WideString;
 begin
   Result := SysUtils.IntToStr(Value);
@@ -2876,7 +2876,7 @@ begin
   Result := SysUtils.FloatToStr(Value);
 end;
 {$IFEND !~FPUNONE FPC_HAS_TYPE_EXTENDED FPC_HAS_TYPE_DOUBLE}
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.Parse(const Value: Integer): UnicodeString;
@@ -2949,7 +2949,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.QuotedString: WideString;
 begin
 
@@ -2960,7 +2960,7 @@ function TWideStringHelper.QuotedString(const QuoteChar: WideChar):
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.QuotedString: UnicodeString;
@@ -3021,7 +3021,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Remove(StartIndex: Integer): WideString;
 begin
 
@@ -3032,7 +3032,7 @@ function TWideStringHelper.Remove(StartIndex: Integer; Count: Integer):
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Remove(StartIndex: Integer): UnicodeString;
@@ -3145,7 +3145,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Replace(OldChar: WideChar;
   NewChar: WideChar): WideString;
 begin
@@ -3169,7 +3169,7 @@ function TWideStringHelper.Replace(const OldValue: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Replace(OldChar: UnicodeChar;
@@ -3343,7 +3343,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Split(const Separator: array of WideChar):
   specialize TArray<WideString>;
 begin
@@ -3379,7 +3379,7 @@ function TWideStringHelper.Split(const Separator: array of WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Split(const Separator: array of UnicodeChar):
@@ -3465,7 +3465,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.StartsWith(const Value: WideString): Boolean;
 begin
 
@@ -3476,7 +3476,7 @@ function TWideStringHelper.StartsWith(const Value: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.StartsWith(const Value: UnicodeString): Boolean;
@@ -3537,7 +3537,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Substring(StartIndex: Integer): WideString;
 begin
 
@@ -3548,7 +3548,7 @@ function TWideStringHelper.Substring(StartIndex: Integer; Length: Integer):
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Substring(StartIndex: Integer): UnicodeString;
@@ -3606,7 +3606,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToBoolean(const S: WideString): Boolean;
 begin
   Result := SysUtils.StrToBool(S);
@@ -3616,7 +3616,7 @@ function TWideStringHelper.ToBoolean: Boolean;
 begin
   Result := SysUtils.StrToBool(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToBoolean(const S: UnicodeString): Boolean;
@@ -3677,7 +3677,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.ToCharArray: specialize TArray<WideChar>;
 begin
 
@@ -3688,7 +3688,7 @@ function TWideStringHelper.ToCharArray(StartIndex: Integer; Length: Integer):
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.ToCharArray: specialize TArray<UnicodeChar>;
@@ -3748,7 +3748,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToDouble(const S: WideString): Double;
 begin
   Result := SysUtils.StrToFloat(S);
@@ -3758,7 +3758,7 @@ function TWideStringHelper.ToDouble: Double;
 begin
   Result := SysUtils.StrToFloat(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToDouble(const S: UnicodeString): Double;
@@ -3820,7 +3820,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToExtended(const S: WideString):
   Extended;
 begin
@@ -3831,7 +3831,7 @@ function TWideStringHelper.ToExtended: Extended;
 begin
   Result := SysUtils.StrToFloat(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToExtended(const S: UnicodeString):
@@ -3890,7 +3890,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToInt64(const S: WideString): Int64;
 begin
   Result := SysUtils.StrToInt64(S);
@@ -3900,7 +3900,7 @@ function TWideStringHelper.ToInt64: Int64;
 begin
   Result := SysUtils.StrToInt64(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToInt64(const S: UnicodeString): Int64;
@@ -4004,7 +4004,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToInteger(const S: WideString): Integer;
 {$IFDEF CPU64}
 var
@@ -4026,7 +4026,7 @@ function TWideStringHelper.ToInteger: Integer;
 begin
   Result := Self.ToInteger(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToInteger(const S: UnicodeString): Integer;
@@ -4095,7 +4095,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.ToLower: WideString;
 begin
 
@@ -4105,7 +4105,7 @@ function TWideStringHelper.ToLower(LocaleID: TLocaleID): WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.ToLower: UnicodeString;
@@ -4177,12 +4177,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.ToLowerInvariant: WideString;
 begin
   Result := WideLowerCase(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.ToLowerInvariant: UnicodeString;
@@ -4235,7 +4235,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.ToSingle(const S: WideString): Single;
 begin
   Result := SysUtils.StrToFloat(S);
@@ -4245,7 +4245,7 @@ function TWideStringHelper.ToSingle: Single;
 begin
   Result := SysUtils.StrToFloat(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.ToSingle(const S: UnicodeString): Single;
@@ -4303,7 +4303,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.ToUpper: WideString;
 begin
 
@@ -4313,7 +4313,7 @@ function TWideStringHelper.ToUpper(LocaleID: TLocaleID): WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.ToUpper: UnicodeString;
@@ -4385,12 +4385,12 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.ToUpperInvariant: WideString;
 begin
   Result := WideUpperCase(Self);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.ToUpperInvariant: UnicodeString;
@@ -4445,7 +4445,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.Trim: WideString;
 begin
   Result := SysUtils.Trim(Self);
@@ -4456,7 +4456,7 @@ function TWideStringHelper.Trim(const TrimChars: array of WideChar):
 begin
   Result := Self.TrimLeft(TrimChars).TrimRight(TrimChars);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.Trim: UnicodeString;
@@ -4497,13 +4497,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.TrimEnd(const TrimChars: array of WideChar):
   WideString;
 begin
   Result := Self.TrimRight(TrimChars);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.TrimEnd(const TrimChars: array of UnicodeChar):
@@ -4627,7 +4627,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.TrimLeft: WideString;
 begin
   Result := SysUtils.TrimLeft(Self);
@@ -4650,7 +4650,7 @@ begin
   else
     Result := System.Copy(Self, i, LastChar - i + Low(Self));
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.TrimLeft: UnicodeString;
@@ -4791,7 +4791,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.TrimRight: WideString;
 begin
   Result := SysUtils.TrimRight(Self);
@@ -4814,7 +4814,7 @@ begin
   else
     Result := System.Copy(Self, Low(Self), i);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.TrimRight: UnicodeString;
@@ -4867,13 +4867,13 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.TrimStart(const TrimChars: array of WideChar):
   WideString;
 begin
   Result := Self.TrimLeft(TrimChars);
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.TrimStart(const TrimChars: array of UnicodeChar):
@@ -4933,7 +4933,7 @@ begin
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
-{$IF DEFINED(FPC_HAS_FEATURE_WIDESTRINGS) AND NOT DEFINED(FPC_WIDESTRING_EQUAL_UNICODESTRING)}
+{$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 class function TWideStringHelper.UpperCase(const S: WideString):
   WideString;
 begin
@@ -4945,7 +4945,7 @@ class function TWideStringHelper.UpperCase(const S: WideString;
 begin
 
 end;
-{$IFEND !FPC_HAS_FEATURE_WIDESTRINGS ~FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 class function TUnicodeStringHelper.UpperCase(const S: UnicodeString):

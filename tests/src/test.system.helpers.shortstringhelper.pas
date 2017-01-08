@@ -22,7 +22,7 @@ uses
 type
   TTestShortStringHelper = class(TTestCase)
   private
-
+    procedure JoinOffRange;
     procedure ToBooleanEmpty;
     {$IFNDEF FPUNONE}
     {$IFDEF FPC_HAS_TYPE_DOUBLE}
@@ -39,7 +39,8 @@ type
     procedure TIntegerToBig;
     procedure TInt64Empty;
     procedure TInt64ToBig;
-
+  public
+    procedure TestJoin;
     procedure TestToLower;
   published
     procedure TestCreate;
@@ -48,9 +49,10 @@ type
     procedure TestCopy;
 
     procedure TestEquals;
+    procedure TestFormat;
 
     procedure TestEmpty;
-    procedure TestFormat;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -172,6 +174,38 @@ begin
   Str := #$00#$01#$02#$03#$04#$05#$06#$07#$08#$09#$0a#$0b#$0c#$0d#$0e#$0f#$10+
     #$11#$12#$13#$14#$5#$6#$7#$8#$9#$1a#$1b#$1c#$1d#$1e#$1f#$20;
   CheckTrue(ShortString.IsNullOrWhiteSpace(Str));
+end;
+
+procedure TTestShortStringHelper.JoinOffRange;
+begin
+  ShortString.Join(',', ['String1', 'String2', 'String3'], 3, 2);
+end;
+
+procedure TTestShortStringHelper.TestJoin;
+var
+  AStr: ShortString;
+begin
+  CheckEquals(ShortString(''),
+    ShortString.Join(',', [], 0, 0));
+  CheckEquals(ShortString('String1,String2,String3'),
+    ShortString.Join(',', ['String1', 'String2', 'String3']));
+  CheckEquals(ShortString('String1String2String3'),
+    ShortString.Join('', ['String1', 'String2', 'String3']));
+  CheckEquals(ShortString('String1->String2->String3'),
+    ShortString.Join('->', ['String1', 'String2', 'String3']));
+  CheckEquals(ShortString('String2,String3'),
+    ShortString.Join(',', ['String1', 'String2', 'String3'], 1, 2));
+  CheckException(@JoinOffRange, ERangeError);
+  CheckEquals(ShortString('String1'),
+    ShortString.Join(',', ['String1', 'String2', 'String3'], 0, 1));
+  CheckEquals(ShortString(''),
+    ShortString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
+
+  AStr := ShortString('Строка');
+  CheckEquals(
+    ShortString('String,Строка,True,10,') + ShortString(SysUtils.FloatToStr(3.14)) + ShortString(',TTestShortStringHelper'),
+    ShortString.Join(',', ['String', AStr, True, 10, 3.14, Self])
+  );
 end;
 
 procedure TTestShortStringHelper.ToBooleanEmpty;

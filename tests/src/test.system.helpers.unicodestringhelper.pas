@@ -106,6 +106,7 @@ type
     procedure TestFormat;
 
     procedure TestEmpty;
+    //procedure TestJoin;
 
     procedure TestToBoolean;
 
@@ -468,7 +469,7 @@ begin
   CheckEquals(UnicodeString(''),
     UnicodeString.Join(',', ['String1', 'String2', 'String3'], 0, 0));
 
-  UStr := 'Строка';
+  UStr := UnicodeString('Строка');
   CheckEquals(
     UnicodeString('String,Строка,True,10,') + UnicodeString(SysUtils.FloatToStr(3.14)) + UnicodeString(',TTestUnicodeStringHelper'),
     UnicodeString.Join(',', ['String', UStr, True, 10, 3.14, Self])
