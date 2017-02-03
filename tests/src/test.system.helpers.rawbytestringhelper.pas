@@ -48,6 +48,9 @@ type
 
     procedure TestContains;
     procedure TestCopy;
+    procedure TestCopyTo;
+    procedure TestCountChar;
+    procedure TestDeQuotedString;
 
     procedure TestEquals;
     procedure TestFormat;
@@ -130,6 +133,45 @@ end;
 procedure TTestRawByteStringHelper.TestCopy;
 begin
   CheckEquals(TEST_STR, RawByteString.Copy(TEST_STR));
+end;
+
+procedure TTestRawByteStringHelper.TestCopyTo;
+var
+  Str1, Str2: RawByteString;
+begin
+  Str1 := TEST_STR;
+  Str2 := 'S';
+  SetCodePage(Str1, CP_NONE, False);
+  SetCodePage(Str2, CP_NONE, False);
+
+  Str2.CopyTo(0, Str1[10 + Low(Str1)], 0, Str2.Length);
+
+  CheckEquals(RawByteString('This is a String.'), Str1);
+end;
+
+procedure TTestRawByteStringHelper.TestCountChar;
+var
+  Str: RawByteString;
+begin
+  Str := 'This string contains 5 occurrences of s';
+  SetCodePage(Str, CP_NONE, False);
+
+  CheckEquals(5, Str.CountChar('s'));
+end;
+
+procedure TTestRawByteStringHelper.TestDeQuotedString;
+var
+  Str1, Str2, Str3: RawByteString;
+begin
+  Str1 := 'This function illustrates the functionality of the QuotedString method.';
+  Str2 := '''This function illustrates the functionality of the QuotedString method.''';
+  Str3 := 'fThis ffunction illustrates the ffunctionality off the QuotedString method.f';
+  SetCodePage(Str1, CP_NONE, False);
+  SetCodePage(Str2, CP_NONE, False);
+  SetCodePage(Str3, CP_NONE, False);
+
+  CheckEquals(Str1, Str2.DeQuotedString);
+  CheckEquals(Str1, Str3.DeQuotedString('f'));
 end;
 
 procedure TTestRawByteStringHelper.TestEquals;

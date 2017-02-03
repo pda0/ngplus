@@ -48,6 +48,9 @@ type
 
     procedure TestContains;
     procedure TestCopy;
+    procedure TestCopyTo;
+    procedure TestCountChar;
+    procedure TestDeQuotedString;
 
     procedure TestEquals;
     procedure TestFormat;
@@ -154,6 +157,37 @@ begin
   CheckFalse(Str1 <> Str2);
   CheckTrue(Str1 = 'A');
   CheckTrue('A' = Str1);
+end;
+
+procedure TTestUTF8StringHelper.TestCopyTo;
+var
+  Str1, Str2: UTF8String;
+begin
+  Str1 := TEST_STR;
+  Str2 := 'S';
+  Str2.CopyTo(0, Str1[10 + Low(Str1)], 0, Str2.Length);
+
+  CheckEquals(UTF8String('This is a String.'), Str1);
+end;
+
+procedure TTestUTF8StringHelper.TestCountChar;
+var
+  Str: UTF8String;
+begin
+  Str := 'This string contains 5 occurrences of s';
+
+  CheckEquals(5, Str.CountChar('s'));
+end;
+
+procedure TTestUTF8StringHelper.TestDeQuotedString;
+var
+  Str1, Str2, Str3: UTF8String;
+begin
+  Str1 := 'This function illustrates the functionality of the QuotedString method.';
+  Str2 := '''This function illustrates the functionality of the QuotedString method.''';
+  Str3 := 'fThis ffunction illustrates the ffunctionality off the QuotedString method.f';
+  CheckEquals(Str1, Str2.DeQuotedString);
+  CheckEquals(Str1, Str3.DeQuotedString('f'));
 end;
 
 procedure TTestUTF8StringHelper.TestFormat;

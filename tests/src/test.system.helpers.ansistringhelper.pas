@@ -48,6 +48,9 @@ type
 
     procedure TestContains;
     procedure TestCopy;
+    procedure TestCopyTo;
+    procedure TestCountChar;
+    procedure TestDeQuotedString;
 
     procedure TestEquals;
     procedure TestFormat;
@@ -130,6 +133,37 @@ end;
 procedure TTestAnsiStringHelper.TestCopy;
 begin
   CheckEquals(TEST_STR, AnsiString.Copy(TEST_STR));
+end;
+
+procedure TTestAnsiStringHelper.TestCopyTo;
+var
+  Str1, Str2: AnsiString;
+begin
+  Str1 := TEST_STR;
+  Str2 := 'S';
+  Str2.CopyTo(0, Str1[10 + Low(Str1)], 0, Str2.Length);
+
+  CheckEquals(AnsiString('This is a String.'), Str1);
+end;
+
+procedure TTestAnsiStringHelper.TestCountChar;
+var
+  Str: AnsiString;
+begin
+  Str := 'This string contains 5 occurrences of s';
+
+  CheckEquals(5, Str.CountChar('s'));
+end;
+
+procedure TTestAnsiStringHelper.TestDeQuotedString;
+var
+  Str1, Str2, Str3: AnsiString;
+begin
+  Str1 := 'This function illustrates the functionality of the QuotedString method.';
+  Str2 := '''This function illustrates the functionality of the QuotedString method.''';
+  Str3 := 'fThis ffunction illustrates the ffunctionality off the QuotedString method.f';
+  CheckEquals(Str1, Str2.DeQuotedString);
+  CheckEquals(Str1, Str3.DeQuotedString('f'));
 end;
 
 procedure TTestAnsiStringHelper.TestEquals;

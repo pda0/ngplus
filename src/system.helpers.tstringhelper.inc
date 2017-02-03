@@ -959,151 +959,285 @@ end;
 
 procedure TShortStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of AnsiChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + 1{Low(Self)}) * SizeOf(AnsiChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + 1{Low(Self)}], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 procedure TAnsiStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of AnsiChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + Low(Self)) * SizeOf(AnsiChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + Low(Self)], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 
 procedure TRawByteStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of AnsiChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + Low(Self)) * SizeOf(AnsiChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + Low(Self)], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 
 procedure TUTF8StringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of AnsiChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + Low(Self)) * SizeOf(AnsiChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + Low(Self)], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 procedure TWideStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of WideChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + Low(Self)) * SizeOf(WideChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + Low(Self)], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 {$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 procedure TUnicodeStringHelper.CopyTo(SourceIndex: Integer; var Destination:
   array of UnicodeChar; DestinationIndex: Integer; Count: Integer);
+var
+  ActualCount: SizeInt;
 begin
-
+  if (SourceIndex >= 0) and (DestinationIndex >= 0) then
+  begin
+    ActualCount := Min(Min(Count, System.Length(Destination) - DestinationIndex), System.Length(Self) - SourceIndex + Low(Self)) * SizeOf(UnicodeChar);
+    if ActualCount > 0 then
+      System.Move(Self[SourceIndex + Low(Self)], Destination[DestinationIndex], ActualCount);
+  end;
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 function TShortStringHelper.CountChar(const C: AnsiChar): Integer;
+var
+  i: Integer;
 begin
-
+  Result := 0;
+  for i := 1 {Low(Self)} to System.Length(Self) {High(Self)} do
+    if Self[i] = C then
+      Inc(Result);
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.CountChar(const C: AnsiChar): Integer;
+var
+  i: TDynArrayIndex;
 begin
-
+  Result := 0;
+  for i := Low(Self) to High(Self) do
+    if Self[i] = C then
+      Inc(Result);
 end;
 
 function TRawByteStringHelper.CountChar(const C: AnsiChar): Integer;
+var
+  i: TDynArrayIndex;
 begin
-
+  Result := 0;
+  for i := Low(Self) to High(Self) do
+    if Self[i] = C then
+      Inc(Result);
 end;
 
 function TUTF8StringHelper.CountChar(const C: AnsiChar): Integer;
+var
+  i: TDynArrayIndex;
 begin
-
+  Result := 0;
+  for i := Low(Self) to High(Self) do
+    if Self[i] = C then
+      Inc(Result);
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.CountChar(const C: WideChar): Integer;
+var
+  i: TDynArrayIndex;
 begin
-
+  Result := 0;
+  for i := Low(Self) to High(Self) do
+    if Self[i] = C then
+      Inc(Result);
 end;
 {$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.CountChar(const C: UnicodeChar): Integer;
+var
+  i: TDynArrayIndex;
 begin
-
+  Result := 0;
+  for i := Low(Self) to High(Self) do
+    if Self[i] = C then
+      Inc(Result);
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 
 function TShortStringHelper.DeQuotedString: ShortString;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TShortStringHelper.DeQuotedString(const QuoteChar: AnsiChar):
   ShortString;
 begin
-
+  Result := AnsiDequotedStr(Self, QuoteChar);
 end;
 
 {$IFDEF FPC_HAS_FEATURE_ANSISTRINGS}
 function TAnsiStringHelper.DeQuotedString: AnsiString;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TAnsiStringHelper.DeQuotedString(const QuoteChar: AnsiChar):
   AnsiString;
 begin
-
+  Result := AnsiDequotedStr(Self, QuoteChar);
 end;
 
 function TRawByteStringHelper.DeQuotedString: RawByteString;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TRawByteStringHelper.DeQuotedString(const QuoteChar: AnsiChar):
   RawByteString;
 begin
-
+  Result := AnsiDequotedStr(Self, QuoteChar);
 end;
 
 function TUTF8StringHelper.DeQuotedString: UTF8String;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TUTF8StringHelper.DeQuotedString(const QuoteChar: AnsiChar):
   UTF8String;
 begin
-
+  Result := AnsiDequotedStr(Self, QuoteChar);
 end;
 {$ENDIF !FPC_HAS_FEATURE_ANSISTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_WIDESTRINGS}
 function TWideStringHelper.DeQuotedString: WideString;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TWideStringHelper.DeQuotedString(const QuoteChar: WideChar):
   WideString;
+var
+  i, j, LastChar: SizeInt;
 begin
+  LastChar := High(Self);
+  if (System.Length(Self) < 2) or (Self[Low(Self)] <> QuoteChar) or
+    (Self[LastChar] <> QuoteChar) then
+    Result := Self
+  else begin
+    System.SetLength(Result, System.Length(Self));
+    j := Low(Result);
+    i := Low(Self) + 1;
+    while (i <= LastChar) do
+    begin
+      if Self[i] <> QuoteChar then
+      begin
+        Result[j] := Self[i];
+        Inc(j);
+      end
+      else begin
+        if (i < LastChar) and (Self[i + 1] = QuoteChar) then
+        begin
+          Result[j] := Self[i];
+          Inc(i);
+          Inc(j);
+        end
+        else if (i <> LastChar) then
+          Exit(Self);
+      end;
+      Inc(i);
+    end;
 
+    System.SetLength(Result, j - Low(Result));
+  end;
 end;
 {$ENDIF !FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
 function TUnicodeStringHelper.DeQuotedString: UnicodeString;
 begin
-
+  Result := Self.DeQuotedString('''');
 end;
 
 function TUnicodeStringHelper.DeQuotedString(const QuoteChar: UnicodeChar):
   UnicodeString;
+var
+  i, j, LastChar: SizeInt;
 begin
+  LastChar := High(Self);
+  if (System.Length(Self) < 2) or (Self[Low(Self)] <> QuoteChar) or
+    (Self[LastChar] <> QuoteChar) then
+    Result := Self
+  else begin
+    System.SetLength(Result, System.Length(Self));
+    j := Low(Result);
+    i := Low(Self) + 1;
+    while (i <= LastChar) do
+    begin
+      if Self[i] <> QuoteChar then
+      begin
+        Result[j] := Self[i];
+        Inc(j);
+      end
+      else begin
+        if (i < LastChar) and (Self[i + 1] = QuoteChar) then
+        begin
+          Result[j] := Self[i];
+          Inc(i);
+          Inc(j);
+        end
+        else if (i <> LastChar) then
+          Exit(Self);
+      end;
+      Inc(i);
+    end;
 
+    System.SetLength(Result, j - Low(Result));
+  end;
 end;
 {$ENDIF !FPC_HAS_FEATURE_UNICODESTRINGS}
 

@@ -55,9 +55,9 @@ type
     procedure TestCompareTo;
     //procedure TestContains;
     //procedure TestCopy;
-    procedure TestCopyTo;
-    procedure TestCountChar;
-    procedure TestDeQuotedString;
+    //procedure TestCopyTo;
+    //procedure TestCountChar;
+    //procedure TestDeQuotedString;
     procedure TestEnds;
     //procedure TestEquals;
     //procedure TestFormat;
@@ -101,6 +101,9 @@ type
 
     procedure TestContains;
     procedure TestCopy;
+    procedure TestCopyTo;
+    procedure TestCountChar;
+    procedure TestDeQuotedString;
 
     procedure TestEquals;
     procedure TestFormat;
